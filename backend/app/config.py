@@ -51,7 +51,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
     GOOGLE_API_KEY: str = ""
-    DEFAULT_MODEL: str = "gemini-1.5-pro"
+    GEMINI_API_KEY: str = ""
+    DEFAULT_MODEL: str = "gemini-3-flash-preview"
 
     # Meta / Instagram Graph API Webhook & Crawler Settings
     META_VERIFY_TOKEN: str = "sociotrack_meta_verify_token_2026"
