@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: social_agent_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - ENVIRONMENT=development
+      - DATABASE_URL=sqlite:///./sql_app.db
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-mock}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - ALLOW_ORIGINS=http://localhost:3000
+    volumes:
+      - ./backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: social_agent_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_USE_MOCK=${NEXT_PUBLIC_USE_MOCK:-false}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  db_data:

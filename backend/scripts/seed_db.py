@@ -168,6 +168,79 @@ def seed():
     )
     db.add(db_lesson)
 
+    # 7. Seed from seed_data.json if present (15 realistic brand posts & 6 extracted memories)
+    seed_json_path = os.path.join(os.path.dirname(__file__), "seed_data.json")
+    if not os.path.exists(seed_json_path):
+        seed_json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../seed_data.json"))
+
+    if os.path.exists(seed_json_path):
+        import json
+        with open(seed_json_path, "r", encoding="utf-8") as f:
+            seed_data = json.load(f)
+
+        posts_data = seed_data.get("posts", [])
+        memories_data = seed_data.get("memories", [])
+
+        seeded_posts_count = 0
+        for p in posts_data:
+            content = p.get("content", "")
+            metrics_dict = p.get("metrics", {})
+            m_obj = EngagementMetricsSchema(
+                impressions=metrics_dict.get("impressions", 1000),
+                shares=metrics_dict.get("reposts", 10),
+                replies=metrics_dict.get("replies", 5),
+                likes=metrics_dict.get("likes", 20),
+            )
+            post_id = p.get("id", str(uuid.uuid4()))
+            perf_tier = p.get("performance_tier", "mediocre")
+
+            existing_post = db.query(PostModel).filter(PostModel.id == post_id).first()
+            if not existing_post:
+                themes = p.get("metadata", {}).get("key_themes", [])
+                post_topic = themes[0].replace("-", " ").title() if themes else "Systems Caching & State"
+                db_post = PostModel(
+                    id=post_id,
+                    brand_name=p.get("brand", brand_name),
+                    topic=post_topic,
+                    format="Format B: Hot take" if perf_tier == "high" else "Format A: Data-first",
+                    hook=content.split("\n")[0] if "\n" in content else content[:80],
+                    body=content,
+                    call_to_action=content.split("\n")[-1] if "\n" in content else "What are your thoughts?",
+                    full_text=content,
+                    status="published",
+                    match_score=9.6 if perf_tier == "high" else 7.2,
+                    scheduled_time=p.get("posted_at", "2026-10-14T14:00:00Z"),
+                )
+                db.add(db_post)
+
+                if perf_tier == "high":
+                    mem_mgr.ingest_post(
+                        topic=post_topic,
+                        content=content,
+                        metrics=m_obj,
+                        hook=db_post.hook,
+                        key_takeaway=f"Contrarian insight: {db_post.hook}",
+                        post_id=post_id,
+                    )
+                seeded_posts_count += 1
+
+        for mem in memories_data:
+            mem_id = mem.get("id", str(uuid.uuid4()))
+            existing_lesson = db.query(LearnedLessonModel).filter(LearnedLessonModel.id == mem_id).first()
+            if not existing_lesson:
+                db_lesson = LearnedLessonModel(
+                    id=mem_id,
+                    brand_name=brand_name,
+                    topic=mem.get("category", "General").replace("_", " ").title(),
+                    post_content=mem.get("insight", ""),
+                    key_lesson=mem.get("operational_rule", ""),
+                    composite_score=round(mem.get("confidence_score", 0.9) * 10, 1),
+                    memory_doc_id=mem_id,
+                )
+                db.add(db_lesson)
+
+        print(f"✓ Successfully seeded {seeded_posts_count} additional posts and {len(memories_data)} structured memories from seed_data.json.")
+
     db.commit()
     db.close()
 
