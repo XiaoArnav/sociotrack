@@ -8,6 +8,7 @@ import sys
 import os
 
 # Support direct imports as shown in Person 1 spec
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "backend")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "backend/app/core")))
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 

@@ -10,12 +10,18 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from backend.app.config import settings
 
 # Engine configuration
+db_url = getattr(settings, "SYNC_DATABASE_URL", None) or settings.DATABASE_URL
+if "+aiosqlite" in db_url:
+    db_url = db_url.replace("+aiosqlite", "")
+if "+asyncpg" in db_url:
+    db_url = db_url.replace("+asyncpg", "")
+
 connect_args = {}
-if settings.DATABASE_URL.startswith("sqlite"):
+if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
     echo=False,
 )

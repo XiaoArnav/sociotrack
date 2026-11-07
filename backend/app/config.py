@@ -55,8 +55,8 @@ class Settings(BaseSettings):
 
     # Social Engagement Scoring Thresholds
     MIN_COMPOSITE_SCORE_THRESHOLD: float = 5.0
-    WEIGHT_SHARES: float = 3.5
-    WEIGHT_REPLIES: float = 2.5
+    WEIGHT_SHARES: float = 3.0
+    WEIGHT_REPLIES: float = 2.0
     WEIGHT_LIKES: float = 1.0
 
     model_config = SettingsConfigDict(

@@ -1,7 +1,10 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, Field, ConfigDict
-from app.schemas.memory import AgentMemoryResponse
+try:
+    from app.schemas.memory import AgentMemoryResponse
+except ImportError:
+    from backend.app.schemas.memory import AgentMemoryResponse
 
 
 class FeedMetricsRequest(BaseModel):

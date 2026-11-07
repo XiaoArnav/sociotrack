@@ -64,6 +64,7 @@ app.include_router(brands.router, prefix=settings.API_V1_STR)
 async def health_check():
     return {
         "status": "healthy",
+        "app": settings.APP_NAME,
         "service": "sociotrack-backend",
         "hindsight_configured": bool(settings.HINDSIGHT_API_URL),
         "database": settings.DATABASE_URL.split("://")[0],
