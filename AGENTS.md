@@ -1,4 +1,5 @@
 # Global Antigravity Operating Directives & Guidelines
+# Inspired by Matt Pocock Engineering Philosophy & Classic Systems Design
 
 ## Git & GitHub Contribution Graph Guarantee ("Green Dot" Policy)
 
@@ -36,46 +37,47 @@ Ensure that EVERY git commit and push performed by Antigravity in any project or
 
 ---
 
-## Mandatory Antigravity Operating Directives: Core Engineering & Safety Skills
+## The Matt Pocock Engineering Operating System (Pocock-OS)
 
-Across the **entire Antigravity system** and in every workspace, Antigravity agents MUST strictly adhere to and execute the following core skill workflows to get things done, code better, and ship high-impact products:
+We build software and AI agents adhering to the rigorous engineering disciplines distilled across Matt Pocock's 200+ repositories (`skills`, `sandcastle`, `evalite`, `agent-rules-books`, `ts-reset`):
 
-1. **`git-guardrails` (Mandatory Privacy & Safety Gate)**:
-   - Active on every tool execution via lifecycle hooks (`PreToolUse`).
-   - Accidental `git push` of private workspaces, academic records (USN, attendance, internal grading rubrics), personal tokens, or unverified repos is unconditionally blocked.
-   - Destructive operations (`git reset --hard`, `git clean -fd`, `git checkout .`, `git restore .`, `push --force`, `branch -D`) are strictly forbidden.
+### 1. The Deep Module Doctrine (Ousterhout's Razor)
+- **Primary Success Metric**: Reduced cognitive load, zero change amplification, and elimination of hidden dependencies.
+- **Deep Modules Only**: Small, semantic public interfaces hiding rich internal implementation. Reject pass-through services, thin wrappers, and tiny split-outs that add file count without reducing reader burden.
+- **Pull Complexity Downward**: When a lower module owns the knowledge, it must absorb the complexity so that all callers enjoy clean, obvious public contracts.
+- **Define Away Invalid States**: Reduce error/exception surfaces by designing interfaces and invariants where illegal states cannot be represented.
 
-2. **`grill-me` / `grilling` (Mandatory Design Alignment Before Implementation)**:
-   - Before writing code for non-trivial features, architectural migrations, or new data models, Antigravity MUST run a structured interview round.
-   - Work the design tree in rounds: number questions (Q1, Q2), provide clear recommended answers (➡️), and word them so "yes" accepts recommendations.
-   - Never silently assume requirements; settle all open branches of the design tree before creating or altering code.
+### 2. Public-Seam Testing Discipline (Zero Internal Coupling)
+- **Tests Test The Public Seam Only**: Tests must interact with modules strictly through public entry points (as an external consumer would). Tests never import internal private helpers or reach across layer boundaries.
+- **Test-Driven Development (TDD)**: Agree on observable public contracts first. Write failing red tests verifying observable behavior before implementing code.
+- **No Mock Tautologies**: Avoid tautological tests coupled to implementation details; assert ground-truth observable outputs.
 
-3. **`tdd` (Mandatory Mathematical & Core Logic Integrity)**:
-   - For all calculation engines (SGPA/CGPA formulas, cohort percentiles, dense rankings, data sync transformers, converters), Test-Driven Development is mandatory.
-   - Agree on public seams with the user first; write failing tests verifying observable behavior before implementing code (Red → Green loop).
-   - Avoid tautological or implementation-coupled tests; verify against independent, ground-truth expected values.
+### 3. Agentic Context Hygiene & Progressive Disclosure
+- **Context Load vs Cognitive Load**: Every word in an always-loaded prompt costs tokens and attention on every turn. Prune relentlessly.
+- **Progressive Disclosure**: Keep root instructions concise; push specialized reference materials behind front-loaded **context pointers** loaded on-demand only when a branch triggers.
+- **Sparse Subagent Communication**: Run implementer subagents with fresh context windows to eliminate context bleed. Communicate via context pointers to specs, commits, and diffs.
+- **Task Graph Frontier**: Model implementations as directed acyclic graphs (DAGs) of tickets with explicit blocking boundaries, executing ready frontier tickets test-first.
 
-4. **`diagnosing-bugs` (Mandatory Systematic Debugging Discipline)**:
-   - When fixing bugs, data parsing errors, or regressions, NEVER guess code changes or edit files without an automated feedback loop.
-   - Follow the 6-phase discipline: (1) Build a tight, red-capable feedback loop, (2) Reproduce and minimise, (3) Hypothesise 3–5 ranked falsifiable causes, (4) Instrument with tagged logs (`[DEBUG-xxxx]`), (5) Fix & write regression test at a true seam, (6) Cleanup.
+### 4. Data-Intensive Invariant Modeling (Kleppmann Baseline)
+- **Source of Truth & Durability**: Every write path must explicitly define its source of truth, consistency boundary, durability point, and idempotent retry contract.
+- **Fault-Tolerant by Design**: Crashes, partial writes, network timeouts, and duplicate payloads are treated as normal inputs, guarded by deduplication keys and natural idempotency.
 
-5. **`codebase-design` & `improve-codebase-architecture` (Deep Module Architecture)**:
-   - Structure code as **deep modules**: small, clear interfaces hiding rich implementation.
-   - Prevent monolithic single-file bloat; cleanly separate rendering/UI state, business logic, and external data sync adapters.
-   - Scan for shallow modules and refactor toward testable, AI-navigable seams.
+### 5. Continuous Documentation-Code Parity
+- **Ubiquitous Language (`GLOSSARY.md`)**: Establish shared domain terminology early. When terms change, update the glossary immediately.
+- **Architectural Decision Records (`docs/adr/`)**: Record non-obvious technical tradeoffs the moment they crystallize. Never re-litigate settled ADRs without new facts.
+- **Tested Documentation**: Enforce that code, guides, and glossaries never drift apart.
 
-6. **`code-review` (Two-Axis Standards & Spec Review)**:
-   - Review changes along two distinct axes: Standards (conformance to repo conventions + Fowler code smell baseline) and Spec (verifying observable requirements match the spec).
-   - Catch subtle regressions, race conditions, edge cases, and typing holes before shipping.
+---
 
-7. **`domain-modeling` (Ubiquitous Language & Clear Invariants)**:
-   - Build and sharpen the project's domain model: challenge fuzzy terms, define entity lifecycles, and record architectural decisions (ADRs).
+## Mandatory Antigravity Operating Directives: Core Engineering Skills
 
-8. **`prototype` (Rapid Throwaway Verification)**:
-   - Build throwaway logic walkthroughs or UI variants to answer core design questions fast before committing to heavy implementation.
-
-9. **`implement-spec` & `to-tickets` (Task Graph Frontier)**:
-   - Convert specs into actionable task graphs with blocking boundaries. Execute ready frontier tickets test-first.
-
-10. **`writing-for-agents` & `handoff` (High-Signal Agent Context)**:
-    - Structure prompts, docs, and handoffs with clean context pointers, front-loaded triggers, and zero bloat.
+1. **`git-guardrails`**: Intercepts dangerous operations (`reset --hard`, `push --force`, `branch -D`) and blocks accidental pushes of secrets or private academic records.
+2. **`grill-me` / `grilling`**: Mandatory structured interview rounds settling every branch of the design tree before creating or altering code.
+3. **`tdd`**: Mandatory Test-Driven Development for all calculations, data transformations, and API contracts.
+4. **`diagnosing-bugs`**: Systematic 6-phase feedback loop (Red reproduce → Hypothesize 3–5 causes → Tagged instrument → Fix at true seam → Cleanup).
+5. **`codebase-design` & `improve-codebase-architecture`**: Deep module refactoring and automated structural reports.
+6. **`code-review`**: Exhaustive two-axis review (Standards + Spec) using parallel subagents and Fowler code smell baseline.
+7. **`domain-modeling`**: Active DDD domain modeling and ADR documentation.
+8. **`prototype`**: High-velocity throwaway logic demos (HTML/script) and UI variants to settle design questions fast.
+9. **`implement-spec` & `to-tickets`**: Task graph decomposition and frontier ticket execution.
+10. **`writing-for-agents` & `handoff`**: Context pointer optimization and zero-bloat session handoffs.
