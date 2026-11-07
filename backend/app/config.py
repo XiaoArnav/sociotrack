@@ -59,6 +59,7 @@ class Settings(BaseSettings):
     META_APP_SECRET: str = ""
     INSTAGRAM_ACCESS_TOKEN: str = ""
     INSTAGRAM_BUSINESS_ACCOUNT_ID: str = ""
+    INSTAGRAM_SESSIONID: str = ""
     RAPIDAPI_KEY: str = ""
 
     # Social Engagement Scoring Thresholds

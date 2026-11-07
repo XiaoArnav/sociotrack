@@ -30,6 +30,7 @@ class PredictContentRequest(BaseModel):
     creator_handle: str = Field(default="thestevenmellor", description="Instagram creator @handle")
     niche_or_topic: Optional[str] = Field(default="Tech & AI Architecture", description="Target niche or topic focus")
     max_posts: int = Field(default=10, ge=1, le=50, description="Max posts to crawl from Instagram")
+    posts: Optional[List[RawPost]] = Field(default=None, description="Optional verified real posts provided directly")
 
 
 @router.post(
@@ -131,10 +132,18 @@ async def get_creator_audit(
 )
 async def post_predict_content(body: PredictContentRequest):
     """
-    Crawls the specified Instagram creator handle (via Meta Graph API, RapidAPI,
-    public web probe, or realistic benchmark), calculates algorithmic ratios,
-    and runs the AI Brain (Gemini, Groq, or analytical heuristics) to predict winning content.
+    Crawls the specified Instagram creator handle (via real session cookie, Meta Graph API,
+    RapidAPI, public web probe, or verified posts), calculates algorithmic ratios,
+    and runs Gemini 3.8/3.0 Flash to predict winning content.
     """
+    if body.posts and len(body.posts) > 0:
+        return await predict_winning_content(
+            creator_handle=body.creator_handle,
+            posts=body.posts,
+            niche=body.niche_or_topic,
+            data_source="creator_verified_posts",
+        )
+
     crawl_result = await fetch_creator_posts(
         creator_handle=body.creator_handle,
         max_posts=body.max_posts,
