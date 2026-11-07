@@ -92,11 +92,12 @@ async def get_creator_audit(
         likes = analytics.likes if analytics else 300
         replies = analytics.replies if analytics else 50
         shares = analytics.shares if analytics else 120
+        caption_text = post.content or getattr(post, "body", None) or getattr(post, "full_text", None) or post.topic or "Engineering architecture post"
         raw_posts.append(
             RawPost(
                 post_id=post.id,
                 media_type="REELS" if post.hook_style == "contrarian" else "CAROUSEL_ALBUM",
-                caption=post.content,
+                caption=caption_text,
                 views_or_reach=impressions,
                 likes=likes,
                 comments=replies,

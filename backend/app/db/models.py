@@ -89,6 +89,7 @@ class SentimentModel(Base):
     __tablename__ = "sentiments"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    brand_name = Column(String(100), nullable=True, index=True)
     topic = Column(String(255), nullable=False, index=True)
     sentiment_label = Column(String(50), default="positive")
     sentiment_score = Column(Float, default=0.8)
