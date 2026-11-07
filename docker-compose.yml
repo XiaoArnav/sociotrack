@@ -3,8 +3,8 @@ version: '3.8'
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: social_agent_backend
     ports:
       - "8000:8000"
@@ -15,8 +15,6 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY:-mock}
       - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
       - ALLOW_ORIGINS=http://localhost:3000
-    volumes:
-      - ./backend:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
