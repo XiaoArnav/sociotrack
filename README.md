@@ -123,7 +123,18 @@ social-engagement-agent/
 
 ## Quickstart Instructions
 
-### 1. Backend Setup (FastAPI & Agent)
+### Option A: One-Command Docker Compose (Recommended)
+
+```bash
+# Start backend, frontend, and database
+docker-compose up --build
+```
+- Dashboard: `http://localhost:3000`
+- API Docs: `http://localhost:8000/docs`
+
+### Option B: Terminal / Local Development
+
+#### 1. Backend Setup (FastAPI & Agent)
 
 ```bash
 # 1. Create and activate virtual environment
@@ -133,7 +144,7 @@ source .venv/bin/activate
 # 2. Install dependencies
 pip install -r backend/requirements.txt
 
-# 3. Seed database and vector store (Person 4)
+# 3. Seed database, vector store, and 15 realistic posts (Person 4)
 python backend/scripts/seed_db.py
 
 # 4. Start FastAPI backend
@@ -141,7 +152,7 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 Interactive Swagger docs: `http://localhost:8000/docs`
 
-### 2. Frontend Setup (Next.js Dashboard)
+#### 2. Frontend Setup (Next.js Dashboard)
 
 ```bash
 cd frontend
@@ -153,6 +164,15 @@ npm install
 npm run dev
 ```
 Dashboard will be live at `http://localhost:3000`.
+
+---
+
+### 📦 Seed Dataset (`seed_data.json`)
+The repository includes a pre-populated dataset [`seed_data.json`](file:///Users/keerthanakeerz/hackathons/microsoft/seed_data.json) with:
+- **5 High-Engagement Posts**: Contrarian technical hooks, code snippets/benchmarks, 14:00 UTC schedule, zero links.
+- **5 Mediocre-Engagement Posts**: Generic announcements and links to blogs/webinars.
+- **5 Poor-Engagement Posts**: Corporate jargon, buzzwords, and hashtag stuffing.
+- **6 Structured Memory Items**: Empirical cognitive rules extracted from the high-performing posts.
 
 ---
 

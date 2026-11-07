@@ -1,0 +1,493 @@
+{
+  "brand": {
+    "name": "Supafast",
+    "handle": "@supafast_cache",
+    "description": "High Performance Distributed In-Memory Cache Engine for PostgreSQL & Modern Microservices",
+    "target_audience": "Senior Backend Engineers, Systems Architects, Platform Tech Leads",
+    "voice_profile": "Direct, authoritative, contrarian, benchmark-driven, anti-fluff"
+  },
+  "posts": [
+    {
+      "id": "post_high_001",
+      "brand": "Supafast",
+      "performance_tier": "high",
+      "posted_at": "2026-10-14T14:00:00Z",
+      "content": "Stop slapping Redis on every single microservice.\n\nYou're trading a 0.05ms memory lookup for 2 serialization passes, a network roundtrip, and a $600/month ElastiCache cluster.\n\n```ts\n// What 85% of Node services do (2.4ms avg):\nconst session = await redis.get(`sess:${id}`);\n\n// What you actually needed (0.02ms p99):\nconst session = await inProcessLru.getOrFetch(id, () => pg.find(id));\n```\n\nWhen was the last time your cache cluster genuinely needed distributed consistency over raw process throughput?",
+      "metrics": {
+        "impressions": 88400,
+        "likes": 2640,
+        "reposts": 542,
+        "replies": 312,
+        "bookmarks": 1120,
+        "clicks": 184,
+        "engagement_rate": 5.22
+      },
+      "metadata": {
+        "has_code_snippet": true,
+        "has_external_link": false,
+        "has_hashtags": false,
+        "hook_type": "contrarian_technical",
+        "character_count": 482,
+        "post_hour_utc": 14,
+        "key_themes": ["redis", "microservices", "latency", "serialization", "in-process-cache"]
+      }
+    },
+    {
+      "id": "post_high_002",
+      "brand": "Supafast",
+      "performance_tier": "high",
+      "posted_at": "2026-10-16T14:00:00Z",
+      "content": "Connection pooling won't save you from a cache stampede.\n\nWhen your key's TTL expires under 15,000 req/sec, 600 pods hitting Postgres at the exact same millisecond isn't high availability—it's a self-inflicted DDoS.\n\n```go\n// Dangerous: Naked TTL miss\nval := cache.Get(ctx, key) // Miss -> 600 concurrent DB queries\n\n// Resilient: Singleflight mutex deduplication\nval, _ := singleflightGroup.Do(key, func() (any, error) {\n    return fetchExpensivePostgresAggregation(ctx, key) // Exactly 1 query\n})\n```\n\nSingleflight coalescing > buying a bigger RDS instance. Who's running request coalescing in production?",
+      "metrics": {
+        "impressions": 114200,
+        "likes": 3910,
+        "reposts": 782,
+        "replies": 405,
+        "bookmarks": 1620,
+        "clicks": 210,
+        "engagement_rate": 5.89
+      },
+      "metadata": {
+        "has_code_snippet": true,
+        "has_external_link": false,
+        "has_hashtags": false,
+        "hook_type": "contrarian_technical",
+        "character_count": 612,
+        "post_hour_utc": 14,
+        "key_themes": ["cache-stampede", "singleflight", "postgres", "concurrency", "outage-prevention"]
+      }
+    },
+    {
+      "id": "post_high_003",
+      "brand": "Supafast",
+      "performance_tier": "high",
+      "posted_at": "2026-10-21T14:00:00Z",
+      "content": "Caching hydrated ORM entity objects is why your p99 latency is 380ms.\n\nHydrating 5,000 active record classes from cached JSON in Python or Node burns more CPU cycles than the PostgreSQL index scan you tried to skip.\n\n```python\n# CPU Bottleneck: 14.2ms instantiating models\nusers = [User(**row) for row in cache.get(\"top_users\")]\n\n# Zero-copy wire response: 0.12ms streaming\nreturn raw_cache.get_bytes(\"top_users_pre_serialized_json\")\n```\n\nCache wire-ready bytes directly at your ingress, never ORM models. Agree or disagree?",
+      "metrics": {
+        "impressions": 94800,
+        "likes": 2980,
+        "reposts": 625,
+        "replies": 328,
+        "bookmarks": 1280,
+        "clicks": 165,
+        "engagement_rate": 5.50
+      },
+      "metadata": {
+        "has_code_snippet": true,
+        "has_external_link": false,
+        "has_hashtags": false,
+        "hook_type": "contrarian_technical",
+        "character_count": 526,
+        "post_hour_utc": 14,
+        "key_themes": ["orm", "cpu-bottleneck", "serialization", "zero-copy", "latency"]
+      }
+    },
+    {
+      "id": "post_high_004",
+      "brand": "Supafast",
+      "performance_tier": "high",
+      "posted_at": "2026-10-23T14:00:00Z",
+      "content": "A 60-second TTL is not a cache invalidation strategy.\n\nIt's an admission that your backend architecture has no idea when state actually mutates.\n\n```text\nTTL-based:\nUser Write -> DB -> Wait 60s for stale reads to self-resolve ❌\n\nCDC Event-Driven:\nUser Write -> Postgres WAL -> Supafast Engine -> Cache evicts in 0.8ms ✅\n```\n\nStale reads quietly destroy fintech and inventory apps. Why are 90% of engineering teams still treating TTL as an eviction strategy?",
+      "metrics": {
+        "impressions": 82600,
+        "likes": 2450,
+        "reposts": 498,
+        "replies": 274,
+        "bookmarks": 980,
+        "clicks": 140,
+        "engagement_rate": 5.09
+      },
+      "metadata": {
+        "has_code_snippet": true,
+        "has_external_link": false,
+        "has_hashtags": false,
+        "hook_type": "contrarian_technical",
+        "character_count": 489,
+        "post_hour_utc": 14,
+        "key_themes": ["cache-invalidation", "cdc", "postgres-wal", "stale-reads", "event-driven"]
+      }
+    },
+    {
+      "id": "post_high_005",
+      "brand": "Supafast",
+      "performance_tier": "high",
+      "posted_at": "2026-10-28T14:00:00Z",
+      "content": "95% of engineering teams over-engineer distributed caching way before they need it.\n\nA single 64GB RAM instance with optimized tiered caching handles 120,000 req/sec at sub-millisecond p99.\n\n```text\nBenchmark: 120k req/s (1KB payload, 32-core VM)\n┌────────────────────────┬──────────┬─────────────┐\n│ Architecture           │ p99 Lat  │ Monthly AWS │\n├────────────────────────┼──────────┼─────────────┤\n│ Supafast Tiered Cache  │ 0.07 ms  │ $84         │\n│ Multi-node Redis Clust │ 3.12 ms  │ $890        │\n└────────────────────────┴──────────┴─────────────┘\n```\n\nDon't pay cloud tax for distributed hops until your memory bus is saturated. What's your current p99?",
+      "metrics": {
+        "impressions": 138500,
+        "likes": 4810,
+        "reposts": 935,
+        "replies": 462,
+        "bookmarks": 2150,
+        "clicks": 290,
+        "engagement_rate": 6.03
+      },
+      "metadata": {
+        "has_code_snippet": true,
+        "has_external_link": false,
+        "has_hashtags": false,
+        "hook_type": "contrarian_technical",
+        "character_count": 624,
+        "post_hour_utc": 14,
+        "key_themes": ["benchmarks", "p99", "aws-cost", "distributed-systems", "simplicity"]
+      }
+    },
+    {
+      "id": "post_med_006",
+      "brand": "Supafast",
+      "performance_tier": "mediocre",
+      "posted_at": "2026-10-11T09:15:00Z",
+      "content": "We just published a comprehensive guide on our engineering blog: 'Understanding Distributed Cache Invalidation: 5 Best Practices for Modern Backends'. Check it out here: https://supafast.dev/blog/cache-invalidation-guide",
+      "metrics": {
+        "impressions": 5800,
+        "likes": 46,
+        "reposts": 6,
+        "replies": 2,
+        "bookmarks": 16,
+        "clicks": 48,
+        "engagement_rate": 0.93
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": true,
+        "has_hashtags": false,
+        "hook_type": "generic_announcement",
+        "character_count": 222,
+        "post_hour_utc": 9,
+        "key_themes": ["blog-post", "announcement", "best-practices"]
+      }
+    },
+    {
+      "id": "post_med_007",
+      "brand": "Supafast",
+      "performance_tier": "mediocre",
+      "posted_at": "2026-10-13T16:30:00Z",
+      "content": "Supafast v1.4.2 is officially live! 🚀 This release includes minor performance enhancements, bug fixes for edge-case reconnects, and improved TypeScript types. Read the full release notes on GitHub: https://github.com/supafast/cache/releases/tag/v1.4.2",
+      "metrics": {
+        "impressions": 6900,
+        "likes": 61,
+        "reposts": 8,
+        "replies": 4,
+        "bookmarks": 11,
+        "clicks": 54,
+        "engagement_rate": 0.99
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": true,
+        "has_hashtags": false,
+        "hook_type": "generic_announcement",
+        "character_count": 254,
+        "post_hour_utc": 16,
+        "key_themes": ["release-notes", "github", "v1.4.2"]
+      }
+    },
+    {
+      "id": "post_med_008",
+      "brand": "Supafast",
+      "performance_tier": "mediocre",
+      "posted_at": "2026-10-18T11:00:00Z",
+      "content": "Join us this Thursday at 11 AM PST for a live webinar with our founder on 'Scaling Postgres with Smart In-Memory Tiers'. Register for your free virtual pass: https://supafast.dev/webinars/scaling-postgres",
+      "metrics": {
+        "impressions": 4850,
+        "likes": 32,
+        "reposts": 4,
+        "replies": 1,
+        "bookmarks": 7,
+        "clicks": 39,
+        "engagement_rate": 0.74
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": true,
+        "has_hashtags": false,
+        "hook_type": "generic_announcement",
+        "character_count": 206,
+        "post_hour_utc": 11,
+        "key_themes": ["webinar", "founder-talk", "event"]
+      }
+    },
+    {
+      "id": "post_med_009",
+      "brand": "Supafast",
+      "performance_tier": "mediocre",
+      "posted_at": "2026-10-25T10:45:00Z",
+      "content": "How Fintech scale-up PayFlow reduced their database load by 60% using Supafast. Read our newly published customer case study to learn about their architecture: https://supafast.dev/customers/payflow-story",
+      "metrics": {
+        "impressions": 6100,
+        "likes": 51,
+        "reposts": 7,
+        "replies": 3,
+        "bookmarks": 14,
+        "clicks": 62,
+        "engagement_rate": 0.97
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": true,
+        "has_hashtags": false,
+        "hook_type": "generic_announcement",
+        "character_count": 208,
+        "post_hour_utc": 10,
+        "key_themes": ["case-study", "customer-story", "fintech"]
+      }
+    },
+    {
+      "id": "post_med_010",
+      "brand": "Supafast",
+      "performance_tier": "mediocre",
+      "posted_at": "2026-10-30T17:15:00Z",
+      "content": "We've completely revamped our official documentation! Faster search, improved code examples in 4 languages, and interactive sandbox environments. Explore the docs: https://docs.supafast.dev",
+      "metrics": {
+        "impressions": 4400,
+        "likes": 36,
+        "reposts": 3,
+        "replies": 1,
+        "bookmarks": 9,
+        "clicks": 31,
+        "engagement_rate": 0.84
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": true,
+        "has_hashtags": false,
+        "hook_type": "generic_announcement",
+        "character_count": 188,
+        "post_hour_utc": 17,
+        "key_themes": ["documentation", "developer-portal", "docs-update"]
+      }
+    },
+    {
+      "id": "post_poor_011",
+      "brand": "Supafast",
+      "performance_tier": "poor",
+      "posted_at": "2026-10-08T08:30:00Z",
+      "content": "Supercharge your enterprise agility with Supafast's paradigm-shifting data acceleration platform! Unleash true digital transformation across your tech stack today. #Dev #Cache #Cloud #Database #Tech #Coding #Software #SaaS #Scale #Performance #WebDev #Innovation #CloudNative",
+      "metrics": {
+        "impressions": 1150,
+        "likes": 6,
+        "reposts": 0,
+        "replies": 0,
+        "bookmarks": 1,
+        "clicks": 2,
+        "engagement_rate": 0.14
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": false,
+        "has_hashtags": true,
+        "hook_type": "corporate_jargon",
+        "character_count": 277,
+        "post_hour_utc": 8,
+        "key_themes": ["buzzwords", "paradigm-shift", "digital-transformation"]
+      }
+    },
+    {
+      "id": "post_poor_012",
+      "brand": "Supafast",
+      "performance_tier": "poor",
+      "posted_at": "2026-10-12T08:00:00Z",
+      "content": "Happy Monday tech innovators! ☀️ Are you ready to optimize your mission-critical workflows and maximize team synergy this week? Let Supafast power your journey to seamless scalability! #MondayMotivation #DevLife #SoftwareEngineering #CloudComputing #TechLeaders #B2B",
+      "metrics": {
+        "impressions": 940,
+        "likes": 4,
+        "reposts": 0,
+        "replies": 0,
+        "bookmarks": 0,
+        "clicks": 1,
+        "engagement_rate": 0.09
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": false,
+        "has_hashtags": true,
+        "hook_type": "corporate_jargon",
+        "character_count": 269,
+        "post_hour_utc": 8,
+        "key_themes": ["monday-motivation", "synergy", "generic-b2b"]
+      }
+    },
+    {
+      "id": "post_poor_013",
+      "brand": "Supafast",
+      "performance_tier": "poor",
+      "posted_at": "2026-10-19T07:45:00Z",
+      "content": "In today's fast-paced digital ecosystem, frictionless customer experiences are paramount. Discover how our best-of-breed caching solutions unlock end-to-end customer satisfaction for forward-thinking organizations. #DigitalTransformation #CustomerExperience #TechTrends #NextGen",
+      "metrics": {
+        "impressions": 880,
+        "likes": 3,
+        "reposts": 1,
+        "replies": 0,
+        "bookmarks": 0,
+        "clicks": 0,
+        "engagement_rate": 0.12
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": false,
+        "has_hashtags": true,
+        "hook_type": "corporate_jargon",
+        "character_count": 279,
+        "post_hour_utc": 7,
+        "key_themes": ["frictionless", "best-of-breed", "corporate-fluff"]
+      }
+    },
+    {
+      "id": "post_poor_014",
+      "brand": "Supafast",
+      "performance_tier": "poor",
+      "posted_at": "2026-10-24T18:00:00Z",
+      "content": "Excited to be named a High Performer in the Fall Caching & Data Layer Grid Report! Huge thank you to our valued customers and amazing community for supporting our journey. Onwards and upwards! 🚀🏆 #G2Crowd #AwardWinner #ProudTeam #SaaSGrowth #TechMilestone",
+      "metrics": {
+        "impressions": 1420,
+        "likes": 9,
+        "reposts": 1,
+        "replies": 0,
+        "bookmarks": 0,
+        "clicks": 3,
+        "engagement_rate": 0.18
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": false,
+        "has_hashtags": true,
+        "hook_type": "corporate_jargon",
+        "character_count": 259,
+        "post_hour_utc": 18,
+        "key_themes": ["award", "corporate-pr", "self-congratulatory"]
+      }
+    },
+    {
+      "id": "post_poor_015",
+      "brand": "Supafast",
+      "performance_tier": "poor",
+      "posted_at": "2026-10-29T19:30:00Z",
+      "content": "Efficiency. Reliability. Velocity. These aren't just words—they are the core pillars of Supafast. Contact our enterprise sales team today for a custom demo and leverage next-gen infrastructure synergy! #Enterprise #B2BTech #ROI #Scalability #Infrastructure",
+      "metrics": {
+        "impressions": 760,
+        "likes": 2,
+        "reposts": 0,
+        "replies": 0,
+        "bookmarks": 0,
+        "clicks": 1,
+        "engagement_rate": 0.05
+      },
+      "metadata": {
+        "has_code_snippet": false,
+        "has_external_link": false,
+        "has_hashtags": true,
+        "hook_type": "corporate_jargon",
+        "character_count": 257,
+        "post_hour_utc": 19,
+        "key_themes": ["sales-pitch", "buzzword-pillars", "empty-claims"]
+      }
+    }
+  ],
+  "memories": [
+    {
+      "id": "mem_001",
+      "category": "timing",
+      "title": "Optimal 14:00 UTC (2 PM EST) Posting Window",
+      "insight": "Posts published at exactly 14:00 UTC generate 5.5x higher engagement compared to morning (7-9 AM) or evening slots (5-7 PM).",
+      "hypothesis": "14:00 UTC aligns precisely with the European afternoon technical peak and US East Coast mid-day dev workflow, maximizing initial reply velocity.",
+      "operational_rule": "Schedule all primary technical debate and architecture posts at 14:00 UTC (2:00 PM EST). Avoid slots before 12:00 UTC or after 17:00 UTC.",
+      "confidence_score": 0.96,
+      "evidence_post_ids": ["post_high_001", "post_high_002", "post_high_003", "post_high_004", "post_high_005"],
+      "tags": ["scheduling", "timing", "developer_habits", "peak_velocity"],
+      "impact_metrics": {
+        "engagement_multiplier": "5.5x",
+        "average_impressions": 103700,
+        "benchmark_vs_off_peak": "+480%"
+      },
+      "status": "validated",
+      "created_at": "2026-10-29T00:00:00Z"
+    },
+    {
+      "id": "mem_002",
+      "category": "hook_strategy",
+      "title": "Contrarian Technical Hooks Against Default Orthodoxy",
+      "insight": "Opening with an assertive challenge against ubiquitous industry practices (e.g. 'Stop slapping Redis on everything', 'Connection pooling won't save you') triggers strong community discussion.",
+      "hypothesis": "Staff and Senior backend engineers are fatigued by generic advice. Debunking default cargo-cult architectures ignites defensiveness or validation, driving quote reposts and comments.",
+      "operational_rule": "First sentence must be a bold, defensible counter-argument to a common pattern. Never start with greetings, company news, questions, or polite introductions.",
+      "confidence_score": 0.94,
+      "evidence_post_ids": ["post_high_001", "post_high_002", "post_high_003", "post_high_004", "post_high_005"],
+      "tags": ["hook", "contrarian", "debate_driver", "virality"],
+      "impact_metrics": {
+        "reply_multiplier": "8.4x",
+        "quote_repost_multiplier": "6.2x",
+        "average_replies": 356
+      },
+      "status": "validated",
+      "created_at": "2026-10-29T00:00:00Z"
+    },
+    {
+      "id": "mem_003",
+      "category": "content_structure",
+      "title": "Side-by-Side Code Diffs & ASCII Benchmark Tables",
+      "insight": "Posts containing concrete, compact code comparisons ('Dangerous/Bad' vs 'Resilient/Supafast') or ASCII benchmark tables achieve 7.2x more bookmarks than pure text.",
+      "hypothesis": "Developers evaluate claims through syntax and benchmarks. Concrete code proves authentic domain expertise and provides immediate utility worth bookmarking for reference.",
+      "operational_rule": "Always include a 4-8 line code snippet or formatted ASCII table contrasting the naive approach with the optimal pattern. Keep code scannable on mobile.",
+      "confidence_score": 0.98,
+      "evidence_post_ids": ["post_high_001", "post_high_002", "post_high_003", "post_high_004", "post_high_005"],
+      "tags": ["code_snippet", "benchmarks", "bookmark_magnet", "proof_points"],
+      "impact_metrics": {
+        "bookmark_multiplier": "7.2x",
+        "average_bookmarks": 1418,
+        "save_rate": "1.4%"
+      },
+      "status": "validated",
+      "created_at": "2026-10-29T00:00:00Z"
+    },
+    {
+      "id": "mem_004",
+      "category": "algorithmic_constraint",
+      "title": "Zero Outbound Links in Primary Post Body",
+      "insight": "Posts with outbound URLs (blog links, release notes, webinar registrations) suffer an 85% algorithmic impression suppression (avg 5,400 vs 103,700).",
+      "hypothesis": "Social platform algorithms aggressively penalize posts containing outbound hyperlinks to protect platform dwell time. Self-contained value is heavily favored.",
+      "operational_rule": "Never include external URLs in the primary draft. Deliver 100% of the technical lesson within the post body. Reserve links strictly for follow-up thread replies.",
+      "confidence_score": 0.99,
+      "evidence_post_ids": ["post_high_001", "post_high_002", "post_high_003", "post_med_006", "post_med_007", "post_med_008"],
+      "tags": ["algorithm_penalty", "zero_links", "dwell_time", "thread_strategy"],
+      "impact_metrics": {
+        "reach_penalty_with_links": "-85.2%",
+        "clean_post_impressions_boost": "+18.2x"
+      },
+      "status": "validated",
+      "created_at": "2026-10-29T00:00:00Z"
+    },
+    {
+      "id": "mem_005",
+      "category": "audience_persona",
+      "title": "Systems Engineering Vocabulary vs Marketing Buzzwords",
+      "insight": "Using granular systems terminology ('p99 latency', 'singleflight coalescing', 'deserialization CPU cost', 'CDC WAL') attracts senior practitioners; corporate buzzwords trigger instant churn and near-zero engagement.",
+      "hypothesis": "High-leverage engineering decision makers instantly filter out corporate jargon (#Dev, 'synergy', 'paradigm shift') as spam, but gravitate toward precise operational challenges.",
+      "operational_rule": "Enforce strict blacklists on marketing jargon and hashtag stuffing (0 hashtags permitted). Mandate low-level systems vocabulary relevant to memory, network hops, and database engines.",
+      "confidence_score": 0.97,
+      "evidence_post_ids": ["post_high_001", "post_high_003", "post_high_005", "post_poor_011", "post_poor_012", "post_poor_015"],
+      "tags": ["persona", "systems_engineering", "anti_jargon", "jargon_blacklist"],
+      "impact_metrics": {
+        "jargon_penalty": "-98.1%",
+        "systems_dev_engagement": "5.5% avg"
+      },
+      "status": "validated",
+      "created_at": "2026-10-29T00:00:00Z"
+    },
+    {
+      "id": "mem_006",
+      "category": "cta_engagement",
+      "title": "Open Peer-Architecture Debate Call-To-Action",
+      "insight": "Concluding with a provocative architectural question ('What is your p99?', 'Who is running request coalescing in production?') drives 8.9x more comment threads than commercial CTAs.",
+      "hypothesis": "Engineers take pride in their system design decisions and production war stories. Asking an open peer question gives them a stage to demonstrate expertise.",
+      "operational_rule": "End every post with a 1-sentence technical question challenging the reader to share their production setup, architecture tradeoffs, or latency metrics.",
+      "confidence_score": 0.95,
+      "evidence_post_ids": ["post_high_001", "post_high_002", "post_high_003", "post_high_004", "post_high_005"],
+      "tags": ["call_to_action", "comment_generator", "debate_prompt", "discussion"],
+      "impact_metrics": {
+        "comment_thread_boost": "+790%",
+        "average_replies_per_post": 348
+      },
+      "status": "validated",
+      "created_at": "2026-10-29T00:00:00Z"
+    }
+  ]
+}
