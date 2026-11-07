@@ -24,6 +24,8 @@ from backend.app.core.agent import (
     AgentGraphState,
     SocialEngagementAgent,
     build_social_agent_graph,
+    run_agent_cycle,
+    ingest_analytics,
 )
 
 
@@ -155,6 +157,72 @@ class TestPerson1Agent(unittest.TestCase):
         self.assertEqual(fb.composite_score, 0.45)
         self.assertFalse(fb.qualifies_for_memory)
         self.assertIsNone(fb.memory_doc_id)
+
+    def test_05_run_agent_cycle_benchmark_within_six_seconds(self):
+        """Person 1 Deliverable: run_agent_cycle executes within 6.0s deadline."""
+        self._seed_sample_data()
+        res = run_agent_cycle(
+            brand_name=self.brand_name,
+            topic=self.topic,
+            memory_mgr=self.memory_mgr,
+            timeout_seconds=6.0,
+        )
+
+        self.assertEqual(res["status"], "success")
+        self.assertLess(res["execution_time_seconds"], 6.0)
+        print(f"\n[Benchmark] run_agent_cycle Latency: {res['execution_time_ms']} ms (< 6000 ms)")
+
+        # Verify output integrity
+        self.assertEqual(len(res["drafts"]), 3)
+        self.assertIsNotNone(res["selected_post"])
+        self.assertIn("memory_context", res)
+        self.assertIn("dynamic_weights", res["memory_context"])
+        self.assertGreaterEqual(res["selected_post"]["match_score"], 0.0)
+
+    def test_06_ingest_analytics_benchmark_and_memory_weight_adjustment(self):
+        """Person 1 Deliverable: ingest_analytics executes within 6.0s & adjusts memory weights."""
+        # 1. High-performing post
+        res_high = ingest_analytics(
+            brand_name=self.brand_name,
+            topic=self.topic,
+            post_content="StateGraph checkpointing reduced agent latency by 64% and token costs by 87%.",
+            impressions=10000,
+            shares=160,
+            replies=80,
+            likes=400,
+            memory_mgr=self.memory_mgr,
+            timeout_seconds=6.0,
+        )
+
+        self.assertEqual(res_high["status"], "success")
+        self.assertLess(res_high["execution_time_seconds"], 6.0)
+        self.assertEqual(res_high["composite_score"], 10.4)
+        self.assertTrue(res_high["qualifies_for_memory"])
+        self.assertIsNotNone(res_high["memory_doc_id"])
+        self.assertEqual(res_high["memory_weight_adjustment"]["status"], "boosted")
+        self.assertGreater(res_high["memory_weight_adjustment"]["topic_weight"], 1.0)
+        print(f"[Benchmark] ingest_analytics (High Score) Latency: {res_high['execution_time_ms']} ms (< 6000 ms)")
+
+        # 2. Low-performing post
+        res_low = ingest_analytics(
+            brand_name=self.brand_name,
+            topic=self.topic,
+            post_content="Generic post without benchmarks.",
+            impressions=10000,
+            shares=5,
+            replies=5,
+            likes=20,
+            memory_mgr=self.memory_mgr,
+            timeout_seconds=6.0,
+        )
+
+        self.assertEqual(res_low["status"], "success")
+        self.assertLess(res_low["execution_time_seconds"], 6.0)
+        self.assertEqual(res_low["composite_score"], 0.45)
+        self.assertFalse(res_low["qualifies_for_memory"])
+        self.assertIsNone(res_low["memory_doc_id"])
+        self.assertEqual(res_low["memory_weight_adjustment"]["status"], "penalized")
+        print(f"[Benchmark] ingest_analytics (Low Score) Latency: {res_low['execution_time_ms']} ms (< 6000 ms)")
 
 
 if __name__ == "__main__":

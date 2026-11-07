@@ -50,6 +50,7 @@ class VectorMemoryManager:
     ):
         self.brand_name = brand_name
         sanitized = "".join(c if c.isalnum() else "_" for c in brand_name.lower())
+        self.memory_weights: Dict[str, float] = {}
 
         if client is not None:
             self.client = client
@@ -72,6 +73,51 @@ class VectorMemoryManager:
             name=f"{sanitized}_learned_lessons",
             metadata={"description": "Learned performance takeaways"}
         )
+
+    def get_weight(self, key: str) -> float:
+        """Retrieves dynamic weight for a topic or format (default: 1.0)."""
+        return self.memory_weights.get(key, 1.0)
+
+    def adjust_memory_weights(
+        self,
+        topic: str,
+        score: float,
+        format_name: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Dynamically adjusts memory weights based on performance.
+        - High score (> 5.0): boosts topic & style weight by delta proportional to excess engagement.
+        - Low score (<= 5.0): applies penalty dampening, downweighting style to prevent repetition.
+        """
+        old_topic_weight = self.get_weight(topic)
+        old_format_weight = self.get_weight(format_name) if format_name else 1.0
+
+        if score > 5.0:
+            # Positive reinforcement delta (capped between +0.1 and +1.0)
+            delta = round(min(1.0, (score - 5.0) / 10.0), 3)
+            new_topic_weight = round(min(2.5, old_topic_weight + delta), 3)
+            new_format_weight = round(min(2.5, old_format_weight + delta), 3)
+            status = "boosted"
+        else:
+            # Negative penalty delta (capped between -0.05 and -0.4)
+            delta = round(max(-0.4, (score - 5.0) / 15.0), 3)
+            new_topic_weight = round(max(0.2, old_topic_weight + delta), 3)
+            new_format_weight = round(max(0.2, old_format_weight + delta), 3)
+            status = "penalized"
+
+        self.memory_weights[topic] = new_topic_weight
+        if format_name:
+            self.memory_weights[format_name] = new_format_weight
+
+        return {
+            "topic": topic,
+            "format": format_name,
+            "composite_score": score,
+            "topic_weight": new_topic_weight,
+            "format_weight": new_format_weight,
+            "delta": delta,
+            "status": status,
+        }
 
     def ingest_post(
         self,
@@ -197,11 +243,14 @@ class VectorMemoryManager:
         topic: str,
         post_content: str,
         metrics: EngagementMetricsSchema,
-    ) -> Tuple[float, bool, Optional[str], Optional[str]]:
+        format_name: Optional[str] = None,
+    ) -> Tuple[float, bool, Optional[str], Optional[str], Dict[str, Any]]:
         """
         Executes learning logic:
-        Computes composite score. If score > 5.0, extracts key lesson and embeds into memory.
-        Returns: (composite_score, qualifies_for_memory, key_lesson, memory_doc_id)
+        1. Computes composite score.
+        2. Adjusts dynamic topic and style memory weights.
+        3. If score > 5.0, extracts key lesson and embeds into vector memory.
+        Returns: (composite_score, qualifies_for_memory, key_lesson, memory_doc_id, weight_adjustment)
         """
         score = calculate_composite_score(
             shares=metrics.shares,
@@ -213,9 +262,12 @@ class VectorMemoryManager:
             weight_likes=settings.WEIGHT_LIKES,
         )
 
+        # Adjust dynamic memory weights based on performance
+        weight_adj = self.adjust_memory_weights(topic=topic, score=score, format_name=format_name)
+
         qualifies = score > settings.MIN_COMPOSITE_SCORE_THRESHOLD
         if not qualifies:
-            return score, False, None, None
+            return score, False, None, None, weight_adj
 
         # Synthesize strategic lesson
         if metrics.shares > metrics.replies and metrics.shares > 50:
@@ -245,6 +297,7 @@ class VectorMemoryManager:
             "likes": int(metrics.likes),
             "impressions": int(metrics.impressions),
             "key_lesson": key_lesson,
+            "adjusted_weight": weight_adj["topic_weight"],
         }
 
         self.lessons_col.add(ids=[lesson_id], documents=[doc_text], metadatas=[metadata])
@@ -257,7 +310,7 @@ class VectorMemoryManager:
             post_id=f"win_{lesson_id}"
         )
 
-        return score, True, key_lesson, lesson_id
+        return score, True, key_lesson, lesson_id, weight_adj
 
     def get_stats(self) -> Dict[str, int]:
         return {

@@ -10,6 +10,8 @@ from backend.app.core.agent import (
     draft_post_variations_node,
     evaluate_brand_voice_node,
     update_memory_with_performance_node,
+    run_agent_cycle,
+    ingest_analytics,
 )
 from backend.app.core.memory import (
     VectorMemoryManager,
@@ -30,6 +32,8 @@ __all__ = [
     "draft_post_variations_node",
     "evaluate_brand_voice_node",
     "update_memory_with_performance_node",
+    "run_agent_cycle",
+    "ingest_analytics",
     "VectorMemoryManager",
     "get_memory_manager",
     "calculate_composite_score",

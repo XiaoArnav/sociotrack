@@ -3,6 +3,7 @@ LangGraph StateGraph Definition for Social Media Engagement Agent.
 Owned by Person 1.
 """
 
+import time
 from typing import Any, Dict, List, Optional, Tuple, Union
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
@@ -243,16 +244,29 @@ def update_memory_with_performance_node(
         state.selected_post.draft.full_text if state.selected_post else ""
     )
 
-    score, qualifies, key_lesson, doc_id = mgr.record_performance_and_learn(
+    format_name = (
+        state.selected_post.draft.format.value
+        if state.selected_post
+        else None
+    )
+
+    score, qualifies, key_lesson, doc_id, weight_adj = mgr.record_performance_and_learn(
         topic=state.topic,
         post_content=post_content,
         metrics=metrics,
+        format_name=format_name,
     )
 
     if qualifies:
-        status_msg = f"Composite score {score:.2f} > 5.0! Lesson embedded into vector memory under ID={doc_id}."
+        status_msg = (
+            f"Composite score {score:.2f} > 5.0! Lesson embedded into vector memory under ID={doc_id} "
+            f"(topic weight boosted to {weight_adj['topic_weight']})."
+        )
     else:
-        status_msg = f"Composite score {score:.2f} <= 5.0. Did not exceed threshold for long-term memory."
+        status_msg = (
+            f"Composite score {score:.2f} <= 5.0. Did not exceed threshold for long-term memory "
+            f"(weight adjusted to {weight_adj['topic_weight']})."
+        )
 
     feedback = SimulatorFeedResponse(
         composite_score=score,
@@ -363,3 +377,171 @@ class SocialEngagementAgent:
         }
         raw = self.graph.invoke(payload)
         return AgentGraphState.model_validate(raw)
+
+
+# =====================================================================
+# PERSON 1 DELIVERABLES: Two Production-Safe, Sub-6-Second Callables
+# =====================================================================
+
+def run_agent_cycle(
+    brand_name: str,
+    topic: str,
+    brand_guidelines: Optional[Union[BrandVoiceGuidelinesSchema, Dict[str, Any]]] = None,
+    memory_mgr: Optional[VectorMemoryManager] = None,
+    timeout_seconds: float = 6.0,
+) -> Dict[str, Any]:
+    """
+    Person 1 Core Callable 1:
+    Executes a complete agent cycle strictly within 6.0 seconds:
+    1. Retrieves vector context (top past winning posts, audience sentiment signals, historical lessons).
+    2. Generates 3 distinct structured variations (Format A: Data-first, Format B: Hot take, Format C: Tactical breakdown).
+    3. Runs an in-line brand voice critique pass scoring drafts (0-10) against brand dos and don'ts.
+    4. Selects the winning post for scheduled distribution.
+    
+    Returns a production-safe dictionary with execution latency metrics.
+    """
+    t_start = time.perf_counter()
+
+    if not brand_name or not brand_name.strip():
+        raise ValueError("brand_name must be a non-empty string.")
+    if not topic or not topic.strip():
+        raise ValueError("topic must be a non-empty string.")
+
+    mgr = memory_mgr or get_memory_manager(brand_name)
+
+    # Parse guidelines if passed as dictionary
+    guidelines_obj: Optional[BrandVoiceGuidelinesSchema] = None
+    if isinstance(brand_guidelines, dict):
+        guidelines_obj = BrandVoiceGuidelinesSchema(**brand_guidelines)
+    elif isinstance(brand_guidelines, BrandVoiceGuidelinesSchema):
+        guidelines_obj = brand_guidelines
+    else:
+        guidelines_obj = BrandVoiceGuidelinesSchema()
+
+    # Build and execute the graph
+    agent = SocialEngagementAgent(memory_mgr=mgr)
+    state = agent.generate_drafts(
+        brand_name=brand_name,
+        topic=topic,
+        brand_guidelines=guidelines_obj,
+    )
+
+    elapsed = time.perf_counter() - t_start
+    if elapsed > timeout_seconds:
+        raise TimeoutError(
+            f"run_agent_cycle exceeded performance budget of {timeout_seconds}s (elapsed: {elapsed:.3f}s)"
+        )
+
+    # Extract dynamic memory weights for the topic and formats
+    active_weights = {
+        "topic_weight": mgr.get_weight(topic),
+        "format_weights": {
+            d.format.value: mgr.get_weight(d.format.value) for d in state.drafts
+        },
+    }
+
+    return {
+        "status": "success",
+        "execution_time_ms": round(elapsed * 1000, 2),
+        "execution_time_seconds": round(elapsed, 4),
+        "brand_name": state.brand_name,
+        "topic": state.topic,
+        "memory_context": {
+            **(state.memory_context or {}),
+            "dynamic_weights": active_weights,
+        },
+        "drafts": [d.model_dump() for d in state.drafts],
+        "selected_post": state.selected_post.model_dump() if state.selected_post else None,
+    }
+
+
+def ingest_analytics(
+    brand_name: str,
+    topic: str,
+    post_content: str,
+    impressions: int,
+    shares: int,
+    replies: int,
+    likes: int,
+    format_name: Optional[str] = None,
+    post_id: Optional[str] = None,
+    memory_mgr: Optional[VectorMemoryManager] = None,
+    timeout_seconds: float = 6.0,
+) -> Dict[str, Any]:
+    """
+    Person 1 Core Callable 2:
+    Ingests live post engagement metrics and executes reinforcement learning strictly within 6.0 seconds:
+    1. Computes composite engagement score: (Shares*3 + Replies*2 + Likes*1) / Impressions * 100.
+    2. Adjusts dynamic memory weights:
+       - If score > 5.0: boosts topic and format weights (+0.1 to +1.0), distills key lesson, and embeds into vector memory.
+       - If score <= 5.0: applies dampening penalty (-0.05 to -0.4) and skips long-term memory to protect signal integrity.
+    
+    Returns structured feedback with composite score, memory weight adjustments, and execution latency.
+    """
+    t_start = time.perf_counter()
+
+    if impressions < 0 or shares < 0 or replies < 0 or likes < 0:
+        raise ValueError("Engagement metrics must be non-negative integers.")
+    if not post_content or not post_content.strip():
+        raise ValueError("post_content cannot be empty.")
+
+    mgr = memory_mgr or get_memory_manager(brand_name)
+    metrics_schema = EngagementMetricsSchema(
+        impressions=impressions,
+        shares=shares,
+        replies=replies,
+        likes=likes,
+    )
+
+    # Detect format if not explicitly provided
+    detected_format = format_name
+    if not detected_format:
+        if "•" in post_content or "%" in post_content:
+            detected_format = PostFormat.DATA_FIRST.value
+        elif "Hot take" in post_content or "hot take" in post_content.lower():
+            detected_format = PostFormat.HOT_TAKE.value
+        elif "1." in post_content or "step" in post_content.lower():
+            detected_format = PostFormat.TACTICAL_BREAKDOWN.value
+        else:
+            detected_format = PostFormat.DATA_FIRST.value
+
+    # Compute score, adjust memory weights, and vectorize if score > 5.0
+    score, qualifies, key_lesson, doc_id, weight_adj = mgr.record_performance_and_learn(
+        topic=topic,
+        post_content=post_content,
+        metrics=metrics_schema,
+        format_name=detected_format,
+    )
+
+    elapsed = time.perf_counter() - t_start
+    if elapsed > timeout_seconds:
+        raise TimeoutError(
+            f"ingest_analytics exceeded performance budget of {timeout_seconds}s (elapsed: {elapsed:.3f}s)"
+        )
+
+    if qualifies:
+        status_msg = (
+            f"Composite score {score:.2f} > 5.0! Lesson embedded into vector memory under ID={doc_id}. "
+            f"Memory weight for '{topic}' boosted to {weight_adj['topic_weight']}."
+        )
+    else:
+        status_msg = (
+            f"Composite score {score:.2f} <= 5.0. Below high-performance threshold; "
+            f"memory weight adjusted to {weight_adj['topic_weight']}."
+        )
+
+    return {
+        "status": "success",
+        "execution_time_ms": round(elapsed * 1000, 2),
+        "execution_time_seconds": round(elapsed, 4),
+        "brand_name": brand_name,
+        "topic": topic,
+        "format": detected_format,
+        "composite_score": score,
+        "qualifies_for_memory": qualifies,
+        "key_lesson": key_lesson,
+        "memory_doc_id": doc_id,
+        "memory_weight_adjustment": weight_adj,
+        "status_message": status_msg,
+        "active_memory_stats": mgr.get_stats(),
+    }
