@@ -1,0 +1,25 @@
+# SocioTrack Demo Recording & Presentation Artifacts
+# Owned by Person 4
+
+Demo Video Recording (Loom / Unlisted YouTube):
+https://www.youtube.com/watch?v=placeholder-sociotrack-agent-demo
+
+Live Hosted Dashboard:
+https://sociotrack-agent.vercel.app
+
+FastAPI Backend & Swagger Documentation:
+https://api.sociotrack.dev/docs
+
+GitHub Repository:
+https://github.com/sociotrack/social-engagement-agent
+
+Pitch Deck PDF:
+presentation/pitch_deck.pdf
+
+Timestamp Breakdown:
+0:00 - Introduction & The Problem (Generic AI content trap)
+0:35 - Architecture Overview (LangGraph 4-Node StateGraph & ChromaDB)
+1:15 - Live Demo: 3 Post Variations (Data-first, Hot take, Tactical)
+2:00 - Brand Voice Critique Pass (Dos & Don'ts match scoring)
+2:45 - Live Reinforcement Learning & Metric Simulation (> 5.0 Composite Score)
+3:30 - Q&A and Engineering Highlights
