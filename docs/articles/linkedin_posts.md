@@ -1,6 +1,6 @@
-# LinkedIn Posts & YouTube Metadata (Hindsight Hackathon Submission)
+# LinkedIn Posts & Social Submission Guide
 
-> **Important**: DO NOT add the word "hackathon" or student tags anywhere in these posts.  
+> **Important Rule**: DO NOT add the word "hackathon" or student tags anywhere in these posts.  
 > As required by the rulebook, post the LinkedIn text, include the GitHub repo link in the body, and immediately add the Hindsight repo link as your **first comment**.
 
 ---
