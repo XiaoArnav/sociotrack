@@ -41,7 +41,7 @@ async def get_memory_insights(
         brand_res = await db.execute(select(Brand).where(Brand.name == brand_name))
         brand = brand_res.scalar_one_or_none()
 
-    if not brand:
+    if not brand and not brand_id:
         # Fallback to the first available brand or mock for test isolation
         brand_res = await db.execute(select(Brand).limit(1))
         brand = brand_res.scalar_one_or_none()

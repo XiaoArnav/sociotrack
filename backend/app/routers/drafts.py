@@ -27,6 +27,7 @@ async def generate_drafts(
     payload: GenerateDraftsRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # 1. Fetch Brand
     brand = None
     if payload.brand_id:
         result = await db.execute(select(Brand).where(Brand.id == payload.brand_id))
@@ -45,6 +46,10 @@ async def generate_drafts(
             )
             db.add(brand)
             await db.flush()
+
+    if not brand and not payload.brand_id:
+        result = await db.execute(select(Brand).limit(1))
+        brand = result.scalar_one_or_none()
 
     if not brand:
         raise HTTPException(

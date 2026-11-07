@@ -24,12 +24,23 @@ import {
 import { CheckCircle2, Sparkles, X } from "lucide-react";
 
 export default function App() {
-  // 1. Authentication State: Default to demo user for zero-latency presentation flow
+  // 1. Authentication State: Default to demo session for instant presentation access
   const [currentUser, setCurrentUser] = useState<UserSession | null>({
     name: "Alex Chen",
     email: "alex.chen@enterprise.com",
     role: "Principal Content Architect",
   });
+
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem("sociotrack_user_session");
+      if (saved) {
+        setCurrentUser(JSON.parse(saved));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // 2. Navigation State
   const [currentTab, setCurrentTab] = useState<NavItem>("overview");
@@ -65,6 +76,11 @@ export default function App() {
   // Login handler
   const handleLoginSuccess = (user: UserSession) => {
     setCurrentUser(user);
+    try {
+      localStorage.setItem("sociotrack_user_session", JSON.stringify(user));
+    } catch {
+      // ignore
+    }
     showToast(
       "Signed in successfully",
       `Welcome to SocioTrack workspace, ${user.name}.`,
@@ -75,6 +91,11 @@ export default function App() {
   // Logout handler
   const handleLogout = () => {
     setCurrentUser(null);
+    try {
+      localStorage.removeItem("sociotrack_user_session");
+    } catch {
+      // ignore
+    }
   };
 
   // Toast trigger helper

@@ -1,8 +1,10 @@
-# SocioTrack: Social Media Engagement Agent
+# SocioTrack: Autonomous AI Social Media Engagement & Intelligence Agent
 
-A production-grade, closed-loop Social Media Engagement Agent built with **Python 3**, **LangGraph**, **ChromaDB / Supabase pgvector**, **FastAPI**, and **Next.js 14**.
+> **Live Demo (GitHub Pages)**: [https://stillzepta.github.io/sociotrack/](https://stillzepta.github.io/sociotrack/)  
+> **API Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs) • **Local App**: [http://localhost:3000](http://localhost:3000)
 
-SocioTrack combines deterministic state machines with vector reinforcement learning to autonomously draft high-signal technical content, enforce brand voice guidelines, and learn from live post engagement metrics.
+**Project Bio**:  
+SocioTrack is the autonomous, closed-loop AI social media engagement and audience intelligence engine engineered for the Microsoft Hackathon. Built with **Python 3**, **LangGraph**, **ChromaDB / Supabase pgvector**, **FastAPI**, and **Next.js 14**, SocioTrack fuses statistical anomaly detection ($ER, VI, UI$), dynamic memory weights, and deterministic state machines. By ingesting real-world post engagement metrics (impressions, shares, replies, likes), it autonomously recalibrates brand memory weights, optimizes future hook styles, and transforms social feeds into high-converting audience growth loops.
 
 ---
 

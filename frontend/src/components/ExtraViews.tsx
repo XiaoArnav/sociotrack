@@ -255,33 +255,81 @@ export function PerformanceAnalyticsView() {
 // 4. SETTINGS VIEW
 export function SettingsView() {
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div className="pb-3 border-b border-[#E6E9F0]">
         <h2 className="text-xl font-extrabold text-[#172033]">Agent &amp; Brand Settings</h2>
         <p className="text-xs text-[#718096]">
-          Configure deterministic brand voice constraints, vector storage, and Microsoft Hackathon endpoints.
+          Configure deterministic brand voice guidelines, creator bios, vector storage, and Microsoft Hackathon endpoints.
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-[#E6E9F0] p-6 shadow-card space-y-4">
-        <h3 className="text-sm font-bold text-[#172033]">Brand Guidelines Engine</h3>
-        <div className="space-y-3 text-xs">
+      {/* Brand & Creator Bio Card */}
+      <div className="bg-white rounded-2xl border border-[#E6E9F0] p-6 shadow-card space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E6E9F0]">
           <div>
-            <label className="font-semibold text-[#172033] block mb-1">Brand Name</label>
+            <h3 className="text-sm font-bold text-[#172033]">Brand &amp; Creator Profiles</h3>
+            <p className="text-[11px] text-[#718096]">Governs identity framing, tone, and audience alignment across all agent draft generations.</p>
+          </div>
+          <span className="px-2.5 py-1 text-[11px] font-semibold bg-[#E8F8F3] text-[#16A477] border border-[#16A477]/30 rounded-full">
+            Active in Agent Prompts
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label className="font-semibold text-[#172033] block mb-1">Brand Handle &amp; Name</label>
             <input
               type="text"
               readOnly
-              value="SocioTrack Enterprise"
-              className="w-full h-10 px-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-medium"
+              value="SocioTrack (@DevRelay)"
+              className="w-full h-10 px-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-medium text-[#172033]"
             />
           </div>
+          <div>
+            <label className="font-semibold text-[#172033] block mb-1">Target Audience Profile</label>
+            <input
+              type="text"
+              readOnly
+              value="Staff+ Engineers, CTOs, AI Founders, DevRel Leads"
+              className="w-full h-10 px-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-medium text-[#172033]"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-3 text-xs">
+          <div>
+            <label className="font-semibold text-[#172033] block mb-1">Brand Identity Bio</label>
+            <textarea
+              readOnly
+              rows={3}
+              value="SocioTrack is the autonomous, closed-loop AI social media engagement and audience intelligence engine. Fusing statistical anomaly detection, dynamic memory weights, and LangGraph state machines to transform post-performance metrics into continuous algorithmic learning, turning social feeds into high-converting audience growth."
+              className="w-full p-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-sans text-xs text-[#172033] leading-relaxed"
+            />
+          </div>
+
+          <div>
+            <label className="font-semibold text-[#172033] block mb-1">Creator Bio (@DevRelay / @dev_dan)</label>
+            <textarea
+              readOnly
+              rows={3}
+              value="Full-stack systems engineer &amp; AI researcher building deterministic agentic architectures, state machines, and vector memory engines. Delivering verified production benchmarks, hard architectural teardowns, and zero-hype engineering playbooks."
+              className="w-full p-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-sans text-xs text-[#172033] leading-relaxed"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Guidelines Engine Card */}
+      <div className="bg-white rounded-2xl border border-[#E6E9F0] p-6 shadow-card space-y-4">
+        <h3 className="text-sm font-bold text-[#172033]">Deterministic Brand Voice Constraints</h3>
+        <div className="space-y-3 text-xs">
           <div>
             <label className="font-semibold text-[#172033] block mb-1">Brand Voice Dos</label>
             <textarea
               readOnly
               rows={3}
-              value="• Quantified benchmark claim in opening 3 lines&#10;• Focus on state management and cost optimization&#10;• Direct questions for audience discussion"
-              className="w-full p-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-mono text-[11px]"
+              value="• Quantified benchmark claim in opening 3 lines (e.g., '73% token reduction', '108ms latency')&#10;• Focus on state management, deterministic seams, and cost optimization&#10;• Direct questions or numbered checklists for audience bookmarking"
+              className="w-full p-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-mono text-[11px] leading-relaxed"
             />
           </div>
           <div>
@@ -289,8 +337,8 @@ export function SettingsView() {
             <textarea
               readOnly
               rows={2}
-              value="• No generic hype buzzwords ('groundbreaking', 'game-changing')&#10;• No unverified performance claims"
-              className="w-full p-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-mono text-[11px]"
+              value="• No generic hype buzzwords ('groundbreaking', 'game-changing', 'disruptive')&#10;• No unverified performance claims or hollow engagement bait"
+              className="w-full p-3 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] font-mono text-[11px] leading-relaxed"
             />
           </div>
         </div>
