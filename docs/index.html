@@ -397,6 +397,27 @@
               <td class="py-3 px-4 text-slate-400">None</td>
               <td class="py-3 px-4 text-indigo-300">{ total_audited, audit_results }</td>
             </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-sky-400 font-bold">GET</td>
+              <td class="py-3 px-4 text-white">/api/webhooks/instagram</td>
+              <td class="py-3 px-4 font-sans">Meta Developer Dashboard verification challenge handshake</td>
+              <td class="py-3 px-4 text-slate-400">?hub.mode=subscribe&hub.challenge={val}&hub.verify_token={tok}</td>
+              <td class="py-3 px-4 text-indigo-300">hub.challenge (text/plain)</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/webhooks/instagram</td>
+              <td class="py-3 px-4 font-sans">Meta Graph API real-time event receiver (comments, likes, shares)</td>
+              <td class="py-3 px-4 text-slate-400">{ object: "instagram", entry: [...] }</td>
+              <td class="py-3 px-4 text-indigo-300">{ status: "EVENT_RECEIVED", processed_entries }</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/webhooks/instagram/simulate</td>
+              <td class="py-3 px-4 font-sans">Simulate Meta webhook event to verify closed-loop memory learning</td>
+              <td class="py-3 px-4 text-slate-400">{ brand_name, topic, likes, comments, shares, impressions }</td>
+              <td class="py-3 px-4 text-indigo-300">{ composite_score, memory_reinforced, extracted_lesson }</td>
+            </tr>
           </tbody>
         </table>
       </div>

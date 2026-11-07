@@ -50,6 +50,23 @@ body {
   background: linear-gradient(135deg, #5146D8 0%, #3478F6 100%);
 }
 
+.rainbow-score-bar {
+  background: linear-gradient(90deg, #F87171 0%, #FBBF24 25%, #34D399 50%, #60A5FA 75%, #818CF8 100%);
+}
+
+.dark {
+  --background: #0B0F19;
+  --card-bg: #161F30;
+  --deep-navy: #F3F4F6;
+  --border-color: #243048;
+  --secondary-text: #94A3B8;
+}
+
+.dark body {
+  background-color: #0B0F19;
+  color: #F3F4F6;
+}
+
 .gradient-ai-subtle {
   background: linear-gradient(135deg, rgba(81, 70, 216, 0.08) 0%, rgba(52, 120, 246, 0.08) 100%);
 }
