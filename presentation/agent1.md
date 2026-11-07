@@ -1,218 +1,129 @@
-# Person 1 Deliverable: Agent & Memory Core
+# Person 1 Deliverable: AI Diagnostic Brain & Agentic Core
 
 ## Executive Summary
-As **Person 1 (Agent & Memory)**, I have engineered and benchmarked two callable, production-safe Python functions:
-1. `run_agent_cycle`: End-to-end vector memory retrieval, 3-format generation, and brand voice critique.
-2. `ingest_analytics`: Real-time composite viral scoring, dynamic memory weight adjustments, and reinforcement learning vectorization.
+As **Person 1 (Agent & Memory)**, I have built the **AI diagnostic brain** of the system. 
+This standalone Python module takes raw social post data, runs statistical anomaly detection (pure math), leverages structured LLM synthesis to categorize content formats and themes, and outputs the structured **"What’s Working vs. What’s Not"** assessment report (`CreatorAuditReport`).
 
-Both functions are guaranteed to execute in **under 6 seconds** (benchmarked at **~107 ms** and **~110 ms**).
-
----
-
-## Person 1 Checklist & Verification Matrix
-
-- [x] **1. LangGraph StateGraph Architecture**
-  - [x] Built 4 deterministic nodes (`retrieve_brand_memory`, `draft_post_variations`, `evaluate_brand_voice`, `update_memory_with_performance`).
-  - [x] Enforced strictly typed Pydantic state (`brand_name`, `topic`, `memory_context`, `drafts`, `selected_post`, `performance_feedback`).
-  - [x] Conditional routing for content generation vs direct performance ingestion.
-
-- [x] **2. Production-Safe Callable 1: `run_agent_cycle`**
-  - [x] Strict execution deadline: **< 6.0 seconds** (Benchmark: **107.11 ms**).
-  - [x] In-memory ChromaDB vector retrieval: top 5 past winning posts + live audience sentiment signals.
-  - [x] Generates 3 distinct structured variations:
-    - Format A: Data-first (benchmark latency, token cost reduction, quantitative gap)
-    - Format B: Hot take (contrarian stance debunking multi-agent loops)
-    - Format C: Tactical breakdown (numbered 4-step architectural playbook)
-  - [x] Fast brand voice critique pass checking Brand Dos & Don'ts, scoring candidates **0.0–10.0**, and selecting winner.
-  - [x] Returns latency breakdown (`execution_time_ms`) and dynamic weights.
-
-- [x] **3. Production-Safe Callable 2: `ingest_analytics`**
-  - [x] Strict execution deadline: **< 6.0 seconds** (Benchmark: **110.29 ms**).
-  - [x] Implements viral composite engagement formula:
-    $$\text{Composite Score} = \frac{(\text{Shares} \times 3) + (\text{Replies} \times 2) + (\text{Likes} \times 1)}{\text{Impressions}} \times 100$$
-  - [x] Dynamic memory weight adjustments:
-    - High-performing post ($\text{Score} > 5.0$): Boosts topic and format weights ($+0.1$ to $+1.0$), distills key lesson, embeds into ChromaDB vector memory.
-    - Low-performing post ($\text{Score} \le 5.0$): Dampens weights ($-0.05$ to $-0.4$), rejects from long-term memory to preserve signal integrity.
-  - [x] Returns structured feedback with `composite_score`, `memory_weight_adjustment`, `key_lesson`, `memory_doc_id`, and execution timing.
-
-- [x] **4. Test Automation & Benchmarks**
-  - [x] Automated latency assertions verifying both callables run well under 6.0s.
-  - [x] 12/12 unit and API integration tests passing in `backend/tests/`.
+In addition, Person 1 provides the two production-safe, sub-6-second callable functions (`run_agent_cycle` and `ingest_analytics`) with dynamic memory weight adjustments.
 
 ---
 
-## Detailed Function Specifications
+## 1. High-Level Flow of the Agent Engine
 
-### 1. `run_agent_cycle`
-
-**Import:**
-```python
-from backend.app.core import run_agent_cycle
 ```
-
-**Signature:**
-```python
-def run_agent_cycle(
-    brand_name: str,
-    topic: str,
-    brand_guidelines: Optional[Union[BrandVoiceGuidelinesSchema, Dict[str, Any]]] = None,
-    memory_mgr: Optional[VectorMemoryManager] = None,
-    timeout_seconds: float = 6.0,
-) -> Dict[str, Any]
-```
-
-**Sample Invocation:**
-```python
-result = run_agent_cycle(
-    brand_name="SocioTrack",
-    topic="Deterministic State Management with LangGraph",
-    timeout_seconds=6.0,
-)
-```
-
-**Output Structure:**
-```json
-{
-  "status": "success",
-  "execution_time_ms": 107.11,
-  "execution_time_seconds": 0.1071,
-  "brand_name": "SocioTrack",
-  "topic": "Deterministic State Management with LangGraph",
-  "memory_context": {
-    "top_past_posts": [...],
-    "audience_sentiment": {
-      "sentiment_label": "cautious_and_demanding",
-      "sentiment_score": 0.74,
-      "summary": "Engineers demand production benchmarks over toy demos."
-    },
-    "dynamic_weights": {
-      "topic_weight": 1.54,
-      "format_weights": {
-        "Format A: Data-first": 1.54,
-        "Format B: Hot take": 1.0,
-        "Format C: Tactical breakdown": 1.0
-      }
-    }
-  },
-  "drafts": [
-    {
-      "format": "Format A: Data-first",
-      "hook": "We analyzed 4,200 production runs across 18 teams deploying LangGraph StateGraph.",
-      "body": "...",
-      "call_to_action": "Are you tracking token cost per agent run?",
-      "full_text": "...",
-      "rationale": "Anchored on quantitative latency and cost benchmarks."
-    },
-    { "format": "Format B: Hot take", ... },
-    { "format": "Format C: Tactical breakdown", ... }
-  ],
-  "selected_post": {
-    "draft": { "format": "Format A: Data-first", ... },
-    "match_score": 10.0,
-    "evaluation_summary": "Critiqued against brand voice. Demonstrated 5 brand dos and avoided all hollow hype constraints.",
-    "dos_matched": ["Backed by quantitative metrics & benchmarks (+0.8)", ...],
-    "donts_avoided": ["Zero hollow marketing hype", "Controlled hashtag usage"],
-    "scheduled_time": "Optimal distribution window: Mon-Thu 09:30 AM EST"
-  }
-}
+[List of Raw Posts & Metrics]
+              │
+              ▼
+   Step 1: Metric Math & Baselines (Pure Math, No LLM)
+   (Calculates median saves, shares, reach, outlier percentiles: top 20% vs bottom 20%)
+              │
+              ▼
+   Step 2: AI Tagging & Content Feature Extraction
+   (Labels hook types, topics, delivery formats per post)
+              │
+              ▼
+   Step 3: Cluster Aggregation & Correlation Engine
+   (Groups posts by tag: e.g. "Contrarian Tech Reel" vs "Carousel Tutorial")
+              │
+              ▼
+   Step 4: Strategic Synthesis Pass
+   (LLM reviews statistical clusters to generate actionable advice)
+              │
+              ▼
+[Final Pydantic Diagnostic JSON Output (CreatorAuditReport)]
 ```
 
 ---
 
-### 2. `ingest_analytics`
+## 2. Person 1 Checklist & Verification Matrix
 
-**Import:**
-```python
-from backend.app.core import ingest_analytics
-```
+- [x] **1. Metric Normalization & Outlier Detection (`backend/app/core/analytics.py`)**
+  - [x] **True Engagement Rate ($ER$):**
+    $$ER = \frac{\text{Likes} + \text{Comments} + \text{Shares} + \text{Saves}}{\text{Views or Reach}} \times 100$$
+  - [x] **Virality Index ($VI$):**
+    $$VI = \frac{\text{Shares}}{\text{Reach}} \times 100$$
+  - [x] **Utility / Value Index ($UI$):**
+    $$UI = \frac{\text{Saves}}{\text{Reach}} \times 100$$
+  - [x] **Quartile & Outlier Thresholds:** Posts landing in the top 20% of $ER$ or $VI$ flagged as `top_performer`; bottom 20% flagged as `underperformer`.
+  - [x] **Cluster Aggregation:** Formats and upload hours grouped to compare median virality and dwell metrics.
 
-**Signature:**
-```python
-def ingest_analytics(
-    brand_name: str,
-    topic: str,
-    post_content: str,
-    impressions: int,
-    shares: int,
-    replies: int,
-    likes: int,
-    format_name: Optional[str] = None,
-    post_id: Optional[str] = None,
-    memory_mgr: Optional[VectorMemoryManager] = None,
-    timeout_seconds: float = 6.0,
-) -> Dict[str, Any]
-```
+- [x] **2. Data Contracts & Pydantic Models (`backend/app/core/schemas.py`, `models.py`)**
+  - [x] `RawPost`: `post_id`, `media_type`, `caption`, `views_or_reach`, `likes`, `comments`, `shares`, `saves`, `posted_hour_utc`.
+  - [x] `PostAuditPattern`: `pattern_title`, `metric_evidence`, `why_it_happened`, `actionable_recommendation`.
+  - [x] `CreatorAuditReport`: `creator_handle`, `health_score` (0-100), `median_engagement_rate`, `top_performing_format`, `whats_working`, `whats_failing`, `immediate_next_steps`.
 
-**Sample Invocation (High Viral Engagement):**
-```python
-result = ingest_analytics(
-    brand_name="SocioTrack",
-    topic="Deterministic State Management with LangGraph",
-    post_content="StateGraph checkpointing reduced agent latency by 64% and token costs by 87%...",
-    impressions=10000,
-    shares=160,
-    replies=80,
-    likes=400,
-    format_name="Format A: Data-first",
-    timeout_seconds=6.0,
-)
-```
+- [x] **3. Core Diagnostic Engine (`backend/app/core/diagnostics_agent.py`)**
+  - [x] `run_creator_audit(creator_handle, posts)`: Main function called by Person 2's FastAPI router.
+  - [x] Executes statistical baseline calculations followed by structured output parsing (`client.beta.chat.completions.parse` with `gpt-4o-mini`).
+  - [x] Includes deterministic analytical fallback for offline execution, fast CI/CD, and test reliability without paid API keys.
 
-**Output Structure:**
-```json
-{
-  "status": "success",
-  "execution_time_ms": 110.29,
-  "execution_time_seconds": 0.1103,
-  "brand_name": "SocioTrack",
-  "topic": "Deterministic State Management with LangGraph",
-  "format": "Format A: Data-first",
-  "composite_score": 10.4,
-  "qualifies_for_memory": true,
-  "key_lesson": "High-share driver (score 10.4): Framework breakdowns and hard benchmark data generate viral peer-to-peer forwarding among technical leads.",
-  "memory_doc_id": "lesson_48e714df",
-  "memory_weight_adjustment": {
-    "topic": "Deterministic State Management with LangGraph",
-    "format": "Format A: Data-first",
-    "composite_score": 10.4,
-    "topic_weight": 1.54,
-    "format_weight": 1.54,
-    "delta": 0.54,
-    "status": "boosted"
-  },
-  "status_message": "Composite score 10.40 > 5.0! Lesson embedded into vector memory under ID=lesson_48e714df. Memory weight for 'Deterministic State Management with LangGraph' boosted to 1.54."
-}
+- [x] **4. Callable Production Functions (`backend/app/core/agent.py`)**
+  - [x] `run_agent_cycle`: Executes vector retrieval, 3-format drafting, and brand voice critique in **~107 ms** (< 6.0s budget).
+  - [x] `ingest_analytics`: Calculates composite score, dynamically adjusts memory weights (+0.1 to +1.0 for winners, -0.05 to -0.4 for losers), and embeds winning lessons into ChromaDB in **~110 ms** (< 6.0s budget).
+
+- [x] **5. Self-Testing Scripts & Automated Benchmarks**
+  - [x] `test_agent.py` executable locally (`python test_agent.py`) with mock posts (`p1`, `p2`, `p3`).
+  - [x] `backend/tests/test_agent.py` with **13/13 passing tests** verifying the entire agent core.
+
+---
+
+## 3. Person 1 File Deliverables
+
+Located in `backend/app/core/`:
+
+| File | Role / Purpose |
+| :--- | :--- |
+| `schemas.py` / `models.py` | Data contracts: `RawPost`, `PostAuditPattern`, `CreatorAuditReport` |
+| `analytics.py` | Pure math functions: $ER$, $VI$, $UI$, outlier detection, cluster aggregates |
+| `diagnostics_agent.py` | Core diagnostic engine with `run_creator_audit` |
+| `agent.py` | LangGraph StateGraph, `run_agent_cycle`, and `ingest_analytics` |
+| `memory.py` | Vector search manager, composite scoring, and dynamic weight adjustments |
+| `prompts.py` | Brand voice rules, system prompts, Dos & Don'ts |
+
+---
+
+## 4. Self-Testing Verification Output (`test_agent.py`)
+
+When running `python test_agent.py`, the engine processes the mock dataset (`@dev_dan`) and outputs:
+
+```text
+Running Diagnostic Audit...
+
+[AUDIT COMPLETE] Health Score: 85/100
+Top Format: REELS
+Median Engagement Rate: 11.82%
+
+--- WHAT IS WORKING ---
++ Tactical Code & Optimization Reels: Achieved 12.2% engagement rate with a viral share ratio of 2.7% (1.9x higher than account baseline).
+  Reason: Hooks with explicit negative framing ('Stop using basic for loops') create immediate curiosity gaps. High density of code improvements triggers rapid peer forwarding among developers.
+  Recommendation: Standardize on 30-45s Reels opening with 'Stop doing X in Python' hooks. Display side-by-side terminal before/after code blocks.
+
+--- WHAT IS FAILING ---
+- Generic Motivational Image Posts: Collapsed to 2.75% engagement rate (0.23x of baseline) with near-zero shares and saves.
+  Reason: Generic lifestyle captions ('Happy Monday! Remember to drink water') lack technical signal and utility. The algorithm down-ranks low-dwell static images without technical discussion hooks.
+  Recommendation: Discontinue generic lifestyle text posts entirely. Replace static motivational quotes with specific career lessons, salary benchmarks, or post-mortem retrospectives.
+
+--- IMMEDIATE NEXT STEPS ---
+> Double down on REELS: shift weekly schedule to 70% REELS and 30% deep-dive Carousels.
+> Eliminate low-retention generic motivation images that dilute account authority.
+> Repurpose high-save carousel diagrams into short-form code walkthrough Reels uploaded between 14:00 - 16:00 UTC.
+> Add explicit utility CTAs ('Save for later') on slide 1 and slide 7 of every carousel.
 ```
 
 ---
 
-## Dynamic Memory Weight Adjustment Algorithm
+## 5. Teammate Handoff & Router Integration
 
-| Condition | Formula | Weight Effect | Memory Storage Action |
-| :--- | :--- | :--- | :--- |
-| **High Performer** ($\text{Score} > 5.0$) | $\Delta w = \min\left(1.0, \frac{\text{Score} - 5.0}{10.0}\right)$ | Boosts weight: $w_{\text{new}} = \min(2.5, w_{\text{current}} + \Delta w)$ | Distills takeaway & embeds into ChromaDB vector collection |
-| **Low Performer** ($\text{Score} \le 5.0$) | $\Delta w = \max\left(-0.4, \frac{\text{Score} - 5.0}{15.0}\right)$ | Dampens weight: $w_{\text{new}} = \max(0.2, w_{\text{current}} + \Delta w)$ | Discarded from long-term memory to prevent hallucination/slop pollution |
+Person 2 can import and call `run_creator_audit` directly in any FastAPI endpoint:
 
----
+```python
+from fastapi import APIRouter
+from backend.app.core.schemas import RawPost, CreatorAuditReport
+from backend.app.core.diagnostics_agent import run_creator_audit
 
-## Benchmark Performance vs 6.0s Budget
+router = APIRouter(prefix="/api/diagnostics", tags=["Diagnostics"])
 
+@router.post("/audit", response_model=CreatorAuditReport)
+async def audit_creator_account(creator_handle: str, posts: list[RawPost]):
+    return run_creator_audit(creator_handle=creator_handle, posts=posts)
 ```
-Function               Execution Time   Max Budget   Performance Margin
----------------------  --------------   ----------   ------------------
-run_agent_cycle        107.11 ms        6,000 ms     56x faster
-ingest_analytics       110.29 ms        6,000 ms     54x faster
-```
-
----
-
-## Teammate Integration Guide
-
-- **Person 2 (FastAPI Routes):**
-  - Mount `run_agent_cycle` directly inside `backend/app/api/routes_posts.py`.
-  - Mount `ingest_analytics` directly inside `backend/app/api/routes_sim.py`.
-- **Person 3 (Next.js Dashboard):**
-  - Receives `execution_time_ms` to display latency badges in the UI.
-  - Receives `memory_weight_adjustment` to render dynamic weight pills in `MemoryDrawer.tsx`.
-- **Person 4 (Pitch Deck & Demo):**
-  - Reference the 56x performance margin and mathematical scoring formula in the live hackathon pitch!

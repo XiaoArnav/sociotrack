@@ -24,6 +24,19 @@ from backend.app.core.prompts import (
     PROMPT_EVALUATION_PASS,
 )
 
+from backend.app.core.schemas import (
+    RawPost,
+    PostAuditPattern,
+    CreatorAuditReport,
+)
+from backend.app.core.analytics import (
+    compute_post_statistics,
+    compute_true_engagement_rate,
+    compute_virality_index,
+    compute_utility_index,
+)
+from backend.app.core.diagnostics_agent import run_creator_audit
+
 __all__ = [
     "AgentGraphState",
     "SocialEngagementAgent",
@@ -40,4 +53,12 @@ __all__ = [
     "SYSTEM_PROMPT_AGENT",
     "BRAND_VOICE_GUIDELINES",
     "PROMPT_EVALUATION_PASS",
+    "RawPost",
+    "PostAuditPattern",
+    "CreatorAuditReport",
+    "compute_post_statistics",
+    "compute_true_engagement_rate",
+    "compute_virality_index",
+    "compute_utility_index",
+    "run_creator_audit",
 ]
