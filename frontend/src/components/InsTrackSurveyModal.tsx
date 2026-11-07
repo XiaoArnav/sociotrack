@@ -136,7 +136,7 @@ export function InsTrackSurveyModal({
           {step === 4 && (
             <div className="space-y-6">
               <h2 className="text-sm font-semibold text-slate-300">
-                What are your top goals for using InsTrack? (Pick 2 or more)
+                What are your top goals for using SocioTrack? (Pick 2 or more)
               </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">

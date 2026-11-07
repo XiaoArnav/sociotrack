@@ -529,7 +529,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* Center: InsTrack Logo */}
+        {/* Center: SocioTrack Logo */}
         <button
           onClick={() => {
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -540,7 +540,7 @@ export default function App() {
             <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
           </div>
           <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            InsTrack
+            SocioTrack
           </span>
         </button>
 
@@ -592,8 +592,8 @@ export default function App() {
 
             {/* Subhead text */}
             <p className="max-w-2xl mx-auto text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-              InsTrack offers powerful in-depth analytics and actionable insights for brands, influencers and agencies.
-              Trusted by millions since 2012. Powered by the official Instagram API.
+              SocioTrack offers powerful in-depth analytics and actionable insights for brands, creators and agencies.
+              Powered by the official Meta Graph API and autonomous agent intelligence.
             </p>
 
             {/* Search Bar with working submit, audit button and keyboard Enter listener */}
@@ -1056,7 +1056,7 @@ export default function App() {
             <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
               <div>
                 <div className="font-extrabold text-slate-900 dark:text-white text-sm">
-                  InsTrack by SocioTrack
+                  SocioTrack
                 </div>
                 <p className="text-[11px] mt-0.5">
                   Autonomous Social Media Agent with Persistent Memory. Built for Hack With Bangalore 4.0.
@@ -1119,7 +1119,7 @@ export default function App() {
                 </button>
               </div>
               <div className="text-[11px] font-mono">
-                © 2026 InsTrack / SocioTrack. All rights reserved.
+                © 2026 SocioTrack. All rights reserved.
               </div>
             </div>
           </footer>
@@ -1148,7 +1148,7 @@ export default function App() {
               <div className="flex items-center space-x-2">
                 <HelpCircle className="w-5 h-5 text-[#0284C7]" />
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  InsTrack &amp; SocioTrack Help Center
+                  SocioTrack Help Center
                 </h4>
               </div>
               <button
@@ -1198,7 +1198,7 @@ export default function App() {
                 setCurrentUser(u);
                 setShowAuthModal(false);
                 setViewMode("saas_dashboard");
-                showToast("Signed In Successfully", `Welcome to your InsTrack Dashboard, ${u.name}!`);
+                showToast("Signed In Successfully", `Welcome to your SocioTrack Dashboard, ${u.name}!`);
               }}
             />
           </div>
@@ -1212,7 +1212,7 @@ export default function App() {
         onComplete={(data) => {
           setViewMode("saas_dashboard");
           showToast(
-            "Welcome to InsTrack!",
+            "Welcome to SocioTrack!",
             `Workspace configured for ${data.persona} focusing on ${data.goals.join(", ")}.`,
             "success"
           );

@@ -226,7 +226,7 @@ export function InsTrackSaaSDashboard({
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-md">
               <span className="text-white text-xs font-black">📈</span>
             </div>
-            <span className="text-lg font-black tracking-tight text-white">InsTrack</span>
+            <span className="text-lg font-black tracking-tight text-white">SocioTrack</span>
           </div>
           <div className="w-4 h-4 rounded-full border border-slate-600 flex items-center justify-center">
             <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
@@ -1037,9 +1037,9 @@ export function InsTrackSaaSDashboard({
         {/* BOTTOM SAAS FOOTER (Matching Video 3 & 4) */}
         <footer className="border-t border-[#1E2638] bg-[#0E1526] px-8 py-5 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
-            <span className="font-extrabold text-white text-sm">InsTrack</span>
+            <span className="font-extrabold text-white text-sm">SocioTrack</span>
             <span className="text-[11px] text-slate-500">
-              InsTrack offers powerful analytics and in-depth actionable insights.
+              SocioTrack offers powerful analytics and in-depth actionable insights.
             </span>
           </div>
           <div className="flex items-center space-x-6 text-[11px]">

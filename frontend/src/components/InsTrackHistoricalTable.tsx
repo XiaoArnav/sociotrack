@@ -299,7 +299,7 @@ export function InsTrackHistoricalTable({ creator = DEFAULT_CREATOR }: InsTrackH
               <div className="flex items-center justify-between border-b pb-4 border-slate-100 dark:border-slate-800">
                 <div>
                   <h3 className="text-base font-black text-slate-900 dark:text-white">
-                    InsTrack Instagram Report
+                    SocioTrack Instagram Report
                   </h3>
                   <p className="text-slate-500">Account: @thestevenmellor</p>
                 </div>
@@ -351,7 +351,7 @@ export function InsTrackHistoricalTable({ creator = DEFAULT_CREATOR }: InsTrackH
               </div>
 
               <div className="text-[10px] text-slate-400 text-center italic">
-                Official Report powered by SocioTrack &amp; InsTrack Analytics Engine
+                Official Report powered by SocioTrack Autonomous Analytics Engine
               </div>
             </div>
 

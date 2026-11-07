@@ -85,7 +85,7 @@ export function InsTrackCreatorCard({
   const displayScore = score ?? creator.score;
 
   const handleCopyLink = () => {
-    navigator.clipboard?.writeText(`https://instrack.app/instagram/${creator.handle}`);
+    navigator.clipboard?.writeText(`https://sociotrack.app/instagram/${creator.handle}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -231,10 +231,10 @@ export function InsTrackCreatorCard({
             {/* The Gradient Rainbow Bar from InsTrack */}
             <div className="relative w-full h-1.5 rounded-full overflow-hidden rainbow-score-bar shadow-inner" />
 
-            {/* Sub-label: InsTrack Score */}
+            {/* Sub-label: SocioTrack Score */}
             <div className="flex items-center justify-center space-x-1 text-[11px] text-slate-400 dark:text-slate-500 pt-0.5">
               <Info className="w-3 h-3 text-slate-400" />
-              <span>InsTrack Score</span>
+              <span>SocioTrack Score</span>
             </div>
           </div>
 

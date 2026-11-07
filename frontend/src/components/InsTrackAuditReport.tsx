@@ -118,7 +118,7 @@ export function InsTrackAuditReport({
         {/* 4 Scorecard Metrics */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] border border-slate-100 dark:border-[#243048]">
-            <span className="text-[11px] font-semibold text-slate-400">InsTrack Score</span>
+            <span className="text-[11px] font-semibold text-slate-400">SocioTrack Score</span>
             <div className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
               {creator.score}%
             </div>
