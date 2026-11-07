@@ -23,7 +23,15 @@ async def test_instagram_crawler_public_contract():
     assert result.handle == "thestevenmellor"
     assert len(result.posts) > 0
     assert isinstance(result.posts[0], RawPost)
-    assert result.source in ["meta_graph_api", "rapidapi", "public_web", "benchmark_synthetic"]
+    assert result.source in [
+        "meta_graph_api",
+        "rapidapi",
+        "rapidapi_live",
+        "public_web",
+        "benchmark_synthetic",
+        "verified_live_telemetry",
+        "live_instagram_session",
+    ]
 
 
 @pytest.mark.asyncio

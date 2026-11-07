@@ -61,6 +61,7 @@ class Settings(BaseSettings):
     INSTAGRAM_BUSINESS_ACCOUNT_ID: str = ""
     INSTAGRAM_SESSIONID: str = ""
     RAPIDAPI_KEY: str = ""
+    RAPIDAPI_HOST: str = "instagram-scraper-stable-api.p.rapidapi.com"
 
     # Social Engagement Scoring Thresholds
     MIN_COMPOSITE_SCORE_THRESHOLD: float = 5.0
