@@ -13,6 +13,8 @@ class Post(Base):
     content = Column(Text, nullable=False)
     topic = Column(String(255), nullable=False)
     hook_style = Column(String(100), nullable=True)
+    format = Column(String(100), nullable=True)
+    brand_name = Column(String(100), nullable=True)
     status = Column(String(50), nullable=False, default="draft")  # draft, pending_approval, scheduled, published
     scheduled_for = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(

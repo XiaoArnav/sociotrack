@@ -66,6 +66,8 @@ async def health_check():
         "status": "healthy",
         "app": settings.APP_NAME,
         "service": "sociotrack-backend",
+        "environment": settings.APP_ENV,
+        "version": "1.0.0",
         "hindsight_configured": bool(settings.HINDSIGHT_API_URL),
         "database": settings.DATABASE_URL.split("://")[0],
     }

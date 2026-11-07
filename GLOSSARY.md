@@ -1,65 +1,49 @@
-# SocioTrack Domain Glossary (`GLOSSARY.md`)
+# SocioTrack — AI Social Media Engagement Agent
 
-This glossary establishes the **ubiquitous domain language** for the SocioTrack project across engineering, product design, and presentation. All modules, tests, schemas, and UI components must strictly adhere to these definitions.
+SocioTrack is an autonomous social media content optimization and audience memory agent that generates brand-aligned post drafts, schedules approved content, simulates engagement feedback, and continuously refines cognitive memory rules.
 
----
+## Ubiquitous Language
 
-## 1. Core Concepts & Agentic Architecture
+### Core Entities
 
-### **SocioTrack**
-The autonomous, closed-loop AI social media engagement and audience intelligence agent built for the Microsoft Hackathon. Unlike traditional scheduling or generative tools, SocioTrack learns from real engagement feedback and continuously improves future content recommendations.
+**Brand**:
+The organizational identity defining audience constraints, voice guidelines, and content guidelines.
+_Avoid_: Account, client, tenant, profile
 
-### **SocioTrack Intelligence Core**
-The 4-node connected cognitive visualization representing the agent's internal architecture:
-1. **Content Generation Node**: Synthesizes multi-format post drafts using retrieved memory patterns.
-2. **Audience Analysis Node**: Tracks real-time audience sentiment signals and topic curiosity.
-3. **Agent Memory Node**: The reinforced vector store holding empirical rules, save multipliers, and past winners.
-4. **Engagement Prediction Node**: Neural evaluation pass calculating virality probability and brand voice compliance.
+**Post**:
+A unit of social media content authored for a brand with a defined hook, topic, and delivery lifecycle.
+_Avoid_: Tweet, status, update, submission
 
-### **Closed-Loop Feedback System**
-An autonomous reinforcement loop where published post engagement metrics (impressions, shares, replies, likes) are ingested, evaluated, and used to dynamically update agent memory weights and system prompt guidelines.
+**Post Status**:
+The lifecycle state of a post: `draft` (generated), `pending_approval` (submitted for human sign-off), `scheduled` (approved with target publication timestamp), or `published` (broadcasted).
+_Avoid_: Post state, status flag
 
----
+**Hook Style**:
+The stylistic angle or narrative pattern of a post's opener (e.g., `question`, `contrarian`, `statistic`, `story`, `bullet_list`).
+_Avoid_: Format, hook type, angle, style template
 
-## 2. Metrics & Algorithmic Scoring
+**Engagement Score**:
+The normalized weighted metric evaluating audience response: `(likes * 2 + replies * 3 + shares * 4) / max(impressions, 1) * 100`.
+_Avoid_: Composite score, viral score, performance index
 
-### **Composite Viral Score**
-The weighted engagement formula used to evaluate post resonance:
-$$\text{Composite Score} = \frac{(\text{Shares} \times 3) + (\text{Replies} \times 2) + (\text{Likes} \times 1)}{\text{Impressions}} \times 100$$
-- **Shares ($3\times$)**: Highest-signal metric indicating peer advocacy and knowledge bookmarking.
-- **Replies ($2\times$)**: High-signal metric representing conversation depth and audience investment.
-- **Likes ($1\times$)**: Base-level positive sentiment signal.
-- **Impressions**: Normalization baseline preventing high-follower distortion.
+**Agent Memory**:
+A learned cognitive behavioral rule or audience insight derived from observed post engagement, stored with a 1536-dimensional vector embedding.
+_Avoid_: Rule, vector entry, knowledge base item
 
-### **Memory Distillation Threshold (5.0 Barrier)**
-- **$\text{Score} > 5.0$**: Qualifies for long-term memory distillation. The agent extracts the core empirical rule (e.g., *"Contrarian takes yield 3.4x more saves"*), boosts the topic weight ($+0.1$ to $+1.0$), and embeds the lesson into ChromaDB / Hindsight vector storage.
-- **$\text{Score} \le 5.0$**: Fails the threshold. The post is discarded from long-term memory to protect the vector store from low-signal noise.
+**Insight Category**:
+The taxonomy of learned memories: `hook_rule` (content structure), `timing_rule` (temporal publication bias), or `audience_pain_point` (topical resonance).
+_Avoid_: Rule type, memory type, tag
 
----
+**Confidence Score**:
+A decimal rating between 0.0 and 1.0 quantifying how reliably a learned memory predicts audience resonance.
+_Avoid_: Weight, threshold, certainty
 
-## 3. Brand Voice & Content Formats
+### Feedback & Simulation
 
-### **Brand Voice Critique Pass**
-A deterministic evaluation node scoring draft candidates from **0.0 to 10.0** against explicit brand Dos (e.g., quantified benchmark claims in opening lines) and Don'ts (e.g., no generic buzzwords or hollow marketing hype).
+**Feed Simulation**:
+Synthetic or recorded injection of social reactions (`impressions`, `likes`, `replies`, `shares`) for a scheduled or published post to test the feedback loop.
+_Avoid_: Mock feedback, test event, metric dump
 
-### **Hook Styles**
-1. **Format A (Data-First Technical)**: Leads with concrete benchmark figures, token cost reductions, and quantitative architectural gaps.
-2. **Format B (Contrarian Hot Take)**: Challenges industry dogma (e.g., unconstrained multi-agent loops) grounded in pragmatic engineering reality.
-3. **Format C (Tactical Breakdown)**: A 4-step numbered procedural playbook optimized for developer bookmarking.
-
-### **Explainability Callout ("Why SocioTrack generated this")**
-A transparent UI callout citing the specific historical audience insight and memory vector that caused the agent to select a specific hook style and tone.
-
----
-
-## 4. UI & Interaction Components
-
-### **Live Engagement Lab**
-The expandable floating bottom drawer enabling users and judges to inject live metrics into the feedback loop, test scenario presets (*Viral Outlier*, *Industry Average*, *Low Engagement*), and observe real-time memory updates.
-
-### **Agent Memory Panel**
-The right-hand workspace sidebar displaying the 4 core learned insight cards:
-1. **Content Performance**: Quantified save multipliers and comparative bar charts.
-2. **Peak Reply Window**: Weekly activity timeline highlighting peak velocity periods (e.g., Tuesday & Thursday 2:00 PM – 4:30 PM).
-3. **Audience Sentiment**: Circular progress gauge representing topic consensus (e.g., 68% cost optimization curiosity).
-4. **Learned Content Preference**: Emerging practitioner preferences with confidence indices.
+**Cognitive Feedback Loop**:
+The reflection and retention cycle where high or low engagement triggers an update or reinforcement to `AgentMemory` (via pgvector or Hindsight API).
+_Avoid_: Memory loop, reinforcement pipeline, training step
