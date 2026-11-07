@@ -2,7 +2,7 @@
 
 ## 1. Executive Topology
 
-SocioTrack is an autonomous AI social media optimization and cognitive memory agent built for **Hack With Bangalore 4.0** (Devnovate × Hack With India @ Microsoft Office Bengaluru) adhering to the **Vectorize.io Hindsight Hackathon** standards.
+SocioTrack is an autonomous AI social media optimization and cognitive memory agent built with **LangGraph** adhering to **Vectorize.io Hindsight** memory standards.
 
 The system decouples content generation, memory reflection, API execution, and user interface into deep modules adhering to **Ousterhout's Razor** (small semantic public surfaces, rich internal implementation) and the **Kleppmann Baseline** (durable sources of truth, idempotent contracts).
 
@@ -261,11 +261,11 @@ The backend exposes 5 core invariant REST endpoints plus a diagnostic audit rout
 
 ## 6. Fault Tolerance & Graceful Offline Fallback
 
-To satisfy our hackathon requirement that the system **never crashes on stage** even during WiFi disruptions, API key exhaustion, or rate limits:
+To satisfy the core engineering invariant that the system **never crashes in production** even during network disruptions, API key exhaustion, or rate limits:
 
 1. **Dual Database Engine**:
    - Production / Cloud: PostgreSQL with `pgvector` extension.
-   - Local / Hackathon Prototype: SQLite via `aiosqlite` with Chroma vector store. Both run seamlessly through SQLAlchemy Async ORM.
+   - Local / Development Environment: SQLite via `aiosqlite` with Chroma vector store. Both run seamlessly through SQLAlchemy Async ORM.
 2. **Deterministic Heuristic Vector Embeddings**:
    - If OpenAI or external embedding APIs are unreachable, the system generates deterministic 1536-dimensional normalized vectors from SHA-256 seed hashes. This preserves vector math, cosine distance searches, and ranking logic without throwing network errors.
 3. **Bidirectional Module Path Resolution**:
