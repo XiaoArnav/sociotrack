@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { AuthPage, UserSession } from "@/components/auth/AuthPage";
 import { InsTrackCreatorCard, SubNavTab } from "@/components/InsTrackCreatorCard";
-import { InsTrackBenchmarkCards } from "@/components/InsTrackBenchmarkCards";
+import {
+  InsTrackBenchmarkCards,
+  InsTrackGradeCards,
+} from "@/components/InsTrackBenchmarkCards";
 import { InsTrackGrowthCharts } from "@/components/InsTrackGrowthCharts";
 import { InsTrackHistoricalTable } from "@/components/InsTrackHistoricalTable";
 import { InsTrackCompetitorTable } from "@/components/InsTrackCompetitorTable";
@@ -68,8 +71,8 @@ export default function App() {
     }
   }, []);
 
-  // 3. Navigation State: Sub-navigation active tab
-  const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("overview");
+  // 3. Navigation State: Sub-navigation active tab (Default: "growth" matching Screenshot 4)
+  const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("growth");
 
   // 4. Application Data State
   const [drafts, setDrafts] = useState<PostDraft[]>(INITIAL_DRAFTS);
@@ -209,8 +212,8 @@ export default function App() {
         </div>
       )}
 
-      {/* TOP NAVIGATION BAR (Matching Screenshot 3, 4, 6) */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200 dark:border-[#243048] px-4 sm:px-8 py-3 flex items-center justify-between transition-colors">
+      {/* TOP NAVIGATION BAR (Matching Screenshot 1, 3, 4, 6) */}
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
         {/* Left: Moon / Sun Toggle Button */}
         <div className="flex items-center space-x-3">
           <button
@@ -226,60 +229,43 @@ export default function App() {
           </button>
         </div>
 
-        {/* Center: InsTrack Logo with Circular Gradient Icon (Screenshot 3 & 4) */}
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-md">
-              <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-              InsTrack
-            </span>
-            <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-              SocioTrack AI
-            </span>
+        {/* Center: InsTrack Logo (Screenshot 1, 3, 4) */}
+        <div className="flex items-center space-x-2.5">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-sm">
+            <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
           </div>
-
-          {/* Segmented View Mode Switcher */}
-          <div className="hidden lg:flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#161F30] border border-slate-200 dark:border-[#243048] text-[11px] font-semibold">
-            <button
-              onClick={() => setViewMode("public_report")}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                viewMode === "public_report"
-                  ? "bg-white dark:bg-[#6366F1] text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              Public Report
-            </button>
-            <button
-              onClick={() => setViewMode("saas_dashboard")}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                viewMode === "saas_dashboard"
-                  ? "bg-white dark:bg-[#6366F1] text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-              }`}
-            >
-              SaaS Dashboard
-            </button>
-          </div>
+          <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+            InsTrack
+          </span>
         </div>
 
-        {/* Right: Pricing, Log in, Create a Free Account (Screenshot 3 & 4) */}
-        <div className="flex items-center space-x-3">
+        {/* Right: Pricing, Log in, Create a Free Account + optional Workspace Toggle */}
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <button
-            onClick={() => setActiveSubTab("overview")}
-            className="hidden sm:inline-block text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            onClick={() => {
+              const el = document.getElementById("benchmark-section");
+              el?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="hidden sm:inline-block text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-2 py-1"
           >
             Pricing
           </button>
 
-          <button
-            onClick={() => setShowAuthModal(true)}
-            className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
-          >
-            Log in
-          </button>
+          {currentUser ? (
+            <button
+              onClick={() => setViewMode(viewMode === "public_report" ? "saas_dashboard" : "public_report")}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
+            >
+              {viewMode === "public_report" ? "SaaS App →" : "Public View"}
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
+            >
+              Log in
+            </button>
+          )}
 
           <button
             onClick={() => setShowSurveyModal(true)}
@@ -324,11 +310,11 @@ export default function App() {
               placeholder="Search any account on Instagram"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-11 pr-4 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
+              className="w-full h-12 pl-11 pr-4 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
             />
           </div>
 
-          {/* 3 Checkmarks below search bar (Screenshot 3) */}
+          {/* 3 Checkmarks below search bar (Screenshot 3 & 4) */}
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600 dark:text-slate-400 pt-3 font-medium">
             <span className="flex items-center space-x-1.5">
               <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
@@ -347,8 +333,8 @@ export default function App() {
       </section>
 
       {/* MAIN CONTENT DASHBOARD */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-12 pb-32">
-        {/* 1. CREATOR PROFILE CARD & RAINBOW SCORE (Screenshot 2) */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-16 pb-32">
+        {/* 1. CREATOR PROFILE CARD & RAINBOW SCORE (Screenshot 2 & 4) */}
         <div className="space-y-6">
           <InsTrackCreatorCard
             activeTab={activeSubTab}
@@ -357,52 +343,15 @@ export default function App() {
             score={70.1}
           />
 
-          {/* 2. TABBED OR FULL OVERVIEW CONTENT */}
-          {activeSubTab === "overview" && (
-            <div className="space-y-12 animate-fade-in">
-              {/* Top 5 Quick Metric Cards + Dual Area Growth Charts */}
-              <div className="space-y-6">
-                <InsTrackBenchmarkCards />
-                <InsTrackGrowthCharts />
-              </div>
-
-              {/* Instant Performance Insights Section (Screenshot 5) */}
-              <div className="text-center max-w-2xl mx-auto space-y-1 pt-4">
-                <h2 className="text-2xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
-                  Instant Performance Insights
-                </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Gain instant in-depth insights on any Instagram account:{" "}
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    Competitors, clients or your own accounts
-                  </span>
-                  . Just enter username and specify date range, and we&apos;ll take care of the rest. Data is updated hourly and is presented in the most visually-appealing and insightful reports.
-                </p>
-              </div>
-
-              {/* Competitor / Multi-Account Tracking Table (Screenshot 6) */}
-              <InsTrackCompetitorTable onAddAccountClick={() => setShowAddAccountModal(true)} />
-
-              {/* Reporting & Data Exports Section (Screenshot 7 & 8) */}
-              <div className="space-y-4 pt-4">
-                <div className="text-center max-w-2xl mx-auto space-y-1">
-                  <h2 className="text-2xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
-                    Reporting and Data Exports
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Streamline your reporting process and <span className="font-semibold text-slate-800 dark:text-slate-200">save a lot of time</span> with our beautiful, automated and{" "}
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">branded white-labeled PDF reports</span>. Schedule{" "}
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">email reports</span> to be sent daily, weekly or monthly to yourself, your team members or directly to your clients.{" "}
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">CSV exports</span> are also available for historical Instagram stats.
-                  </p>
-                </div>
-
-                <InsTrackHistoricalTable />
-              </div>
+          {/* 2. CREATOR TAB CONTENT (Default: Growth) */}
+          {activeSubTab === "growth" && (
+            <div className="space-y-6 animate-fade-in">
+              <InsTrackBenchmarkCards />
+              <InsTrackGrowthCharts />
             </div>
           )}
 
-          {activeSubTab === "growth" && (
+          {activeSubTab === "overview" && (
             <div className="space-y-6 animate-fade-in">
               <InsTrackBenchmarkCards />
               <InsTrackGrowthCharts />
@@ -412,14 +361,14 @@ export default function App() {
           {activeSubTab === "audit" && (
             <div className="space-y-6 animate-fade-in">
               <InsTrackBenchmarkCards />
-              <InsTrackCompetitorTable onAddAccountClick={() => setShowAddAccountModal(true)} />
+              <InsTrackGradeCards />
             </div>
           )}
 
           {activeSubTab === "engagement" && (
             <div className="space-y-6 animate-fade-in">
               <InsTrackBenchmarkCards />
-              <InsTrackCompetitorTable onAddAccountClick={() => setShowAddAccountModal(true)} />
+              <InsTrackGrowthCharts />
             </div>
           )}
 
@@ -440,7 +389,7 @@ export default function App() {
                   onSendToSimulator={() => {
                     showToast(
                       "Post Sent to Simulator",
-                      "Use the Live Engagement Lab drawer below to test metrics.",
+                      "Click Live Engagement Lab at bottom left to test real-time feedback.",
                       "info"
                     );
                   }}
@@ -468,8 +417,46 @@ export default function App() {
           )}
         </div>
 
-        {/* 3. FREQUENTLY ASKED QUESTIONS (Matching Screenshot 9) */}
-        <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-8 shadow-sm space-y-4 max-w-4xl mx-auto">
+        {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE (Matching Screenshot 5 & 6) */}
+        <section id="benchmark-section" className="space-y-6 pt-4">
+          <InsTrackGradeCards />
+        </section>
+
+        {/* 4. SHOWCASE SECTION 2: INSTANT PERFORMANCE INSIGHTS / COMPETITOR TRACKING (Matching Screenshot 8) */}
+        <section className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto space-y-1">
+            <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+              Instant Performance Insights
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Gain instant in-depth insights on any Instagram account:{" "}
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
+                Competitors, clients or your own accounts
+              </span>
+              . Just enter username and specify date range, and we&apos;ll take care of the rest. Data is updated hourly and is presented in the most visually-appealing and insightful reports.
+            </p>
+          </div>
+          <InsTrackCompetitorTable onAddAccountClick={() => setShowAddAccountModal(true)} />
+        </section>
+
+        {/* 5. SHOWCASE SECTION 3: REPORTING AND DATA EXPORTS (Matching Screenshot 1 & 2 & 6) */}
+        <section className="space-y-6 pt-4">
+          <div className="text-center max-w-2xl mx-auto space-y-1">
+            <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+              Reporting and Data Exports
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              Streamline your reporting process and <span className="font-semibold text-slate-800 dark:text-slate-200">save a lot of time</span> with our beautiful, automated and{" "}
+              <span className="font-semibold text-slate-800 dark:text-slate-200">branded white-labeled PDF reports</span>. Schedule{" "}
+              <span className="font-semibold text-slate-800 dark:text-slate-200">email reports</span> to be sent daily, weekly or monthly to yourself, your team members or directly to your clients.{" "}
+              <span className="font-semibold text-slate-800 dark:text-slate-200">CSV exports</span> are also available for historical Instagram stats.
+            </p>
+          </div>
+          <InsTrackHistoricalTable />
+        </section>
+
+        {/* 6. SHOWCASE SECTION 4: FREQUENTLY ASKED QUESTIONS (Matching Screenshot 2 & 3 & 6) */}
+        <section className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200/80 dark:border-[#243048] p-8 shadow-sm space-y-4 max-w-4xl mx-auto">
           <div className="border-b border-slate-100 dark:border-[#243048] pb-4">
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Frequently Asked Question (FAQ)
@@ -483,7 +470,7 @@ export default function App() {
                 <div key={idx} className="py-3.5">
                   <button
                     onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                    className="w-full flex items-center justify-between text-left text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                   >
                     <span>{faq.q}</span>
                     <ChevronDown
@@ -501,23 +488,23 @@ export default function App() {
               );
             })}
           </div>
-        </div>
+        </section>
 
-        {/* 4. GRADIENT CALL TO ACTION BANNER (Matching Screenshot 9 & 10) */}
-        <div className="rounded-2xl p-10 bg-gradient-to-r from-[#7C3AED] via-[#6366F1] to-[#06B6D4] text-white shadow-xl text-center space-y-4 max-w-4xl mx-auto">
-          <h3 className="text-2xl sm:text-3xl font-black tracking-tight">
+        {/* 7. SHOWCASE SECTION 5: GRADIENT CALL TO ACTION BANNER (Matching Screenshot 3 & 10) */}
+        <section className="rounded-2xl p-10 sm:p-14 bg-gradient-to-r from-[#7C3AED] via-[#6366F1] to-[#06B6D4] text-white shadow-xl text-center space-y-5 max-w-4xl mx-auto">
+          <h3 className="text-2xl sm:text-4xl font-black tracking-tight">
             Start your adventure now! 🚀
           </h3>
           <div>
             <button
               onClick={() => setShowSurveyModal(true)}
-              className="px-6 py-3 rounded-xl bg-white/20 hover:bg-white/30 border border-white/40 text-white font-bold text-xs shadow-lg transition-all inline-flex items-center space-x-2"
+              className="px-8 py-3.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/40 text-white font-bold text-sm shadow-lg transition-all inline-flex items-center space-x-2 hover:scale-105"
             >
               <span>Create a Free Account</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </section>
       </main>
 
       {/* FOOTER */}
