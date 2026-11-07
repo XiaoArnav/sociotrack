@@ -11,6 +11,8 @@ import {
   FileText,
 } from "lucide-react";
 
+import { CreatorProfile, DEFAULT_CREATOR } from "./InsTrackCreatorCard";
+
 interface HistoricalRow {
   date: string;
   followers: number;
@@ -95,13 +97,30 @@ const HISTORICAL_DATA: HistoricalRow[] = [
   },
 ];
 
-export function InsTrackHistoricalTable() {
+interface InsTrackHistoricalTableProps {
+  creator?: CreatorProfile;
+}
+
+export function InsTrackHistoricalTable({ creator = DEFAULT_CREATOR }: InsTrackHistoricalTableProps = {}) {
   const [showPdfModal, setShowPdfModal] = useState(false);
+
+  // Scale data dynamically if creator changes
+  const scaleF = creator.followers / 173435;
+  const scaleFol = creator.following / 584;
+  const scaleM = creator.posts / 353;
+
+  const displayData = HISTORICAL_DATA.map((r) => ({
+    ...r,
+    followers: Math.round(r.followers * scaleF),
+    followersDelta: Math.round(r.followersDelta * scaleF) || 1,
+    following: Math.round(r.following * scaleFol),
+    mediaCount: Math.round(r.mediaCount * scaleM),
+  }));
 
   // Trigger Client-Side CSV Download
   const handleDownloadCsv = () => {
     const headers = "Date,Followers,FollowersDelta,Following,FollowingDelta,MediaCount,EngagementRate,EngagementDelta\n";
-    const rows = HISTORICAL_DATA.map(
+    const rows = displayData.map(
       (r) =>
         `"${r.date}",${r.followers},${r.followersDelta},${r.following},${r.followingDelta},${r.mediaCount},${r.engagementRate}%,${r.engagementDelta}%`
     ).join("\n");
@@ -109,7 +128,7 @@ export function InsTrackHistoricalTable() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", "thestevenmellor_historical_stats.csv");
+    link.setAttribute("download", `${creator.handle}_historical_stats.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -155,7 +174,7 @@ export function InsTrackHistoricalTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-[#243048] font-mono">
-              {HISTORICAL_DATA.map((row) => (
+              {displayData.map((row) => (
                 <tr
                   key={row.date}
                   className="hover:bg-slate-50/70 dark:hover:bg-[#1E2638]/50 transition-colors text-slate-700 dark:text-slate-300"

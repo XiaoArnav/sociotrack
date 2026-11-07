@@ -3,7 +3,15 @@
 import React, { useState } from "react";
 import { Calendar } from "lucide-react";
 
-export function InsTrackGrowthCharts() {
+interface InsTrackGrowthChartsProps {
+  followers?: number;
+  following?: number;
+}
+
+export function InsTrackGrowthCharts({
+  followers = 173435,
+  following = 584,
+}: InsTrackGrowthChartsProps = {}) {
   const [hoveredIndexA, setHoveredIndexA] = useState<number | null>(9);
   const [hoveredIndexB, setHoveredIndexB] = useState<number | null>(9);
 
@@ -21,17 +29,46 @@ export function InsTrackGrowthCharts() {
     "12 Mar",
   ];
 
-  // Followers y-axis values from 168.0k to 174.0k
-  const followersYLabels = ["174.0k", "173.0k", "172.0k", "171.0k", "170.0k", "169.0k", "168.0k"];
-  const followersData = [168.2, 168.4, 168.6, 168.8, 169.5, 170.2, 171.4, 172.2, 172.8, 173.4];
-  const minF = 168.0;
-  const maxF = 174.0;
+  // Scale followers data dynamically based on creator's follower count
+  const scaleF = followers / 173435;
+  const baseFollowersData = [168.2, 168.4, 168.6, 168.8, 169.5, 170.2, 171.4, 172.2, 172.8, 173.4];
+  const followersData = baseFollowersData.map((val) => {
+    const scaled = val * scaleF;
+    return scaled >= 1000
+      ? Number((scaled / 1000).toFixed(2))
+      : Number(scaled.toFixed(1));
+  });
 
-  // Following y-axis values from 540 to 590
-  const followingYLabels = ["590", "580", "570", "560", "550", "540"];
-  const followingData = [545, 552, 553, 560, 558, 565, 568, 575, 580, 584];
-  const minFol = 540;
-  const maxFol = 590;
+  const isMillions = followers >= 1000000;
+  const unitF = isMillions ? "M" : "k";
+  const minF = Math.min(...followersData) * 0.998;
+  const maxF = Math.max(...followersData) * 1.002;
+
+  const followersYLabels = [
+    `${maxF.toFixed(isMillions ? 2 : 1)}${unitF}`,
+    `${((maxF * 5 + minF) / 6).toFixed(isMillions ? 2 : 1)}${unitF}`,
+    `${((maxF * 4 + minF * 2) / 6).toFixed(isMillions ? 2 : 1)}${unitF}`,
+    `${((maxF * 3 + minF * 3) / 6).toFixed(isMillions ? 2 : 1)}${unitF}`,
+    `${((maxF * 2 + minF * 4) / 6).toFixed(isMillions ? 2 : 1)}${unitF}`,
+    `${((maxF + minF * 5) / 6).toFixed(isMillions ? 2 : 1)}${unitF}`,
+    `${minF.toFixed(isMillions ? 2 : 1)}${unitF}`,
+  ];
+
+  // Scale following data dynamically based on creator's following count
+  const scaleFol = following / 584;
+  const baseFollowingData = [545, 552, 553, 560, 558, 565, 568, 575, 580, 584];
+  const followingData = baseFollowingData.map((val) => Math.round(val * scaleFol));
+  const minFol = Math.min(...followingData) - 5;
+  const maxFol = Math.max(...followingData) + 5;
+
+  const followingYLabels = [
+    `${maxFol}`,
+    `${Math.round((maxFol * 4 + minFol) / 5)}`,
+    `${Math.round((maxFol * 3 + minFol * 2) / 5)}`,
+    `${Math.round((maxFol * 2 + minFol * 3) / 5)}`,
+    `${Math.round((maxFol + minFol * 4) / 5)}`,
+    `${minFol}`,
+  ];
 
   const svgWidth = 480;
   const svgHeight = 160;
@@ -103,7 +140,7 @@ export function InsTrackGrowthCharts() {
               >
                 <div className="flex items-center space-x-1.5 px-2.5 py-1 bg-white dark:bg-[#161F30] border border-slate-200 dark:border-[#243048] rounded-md shadow-md text-xs font-semibold text-slate-800 dark:text-slate-200">
                   <span className="w-2 h-2 rounded-full bg-[#10B981]" />
-                  <span>Followers: {followersData[hoveredIndexA]}k</span>
+                  <span>Followers: {followersData[hoveredIndexA]}{unitF}</span>
                 </div>
               </div>
             )}

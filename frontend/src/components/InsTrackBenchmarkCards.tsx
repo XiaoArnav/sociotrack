@@ -13,12 +13,32 @@ import {
   ArrowDown,
 } from "lucide-react";
 
+import { CreatorProfile } from "./InsTrackCreatorCard";
+
+interface InsTrackBenchmarkCardsProps {
+  creator?: CreatorProfile;
+}
+
 /**
  * 5 Quick Metric Cards matching Screenshot 2 & 4:
  * - Row 1: 2 Wide Metric Cards (Followers Growth Rate 90 Days & Steady Growth Factor)
  * - Row 2: 3 Metric Cards (Daily Followers, Weekly Followers, Monthly Followers)
  */
-export function InsTrackBenchmarkCards() {
+export function InsTrackBenchmarkCards({ creator }: InsTrackBenchmarkCardsProps = {}) {
+  const followers = creator?.followers ?? 173435;
+  const scale = followers / 173435;
+
+  const growthRate = creator
+    ? ((creator.score / 100) * 5.42).toFixed(2)
+    : "3.80";
+
+  const steadyFactor = creator
+    ? Math.min(96.5, (creator.score * 1.26)).toFixed(2)
+    : "88.37";
+
+  const dailyFollowers = Math.round(279 * scale).toLocaleString();
+  const weeklyFollowers = Math.round(1954 * scale).toLocaleString();
+  const monthlyFollowers = Math.round(8491 * scale).toLocaleString();
   return (
     <div className="space-y-4">
       {/* Top Row: 2 Wide Metric Cards (Matching Screenshot 2 & 4) */}
@@ -35,7 +55,7 @@ export function InsTrackBenchmarkCards() {
           </div>
           <div className="mt-3 text-center">
             <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              3.80%
+              {growthRate}%
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
               Followers Growth Rate (90 Days)
@@ -55,7 +75,7 @@ export function InsTrackBenchmarkCards() {
           </div>
           <div className="mt-3 text-center">
             <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              88.37%
+              {steadyFactor}%
             </div>
             <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
               Steady Growth Factor
@@ -72,7 +92,7 @@ export function InsTrackBenchmarkCards() {
             <Users className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            279
+            {dailyFollowers}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
             Daily Followers
@@ -85,7 +105,7 @@ export function InsTrackBenchmarkCards() {
             <Users className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            1,954
+            {weeklyFollowers}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
             Weekly Followers
@@ -98,7 +118,7 @@ export function InsTrackBenchmarkCards() {
             <Users className="w-4 h-4 stroke-[2.5]" />
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            8,491
+            {monthlyFollowers}
           </div>
           <div className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
             Monthly Followers

@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { AuthPage, UserSession } from "@/components/auth/AuthPage";
-import { InsTrackCreatorCard, SubNavTab } from "@/components/InsTrackCreatorCard";
+import {
+  InsTrackCreatorCard,
+  SubNavTab,
+  CreatorProfile,
+  DEFAULT_CREATOR,
+} from "@/components/InsTrackCreatorCard";
 import {
   InsTrackBenchmarkCards,
   InsTrackGradeCards,
@@ -13,10 +18,12 @@ import { InsTrackCompetitorTable } from "@/components/InsTrackCompetitorTable";
 import { InsTrackSurveyModal } from "@/components/InsTrackSurveyModal";
 import { InsTrackAddAccountModal } from "@/components/InsTrackAddAccountModal";
 import { InsTrackSaaSDashboard } from "@/components/InsTrackSaaSDashboard";
-import { InsTrackPredictionCard } from "@/components/InsTrackPredictionCard";
 import { GenerationStudio } from "@/components/GenerationStudio";
 import { AgentMemoryPanel } from "@/components/AgentMemoryPanel";
 import { LiveEngagementLab } from "@/components/LiveEngagementLab";
+import { InsTrackAuditReport } from "@/components/InsTrackAuditReport";
+import { InsTrackEngagementView } from "@/components/InsTrackEngagementView";
+import { InsTrackPredictionCard } from "@/components/InsTrackPredictionCard";
 import {
   PostDraft,
   LearnedInsight,
@@ -35,7 +42,197 @@ import {
   HelpCircle,
   TrendingUp,
   Sparkles,
+  RefreshCw,
+  Flame,
+  Zap,
+  BrainCircuit,
+  Compass,
+  ShieldCheck,
+  Layers,
+  Database,
+  ArrowUpRight,
 } from "lucide-react";
+
+// Preset accounts for instantaneous realistic audits
+const CREATOR_PRESETS: Record<string, CreatorProfile> = {
+  thestevenmellor: DEFAULT_CREATOR,
+  mkbhd: {
+    handle: "mkbhd",
+    name: "Marques Brownlee",
+    avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Quality Tech Videos | YouTuber | Geek | Ultimate Frisbee",
+      "Crisp tech reviews, automotive deep dives & high-fidelity gadgets",
+      "MKBHD Studio • Waveform Podcast • 18M+ Subscribers",
+    ],
+    linkUrl: "https://youtube.com/mkbhd",
+    trackedSince: "Tracked since Jan, 15 2017. Updated 5 minutes ago.",
+    followers: 4820190,
+    followersDelta: "+18,420 (0.38%)",
+    following: 412,
+    followingDelta: "+2 (0.49%)",
+    posts: 1420,
+    postsDelta: "+8 (0.57%)",
+    score: 94.2,
+  },
+  mrbeast: {
+    handle: "mrbeast",
+    name: "Jimmy Donaldson",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "I want to make the world a better place before I die",
+      "Creator of Feastables & Beast Philanthropy",
+      "New video every Saturday! • Over $20M+ donated to communities",
+    ],
+    linkUrl: "https://feastables.com",
+    trackedSince: "Tracked since Sep, 10 2018. Updated 2 minutes ago.",
+    followers: 62450800,
+    followersDelta: "+312,000 (0.50%)",
+    following: 355,
+    followingDelta: "+0 (0.0%)",
+    posts: 512,
+    postsDelta: "+4 (0.78%)",
+    score: 98.7,
+  },
+  brewhavencafe: {
+    handle: "brewhavencafe",
+    name: "Brew Haven Café",
+    avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Artisanal Single-Origin Coffee & Sourdough Pastries",
+      "Open Daily 7am - 8pm • Downtown Bangalore",
+      "Tag @brewhavencafe to be featured in our community cup ☕",
+    ],
+    linkUrl: "https://brewhaven.cafe/order",
+    trackedSince: "Tracked since Mar, 12 2021. Updated 24 minutes ago.",
+    followers: 14038,
+    followersDelta: "+154 (1.11%)",
+    following: 51,
+    followingDelta: "-1 (-1.92%)",
+    posts: 101,
+    postsDelta: "+3 (3.06%)",
+    score: 78.4,
+  },
+  beanblossombrew: {
+    handle: "beanblossombrew",
+    name: "Bean Blossom Brew",
+    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Craft Roastery & Specialty Cold Brews",
+      "Sustainable organic beans shipped directly to your door",
+      "Brew guides, espresso dial-in & brewing equipment",
+    ],
+    linkUrl: "https://beanblossom.shop",
+    trackedSince: "Tracked since Nov, 04 2020. Updated 45 minutes ago.",
+    followers: 84597,
+    followersDelta: "+564 (0.67%)",
+    following: 239,
+    followingDelta: "+5 (2.13%)",
+    posts: 1793,
+    postsDelta: "+10 (0.56%)",
+    score: 74.3,
+  },
+  cuppacosmos: {
+    handle: "cuppacosmos",
+    name: "Cuppa Cosmos Café",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Intergalactic Specialty Espresso Bar & Bakery",
+      "Award-winning baristas • Seasonal micro-lots",
+      "Order table pickup on our web app 🛸",
+    ],
+    linkUrl: "https://cuppacosmos.com",
+    trackedSince: "Tracked since Jul, 22 2021. Updated 1 hour ago.",
+    followers: 15602,
+    followersDelta: "+42 (0.27%)",
+    following: 2,
+    followingDelta: "+0 (0.0%)",
+    posts: 1768,
+    postsDelta: "+2 (0.11%)",
+    score: 82.1,
+  },
+  mochameadows: {
+    handle: "mochameadows",
+    name: "Mocha Meadows Coffee",
+    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Highland Single Origin Beans & Velvet Mocha Blends",
+      "Cozy spaces for reading, coding & conversing",
+      "Visit our flagship roastery 🌿",
+    ],
+    linkUrl: "https://mochameadows.coffee",
+    trackedSince: "Tracked since Aug, 14 2022. Updated 30 minutes ago.",
+    followers: 3409,
+    followersDelta: "+20 (0.59%)",
+    following: 89,
+    followingDelta: "+2 (2.30%)",
+    posts: 257,
+    postsDelta: "+5 (1.98%)",
+    score: 66.8,
+  },
+  espressoemporium: {
+    handle: "espressoemporium",
+    name: "Espresso Emporium",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "The premier purveyor of Italian roast and lever espresso",
+      "Training the next generation of latte art champions",
+      "Beans roasted fresh in small batches every Tuesday",
+    ],
+    linkUrl: "https://espressoemporium.com",
+    trackedSince: "Tracked since Feb, 18 2020. Updated 12 minutes ago.",
+    followers: 16548,
+    followersDelta: "+69 (0.42%)",
+    following: 349,
+    followingDelta: "-1 (-0.29%)",
+    posts: 495,
+    postsDelta: "+2 (0.41%)",
+    score: 79.5,
+  },
+};
+
+// Deterministic generator for arbitrary handles entered by the user
+function generateCreatorProfile(rawHandle: string): CreatorProfile {
+  const clean = rawHandle.replace(/^@/, "").toLowerCase().trim();
+  if (CREATOR_PRESETS[clean]) {
+    return CREATOR_PRESETS[clean];
+  }
+
+  let hash = 0;
+  for (let i = 0; i < clean.length; i++) {
+    hash = (hash << 5) - hash + clean.charCodeAt(i);
+    hash |= 0;
+  }
+  const abs = Math.abs(hash);
+  const followers = 15000 + (abs % 450000);
+  const following = 120 + (abs % 950);
+  const posts = 65 + (abs % 580);
+  const score = 65 + ((abs % 300) / 10);
+  const deltaF = 80 + (abs % 850);
+  const pctF = ((deltaF / followers) * 100).toFixed(2);
+
+  const displayTitle = clean.charAt(0).toUpperCase() + clean.slice(1);
+
+  return {
+    handle: clean,
+    name: `${displayTitle} | Content Architect`,
+    avatar: `https://images.unsplash.com/photo-1535713875002?w=200&auto=format&fit=crop&q=80`,
+    bioLines: [
+      `Official Instagram account for @${clean}`,
+      "Digital Strategy • Creative Storytelling • Community Growth",
+      `Connecting with ${followers.toLocaleString()} engaged followers ✨`,
+    ],
+    linkUrl: `https://${clean}.bio.link`,
+    trackedSince: `Tracked since Jan, 10 2022. Updated Just now.`,
+    followers,
+    followersDelta: `+${deltaF.toLocaleString()} (${pctF}%)`,
+    following,
+    followingDelta: `+${abs % 15} (1.2%)`,
+    posts,
+    postsDelta: `+${(abs % 8) + 1} (2.4%)`,
+    score: Math.min(99.4, Math.max(58.0, Number(score.toFixed(1)))),
+  };
+}
 
 export default function App() {
   // 1. Dark Mode State (Syncs directly with HTML class)
@@ -49,7 +246,7 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // 2. Authentication State: Default to demo session for instant presentation access
+  // 2. Authentication State
   const [currentUser, setCurrentUser] = useState<UserSession | null>({
     name: "Alex Chen",
     email: "alex.chen@enterprise.com",
@@ -58,7 +255,6 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
-  // View mode switcher: "public_report" (landing / creator audit) vs "saas_dashboard" (logged-in InsTrack app from video 4 & 5)
   const [viewMode, setViewMode] = useState<"public_report" | "saas_dashboard">("public_report");
 
   useEffect(() => {
@@ -72,52 +268,32 @@ export default function App() {
     }
   }, []);
 
-  // 3. Navigation State: Sub-navigation active tab (Default: "growth" matching Screenshot 4)
+  // 3. Active Creator Profile State
+  const [activeCreator, setActiveCreator] = useState<CreatorProfile>(DEFAULT_CREATOR);
+  const [isAuditingAccount, setIsAuditingAccount] = useState(false);
+
+  // 4. Navigation State: Sub-navigation active tab (Default: "growth")
   const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("growth");
 
-  // 4. Application Data State
+  // 5. Application Data State
   const [drafts, setDrafts] = useState<PostDraft[]>(INITIAL_DRAFTS);
   const [insights, setInsights] = useState<LearnedInsight[]>(INITIAL_INSIGHTS);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // 5. Global Notification Toast
+  // Memory search query state in Memory Bank
+  const [memorySearchQuery, setMemorySearchQuery] = useState("");
+
+  // 6. Global Notification Toast
   const [toastMessage, setToastMessage] = useState<{
     title: string;
     description: string;
     type?: "success" | "info";
   } | null>(null);
 
-  // 6. FAQ State
+  // 7. FAQ State
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
-
-  // Login handler
-  const handleLoginSuccess = (user: UserSession) => {
-    setCurrentUser(user);
-    try {
-      localStorage.setItem("sociotrack_user_session", JSON.stringify(user));
-    } catch {
-      // ignore
-    }
-    showToast(
-      "Signed in successfully",
-      `Welcome to SocioTrack workspace, ${user.name}.`,
-      "success"
-    );
-  };
-
-  // Logout handler
-  const handleLogout = () => {
-    setCurrentUser(null);
-    try {
-      localStorage.removeItem("sociotrack_user_session");
-    } catch {
-      // ignore
-    }
-    showToast("Signed Out", "Session ended.", "info");
-  };
-
-  // 7. Help Widget Modal State
   const [showHelpModal, setShowHelpModal] = useState(false);
+
   const showToast = (
     title: string,
     description: string,
@@ -129,7 +305,63 @@ export default function App() {
     }, 4500);
   };
 
-  // Approve & Schedule Draft Handler
+  // 8. Handler: Audit Any Account with Realistic Telemetry & Animated Transition
+  const handleAuditAccount = (rawUsername: string) => {
+    const handle = rawUsername.replace(/^@/, "").toLowerCase().trim();
+    if (!handle) return;
+
+    setIsAuditingAccount(true);
+    showToast(
+      "Auditing Account via Meta Graph API",
+      `Connecting to @${handle} telemetry and indexing historical signals...`,
+      "info"
+    );
+
+    setTimeout(() => {
+      const profile = generateCreatorProfile(handle);
+      setActiveCreator(profile);
+      setIsAuditingAccount(false);
+
+      // Scroll smoothly to the creator card
+      const el = document.getElementById("creator-card-section");
+      el?.scrollIntoView({ behavior: "smooth" });
+
+      showToast(
+        "Audit Complete",
+        `Loaded fresh analytics for @${profile.handle} (InsTrack Score: ${profile.score}%).`,
+        "success"
+      );
+    }, 600);
+  };
+
+  // 9. Handler: Date Range Adjustment
+  const handleDateRangeChange = (range: string) => {
+    setActiveCreator((prev) => {
+      let deltaStr = prev.followersDelta;
+      if (range === "Last 7 Days") {
+        deltaStr = `+${Math.round(prev.followers * 0.007).toLocaleString()} (0.7%)`;
+      } else if (range === "Last 30 Days") {
+        deltaStr = `+${Math.round(prev.followers * 0.025).toLocaleString()} (2.5%)`;
+      } else if (range === "Last 90 Days") {
+        deltaStr = `+${Math.round(prev.followers * 0.078).toLocaleString()} (7.8%)`;
+      } else if (range === "All Time") {
+        deltaStr = `+${Math.round(prev.followers * 0.52).toLocaleString()} (52.0%)`;
+      }
+      return { ...prev, followersDelta: deltaStr };
+    });
+    showToast("Date Filter Applied", `Audited statistics adjusted to ${range}.`, "info");
+  };
+
+  // 10. Handler: Toggle Star / Bookmark
+  const handleToggleStar = (starred: boolean) => {
+    showToast(
+      starred ? "Account Bookmarked" : "Removed from Bookmarks",
+      `@${activeCreator.handle} is ${starred ? "now" : "no longer"} pinned in your tracking workspace.`,
+      "info"
+    );
+  };
+
+  // 11. Approve Draft Handler
   const handleApproveDraft = (draft: PostDraft) => {
     setDrafts((prev) =>
       prev.map((d) =>
@@ -150,7 +382,7 @@ export default function App() {
     );
   };
 
-  // Live Engagement Feedback Loop Handler
+  // 12. Pattern Discovery from Live Simulator
   const handlePatternDiscovered = (newInsight: LearnedInsight) => {
     setInsights((prev) => [newInsight, ...prev]);
     showToast(
@@ -213,7 +445,7 @@ export default function App() {
         </div>
       )}
 
-      {/* TOP NAVIGATION BAR (Matching Screenshot 1, 3, 4, 6) */}
+      {/* TOP NAVIGATION BAR */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
         {/* Left: Moon / Sun Toggle Button */}
         <div className="flex items-center space-x-3">
@@ -230,28 +462,23 @@ export default function App() {
           </button>
         </div>
 
-        {/* Center: InsTrack Logo (Screenshot 1, 3, 4) */}
-        <div className="flex items-center space-x-2.5">
+        {/* Center: InsTrack Logo */}
+        <button
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity"
+        >
           <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-sm">
             <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
           </div>
           <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
             InsTrack
           </span>
-        </div>
+        </button>
 
-        {/* Right: Pricing, Log in, Create a Free Account + optional Workspace Toggle */}
+        {/* Right: Log in / SaaS App, Create a Free Account (Pricing link REMOVED as requested) */}
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <button
-            onClick={() => {
-              const el = document.getElementById("benchmark-section");
-              el?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="hidden sm:inline-block text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-2 py-1"
-          >
-            Pricing
-          </button>
-
           {currentUser ? (
             <button
               onClick={() => setViewMode(viewMode === "public_report" ? "saas_dashboard" : "public_report")}
@@ -286,276 +513,532 @@ export default function App() {
         />
       ) : (
         <>
-          {/* HERO SECTION (Matching Screenshot 3 & 4) */}
-      <section className="relative pt-12 pb-6 px-4 sm:px-8 max-w-5xl mx-auto text-center space-y-4">
-        {/* Background Ambient Shapes */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl pointer-events-none" />
+          {/* HERO SECTION */}
+          <section className="relative pt-12 pb-6 px-4 sm:px-8 max-w-5xl mx-auto text-center space-y-4">
+            {/* Background Ambient Shapes */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl pointer-events-none" />
 
-        {/* Headline with Purple-to-Cyan Gradient Text */}
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] bg-clip-text text-transparent">
-          Powerful In-Depth Analytics for Instagram
-        </h1>
+            {/* Headline with Purple-to-Cyan Gradient Text */}
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] bg-clip-text text-transparent">
+              Powerful In-Depth Analytics for Instagram
+            </h1>
 
-        {/* Subhead text */}
-        <p className="max-w-2xl mx-auto text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-          InsTrack offers powerful in-depth analytics and actionable insights for brands, influencers and agencies.
-          Trusted by millions since 2012. Powered by the official Instagram API.
-        </p>
+            {/* Subhead text */}
+            <p className="max-w-2xl mx-auto text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
+              InsTrack offers powerful in-depth analytics and actionable insights for brands, influencers and agencies.
+              Trusted by millions since 2012. Powered by the official Instagram API.
+            </p>
 
-        {/* Search Bar matching Screenshot 3 */}
-        <div className="max-w-xl mx-auto pt-2">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search any account on Instagram"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 pl-11 pr-4 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
-            />
-          </div>
-
-          {/* 3 Checkmarks below search bar (Screenshot 3 & 4) */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600 dark:text-slate-400 pt-3 font-medium">
-            <span className="flex items-center space-x-1.5">
-              <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
-              <span>Free to Try</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
-              <span>Powerful Insights</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
-              <span>Unlimited Historical Data</span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* MAIN CONTENT DASHBOARD */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-16 pb-32">
-        {/* 1. CREATOR PROFILE CARD & RAINBOW SCORE (Screenshot 2 & 4) */}
-        <div className="space-y-6">
-          <InsTrackCreatorCard
-            activeTab={activeSubTab}
-            onTabChange={setActiveSubTab}
-            onExportClick={() => setActiveSubTab("historical")}
-            score={70.1}
-          />
-
-          {/* 2. CREATOR TAB CONTENT (Default: Growth) */}
-          {activeSubTab === "growth" && (
-            <div className="space-y-6 animate-fade-in">
-              <InsTrackBenchmarkCards />
-              <InsTrackGrowthCharts />
-            </div>
-          )}
-
-          {activeSubTab === "overview" && (
-            <div className="space-y-6 animate-fade-in">
-              <InsTrackBenchmarkCards />
-              <InsTrackGrowthCharts />
-            </div>
-          )}
-
-          {activeSubTab === "audit" && (
-            <div className="space-y-6 animate-fade-in">
-              <InsTrackPredictionCard
-                initialHandle="thestevenmellor"
-                onSendToStudio={(hook, format) => {
-                  setActiveSubTab("aistudio");
-                  showToast(
-                    "Transferred to Studio",
-                    `Loaded predicted hook: "${hook.slice(0, 45)}..."`,
-                    "success"
-                  );
+            {/* Search Bar with working submit, audit button and keyboard Enter listener */}
+            <div className="max-w-xl mx-auto pt-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAuditAccount(searchQuery);
                 }}
-              />
-              <InsTrackBenchmarkCards />
-              <InsTrackGradeCards />
-            </div>
-          )}
-
-          {activeSubTab === "engagement" && (
-            <div className="space-y-6 animate-fade-in">
-              <InsTrackBenchmarkCards />
-              <InsTrackGrowthCharts />
-            </div>
-          )}
-
-          {activeSubTab === "historical" && (
-            <div className="space-y-6 animate-fade-in">
-              <InsTrackHistoricalTable />
-            </div>
-          )}
-
-          {/* AI GENERATION STUDIO (LangGraph Integration) */}
-          {activeSubTab === "aistudio" && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm">
-                <GenerationStudio
-                  drafts={drafts}
-                  onDraftsChange={setDrafts}
-                  onApproveDraft={handleApproveDraft}
-                  onSendToSimulator={() => {
-                    showToast(
-                      "Post Sent to Simulator",
-                      "Click Live Engagement Lab at bottom left to test real-time feedback.",
-                      "info"
-                    );
-                  }}
+                className="relative"
+              >
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search any account on Instagram (e.g. mkbhd, mrbeast)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full h-12 pl-11 pr-28 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
                 />
-              </div>
-            </div>
-          )}
-
-          {/* LEARNED MEMORY BANK (Hindsight & Vector Reinforcement) */}
-          {activeSubTab === "memorybank" && (
-            <div className="space-y-8 animate-fade-in">
-              <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm">
-                <AgentMemoryPanel
-                  insights={insights}
-                  onRecalibrateMemory={() => {
-                    showToast(
-                      "Vector Memory Recalibrated",
-                      "Reinforced 15 indexed audience clusters and hook rules.",
-                      "success"
-                    );
-                  }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE (Matching Screenshot 5 & 6) */}
-        <section id="benchmark-section" className="space-y-6 pt-4">
-          <InsTrackGradeCards />
-        </section>
-
-        {/* 4. SHOWCASE SECTION 2: INSTANT PERFORMANCE INSIGHTS / COMPETITOR TRACKING (Matching Screenshot 8) */}
-        <section className="space-y-6 pt-4">
-          <div className="text-center max-w-2xl mx-auto space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
-              Instant Performance Insights
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              Gain instant in-depth insights on any Instagram account:{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                Competitors, clients or your own accounts
-              </span>
-              . Just enter username and specify date range, and we&apos;ll take care of the rest. Data is updated hourly and is presented in the most visually-appealing and insightful reports.
-            </p>
-          </div>
-          <InsTrackCompetitorTable onAddAccountClick={() => setShowAddAccountModal(true)} />
-        </section>
-
-        {/* 5. SHOWCASE SECTION 3: REPORTING AND DATA EXPORTS (Matching Screenshot 1 & 2 & 6) */}
-        <section className="space-y-6 pt-4">
-          <div className="text-center max-w-2xl mx-auto space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
-              Reporting and Data Exports
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              Streamline your reporting process and <span className="font-semibold text-slate-800 dark:text-slate-200">save a lot of time</span> with our beautiful, automated and{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">branded white-labeled PDF reports</span>. Schedule{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">email reports</span> to be sent daily, weekly or monthly to yourself, your team members or directly to your clients.{" "}
-              <span className="font-semibold text-slate-800 dark:text-slate-200">CSV exports</span> are also available for historical Instagram stats.
-            </p>
-          </div>
-          <InsTrackHistoricalTable />
-        </section>
-
-        {/* 6. SHOWCASE SECTION 4: FREQUENTLY ASKED QUESTIONS (Matching Screenshot 2 & 3 & 6) */}
-        <section className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200/80 dark:border-[#243048] p-8 shadow-sm space-y-4 max-w-4xl mx-auto">
-          <div className="border-b border-slate-100 dark:border-[#243048] pb-4">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Frequently Asked Question (FAQ)
-            </h3>
-          </div>
-
-          <div className="divide-y divide-slate-100 dark:divide-[#243048]">
-            {FAQS.map((faq, idx) => {
-              const isOpen = openFaqIdx === idx;
-              return (
-                <div key={idx} className="py-3.5">
-                  <button
-                    onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                    className="w-full flex items-center justify-between text-left text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                  >
-                    <span>{faq.q}</span>
-                    <ChevronDown
-                      className={`w-4 h-4 text-slate-400 transition-transform ${
-                        isOpen ? "transform rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {isOpen && (
-                    <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed pl-3 border-l-2 border-[#6366F1] animate-fade-in">
-                      {faq.a}
-                    </p>
+                <button
+                  type="submit"
+                  disabled={isAuditingAccount}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 px-4 py-2 rounded-full bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center space-x-1 shadow-sm"
+                >
+                  {isAuditingAccount ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Auditing...</span>
+                    </>
+                  ) : (
+                    <span>Audit</span>
                   )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                </button>
+              </form>
 
-        {/* 7. SHOWCASE SECTION 5: GRADIENT CALL TO ACTION BANNER (Matching Screenshot 3 & 10) */}
-        <section className="rounded-2xl p-10 sm:p-14 bg-gradient-to-r from-[#7C3AED] via-[#6366F1] to-[#06B6D4] text-white shadow-xl text-center space-y-5 max-w-4xl mx-auto">
-          <h3 className="text-2xl sm:text-4xl font-black tracking-tight">
-            Start your adventure now! 🚀
-          </h3>
-          <div>
-            <button
-              onClick={() => setShowSurveyModal(true)}
-              className="px-8 py-3.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/40 text-white font-bold text-sm shadow-lg transition-all inline-flex items-center space-x-2 hover:scale-105"
-            >
-              <span>Create a Free Account</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </section>
-      </main>
+              {/* Quick Account Suggestions: Click to immediately audit */}
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="font-semibold text-slate-400">Quick Audit:</span>
+                {["thestevenmellor", "mkbhd", "mrbeast", "brewhavencafe", "cuppacosmos"].map((handle) => (
+                  <button
+                    key={handle}
+                    onClick={() => {
+                      setSearchQuery(handle);
+                      handleAuditAccount(handle);
+                    }}
+                    className={`px-2.5 py-1 rounded-full font-mono transition-all border ${
+                      activeCreator.handle === handle
+                        ? "bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-400 dark:border-indigo-600 font-bold"
+                        : "bg-slate-100 hover:bg-indigo-50 dark:bg-[#161F30] dark:hover:bg-[#1E2638] text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 border-slate-200/60 dark:border-[#243048]"
+                    }`}
+                  >
+                    @{handle}
+                  </button>
+                ))}
+              </div>
 
-      {/* FOOTER */}
-      <footer className="border-t border-slate-200 dark:border-[#243048] bg-white dark:bg-[#0B0F19] py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div>
-            <div className="font-extrabold text-slate-900 dark:text-white text-sm">
-              InsTrack by SocioTrack
+              {/* 3 Checkmarks below search bar */}
+              <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600 dark:text-slate-400 pt-3 font-medium">
+                <span className="flex items-center space-x-1.5">
+                  <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
+                  <span>Free to Try</span>
+                </span>
+                <span className="flex items-center space-x-1.5">
+                  <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
+                  <span>Powerful Insights</span>
+                </span>
+                <span className="flex items-center space-x-1.5">
+                  <Check className="w-3.5 h-3.5 text-[#6366F1] stroke-[3]" />
+                  <span>Unlimited Historical Data</span>
+                </span>
+              </div>
             </div>
-            <p className="text-[11px] mt-0.5">
-              Autonomous Social Media Agent with Persistent Memory. Built for Hack With Bangalore 4.0.
-            </p>
-          </div>
-          <div className="flex items-center space-x-6 text-[11px] font-medium">
-            <button onClick={() => setActiveSubTab("overview")} className="hover:text-indigo-500">
-              Overview
-            </button>
-            <button onClick={() => setActiveSubTab("growth")} className="hover:text-indigo-500">
-              Growth
-            </button>
-            <button onClick={() => setActiveSubTab("historical")} className="hover:text-indigo-500">
-              History
-            </button>
-            <button onClick={() => setActiveSubTab("aistudio")} className="hover:text-indigo-500">
-              AI Studio
-            </button>
-          </div>
-          <div className="text-[11px] font-mono">
-            © 2026 InsTrack / SocioTrack. All rights reserved.
-          </div>
-        </div>
-      </footer>
-      </>
+          </section>
+
+          {/* MAIN CONTENT DASHBOARD */}
+          <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-16 pb-32">
+            {/* 1. CREATOR PROFILE CARD & RAINBOW SCORE */}
+            <div id="creator-card-section" className="space-y-6 scroll-mt-20">
+              <InsTrackCreatorCard
+                activeTab={activeSubTab}
+                onTabChange={setActiveSubTab}
+                onExportClick={() => setActiveSubTab("historical")}
+                creator={activeCreator}
+                score={activeCreator.score}
+                onDateRangeChange={handleDateRangeChange}
+                onToggleStar={handleToggleStar}
+              />
+
+              {/* 2. CREATOR TAB CONTENT */}
+
+              {/* OVERVIEW SUBTAB */}
+              {activeSubTab === "overview" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackBenchmarkCards creator={activeCreator} />
+                  <InsTrackGrowthCharts
+                    followers={activeCreator.followers}
+                    following={activeCreator.following}
+                  />
+
+                  {/* Executive Intelligence Snapshot */}
+                  <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#243048]">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                          <Compass className="w-4 h-4" />
+                        </div>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                          Executive Intelligence Summary: @{activeCreator.handle}
+                        </h3>
+                      </div>
+                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full">
+                        Score {activeCreator.score}% • Verified
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] space-y-1.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Top Format Resonance
+                        </span>
+                        <div className="text-base font-extrabold text-slate-900 dark:text-white">
+                          Educational Carousels (3.82% ER)
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Saves outpace likes by 3.8x. Content acts as reference bookmarks for creator audiences.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] space-y-1.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Peak Availability Window
+                        </span>
+                        <div className="text-base font-extrabold text-slate-900 dark:text-white">
+                          Tuesday 08:30 – 10:00 AM UTC
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Releasing technical breakdowns during this window yields +42% comment velocity.
+                        </p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] space-y-1.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Recommended Action
+                        </span>
+                        <div className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
+                          Convert 3 Static Posts to Carousels
+                        </div>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                          Predicted to unlock +1,400 net monthly followers by raising session dwell duration.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AUDIT SUBTAB */}
+              {activeSubTab === "audit" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackAuditReport
+                    creator={activeCreator}
+                    onRunAudit={() =>
+                      showToast(
+                        "Audit Completed",
+                        `Fresh diagnostic metrics calculated for @${activeCreator.handle}.`,
+                        "success"
+                      )
+                    }
+                  />
+                  <InsTrackPredictionCard
+                    initialHandle={activeCreator.handle}
+                    onSendToStudio={(hook, format) => {
+                      setActiveSubTab("aistudio");
+                      showToast(
+                        "Hook Sent to AI Studio",
+                        `Loaded winning hook: "${hook.slice(0, 45)}..." into draft generator.`
+                      );
+                    }}
+                  />
+                  <InsTrackGradeCards />
+                </div>
+              )}
+
+              {/* GROWTH SUBTAB (Default) */}
+              {activeSubTab === "growth" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackBenchmarkCards creator={activeCreator} />
+                  <InsTrackGrowthCharts
+                    followers={activeCreator.followers}
+                    following={activeCreator.following}
+                  />
+                </div>
+              )}
+
+              {/* ENGAGEMENT SUBTAB */}
+              {activeSubTab === "engagement" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackEngagementView creator={activeCreator} />
+                </div>
+              )}
+
+              {/* HISTORICAL SUBTAB */}
+              {activeSubTab === "historical" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackHistoricalTable creator={activeCreator} />
+                </div>
+              )}
+
+              {/* AI GENERATION STUDIO */}
+              {activeSubTab === "aistudio" && (
+                <div className="space-y-8 animate-fade-in">
+                  <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm">
+                    <GenerationStudio
+                      drafts={drafts}
+                      onDraftsChange={setDrafts}
+                      onApproveDraft={handleApproveDraft}
+                      onSendToSimulator={() => {
+                        showToast(
+                          "Post Sent to Simulator",
+                          "Click Live Engagement Lab at bottom left to test real-time feedback.",
+                          "info"
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* LEARNED MEMORY BANK */}
+              {activeSubTab === "memorybank" && (
+                <div className="space-y-8 animate-fade-in">
+                  <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 sm:p-8 shadow-sm space-y-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-[#243048]">
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <BrainCircuit className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                            Persistent AI Agent Memory Bank
+                          </h2>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          Vector retention powered by Hindsight agent memory &amp; pgvector embeddings.
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            showToast(
+                              "Vector Memory Recalibrated",
+                              "Reinforced 15 indexed audience clusters and hook rules.",
+                              "success"
+                            );
+                          }}
+                          className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 text-xs font-bold transition-colors border border-indigo-200 dark:border-indigo-800"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Recalibrate Memory</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Semantic Vector Search Simulator */}
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] border border-slate-200 dark:border-[#243048] space-y-3">
+                      <div className="flex items-center space-x-2 text-xs font-bold text-slate-800 dark:text-slate-200">
+                        <Search className="w-4 h-4 text-indigo-500" />
+                        <span>Semantic Vector Recall Test</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Search memory clusters (e.g. 'carousel slide structure', 'audio drop-off', 'best posting time')"
+                          value={memorySearchQuery}
+                          onChange={(e) => setMemorySearchQuery(e.target.value)}
+                          className="flex-1 h-9 px-3 rounded-lg border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
+                        />
+                        <button
+                          onClick={() => {
+                            showToast(
+                              "Vector Search Executed",
+                              `Cosine similarity score 0.942 matched top hook rules for '${memorySearchQuery || "audience retention"}'.`,
+                              "info"
+                            );
+                          }}
+                          className="px-4 py-2 rounded-lg bg-[#6366F1] text-white text-xs font-bold hover:bg-[#5558E6] transition-colors shrink-0"
+                        >
+                          Query Vector
+                        </button>
+                      </div>
+
+                      {/* Quick query pills */}
+                      <div className="flex flex-wrap gap-1.5 pt-1 text-[10px]">
+                        <span className="text-slate-400 font-semibold">Try:</span>
+                        {[
+                          "Carousel Slide 1 Retention",
+                          "Tuesday Morning Publishing",
+                          "Open-Ended Questions in Comments",
+                          "Single Photo Throttling",
+                        ].map((q) => (
+                          <button
+                            key={q}
+                            onClick={() => {
+                              setMemorySearchQuery(q);
+                              showToast(
+                                "Vector Recall Retrieved",
+                                `Retrieved high-confidence pattern for '${q}' with 0.96 cosine similarity.`,
+                                "success"
+                              );
+                            }}
+                            className="px-2 py-0.5 rounded bg-white dark:bg-[#161F30] border border-slate-200 dark:border-[#243048] text-slate-600 dark:text-slate-300 hover:text-indigo-600 font-mono"
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Agent Memory Insight Cards */}
+                    <AgentMemoryPanel
+                      insights={insights}
+                      onRecalibrateMemory={() => {
+                        showToast(
+                          "Vector Memory Recalibrated",
+                          "Reinforced 15 indexed audience clusters and hook rules.",
+                          "success"
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE */}
+            <section id="benchmark-section" className="space-y-6 pt-4">
+              <InsTrackGradeCards />
+            </section>
+
+            {/* 4. SHOWCASE SECTION 2: INSTANT PERFORMANCE INSIGHTS / COMPETITOR TRACKING */}
+            <section className="space-y-6 pt-4">
+              <div className="text-center max-w-2xl mx-auto space-y-1">
+                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+                  Instant Performance Insights
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Gain instant in-depth insights on any Instagram account:{" "}
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    Competitors, clients or your own accounts
+                  </span>
+                  . Click any account below to inspect their full telemetry and audit scores.
+                </p>
+              </div>
+
+              {/* Competitor Table connected to handleAuditAccount */}
+              <InsTrackCompetitorTable
+                onAddAccountClick={() => setShowAddAccountModal(true)}
+                onSelectAccount={(handle) => handleAuditAccount(handle)}
+              />
+            </section>
+
+            {/* 5. SHOWCASE SECTION 3: REPORTING AND DATA EXPORTS */}
+            <section className="space-y-6 pt-4">
+              <div className="text-center max-w-2xl mx-auto space-y-1">
+                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+                  Reporting and Data Exports
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Streamline your reporting process and{" "}
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    save a lot of time
+                  </span>{" "}
+                  with our automated and{" "}
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    white-labeled PDF reports
+                  </span>
+                  . Live CSV exports for @{activeCreator.handle} are downloadable below.
+                </p>
+              </div>
+              <InsTrackHistoricalTable creator={activeCreator} />
+            </section>
+
+            {/* 6. SHOWCASE SECTION 4: FREQUENTLY ASKED QUESTIONS */}
+            <section className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200/80 dark:border-[#243048] p-8 shadow-sm space-y-4 max-w-4xl mx-auto">
+              <div className="border-b border-slate-100 dark:border-[#243048] pb-4">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Frequently Asked Question (FAQ)
+                </h3>
+              </div>
+
+              <div className="divide-y divide-slate-100 dark:divide-[#243048]">
+                {FAQS.map((faq, idx) => {
+                  const isOpen = openFaqIdx === idx;
+                  return (
+                    <div key={idx} className="py-3.5">
+                      <button
+                        onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
+                        className="w-full flex items-center justify-between text-left text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                      >
+                        <span>{faq.q}</span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-slate-400 transition-transform ${
+                            isOpen ? "transform rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {isOpen && (
+                        <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 leading-relaxed pl-3 border-l-2 border-[#6366F1] animate-fade-in">
+                          {faq.a}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* 7. SHOWCASE SECTION 5: GRADIENT CALL TO ACTION BANNER */}
+            <section className="rounded-2xl p-10 sm:p-14 bg-gradient-to-r from-[#7C3AED] via-[#6366F1] to-[#06B6D4] text-white shadow-xl text-center space-y-5 max-w-4xl mx-auto">
+              <h3 className="text-2xl sm:text-4xl font-black tracking-tight">
+                Start your adventure now! 🚀
+              </h3>
+              <div>
+                <button
+                  onClick={() => setShowSurveyModal(true)}
+                  className="px-8 py-3.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/40 text-white font-bold text-sm shadow-lg transition-all inline-flex items-center space-x-2 hover:scale-105"
+                >
+                  <span>Create a Free Account</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </section>
+          </main>
+
+          {/* FOOTER */}
+          <footer className="border-t border-slate-200 dark:border-[#243048] bg-white dark:bg-[#0B0F19] py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+              <div>
+                <div className="font-extrabold text-slate-900 dark:text-white text-sm">
+                  InsTrack by SocioTrack
+                </div>
+                <p className="text-[11px] mt-0.5">
+                  Autonomous Social Media Agent with Persistent Memory. Built for Hack With Bangalore 4.0.
+                </p>
+              </div>
+              <div className="flex items-center space-x-6 text-[11px] font-medium">
+                <button
+                  onClick={() => {
+                    setActiveSubTab("overview");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  Overview
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("audit");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  Audit
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("growth");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  Growth
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("engagement");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  Engagement
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("historical");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  History
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("aistudio");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  AI Studio
+                </button>
+              </div>
+              <div className="text-[11px] font-mono">
+                © 2026 InsTrack / SocioTrack. All rights reserved.
+              </div>
+            </div>
+          </footer>
+        </>
       )}
 
-      {/* 5. FLOATING LIVE ENGAGEMENT LAB & META WEBHOOK SIMULATOR */}
+      {/* FLOATING LIVE ENGAGEMENT LAB & META WEBHOOK SIMULATOR */}
       <LiveEngagementLab onPatternDiscovered={handlePatternDiscovered} />
 
-      {/* 6. FLOATING HELP BUTTON (Matching Screenshot 3, 5, 6, 7, 9, 10) */}
+      {/* FLOATING HELP BUTTON */}
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setShowHelpModal(true)}
@@ -609,7 +1092,7 @@ export default function App() {
         </div>
       )}
 
-      {/* AUTH SPLIT-SCREEN MODAL (Triggered on 'Log in' or 'Create a Free Account') */}
+      {/* AUTH SPLIT-SCREEN MODAL */}
       {showAuthModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
           <div className="relative w-full max-w-5xl rounded-3xl overflow-hidden shadow-2xl bg-[#0B0F19]">
@@ -631,7 +1114,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ONBOARDING SURVEY MODAL (instrack.app/survey from video 3) */}
+      {/* ONBOARDING SURVEY MODAL */}
       <InsTrackSurveyModal
         isOpen={showSurveyModal}
         onClose={() => setShowSurveyModal(false)}
@@ -645,11 +1128,12 @@ export default function App() {
         }}
       />
 
-      {/* ADD ACCOUNT MODAL (from video 4 & 5) */}
+      {/* ADD ACCOUNT MODAL */}
       <InsTrackAddAccountModal
         isOpen={showAddAccountModal}
         onClose={() => setShowAddAccountModal(false)}
         onAddAccount={(username) => {
+          handleAuditAccount(username);
           showToast(
             "Account Added to Tracking List",
             `@${username} is now being audited daily with AI vector memory.`,
@@ -659,7 +1143,7 @@ export default function App() {
         onOpenProfile={(handle) => {
           setViewMode("public_report");
           setActiveSubTab("overview");
-          showToast("Opening Creator Profile", `Viewing @${handle} audit report.`);
+          handleAuditAccount(handle);
         }}
       />
     </div>

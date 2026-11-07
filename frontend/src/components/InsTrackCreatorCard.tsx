@@ -22,28 +22,84 @@ export type SubNavTab =
   | "aistudio"
   | "memorybank";
 
+export interface CreatorProfile {
+  handle: string;
+  name: string;
+  avatar: string;
+  bioLines: string[];
+  linkUrl: string;
+  trackedSince: string;
+  followers: number;
+  followersDelta: string;
+  following: number;
+  followingDelta: string;
+  posts: number;
+  postsDelta: string;
+  score: number;
+}
+
+export const DEFAULT_CREATOR: CreatorProfile = {
+  handle: "thestevenmellor",
+  name: "Steve | Growth Marketing",
+  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
+  bioLines: [
+    "I help you Grow and Launch your brand on Instagram",
+    "👨‍💻 ex corporate 9-5 > 🚀 6-figure creator",
+    "👇 Join my 'Gram Accelerator Program ⏳",
+  ],
+  linkUrl: "http://linktr.ee/thestevenmellor/",
+  trackedSince: "Tracked since May, 01 2019. Updated 16 minutes ago.",
+  followers: 173435,
+  followersDelta: "+4,227 (2.5%)",
+  following: 584,
+  followingDelta: "+38 (7.0%)",
+  posts: 353,
+  postsDelta: "+16 (4.7%)",
+  score: 70.1,
+};
+
 interface InsTrackCreatorCardProps {
   activeTab: SubNavTab;
   onTabChange: (tab: SubNavTab) => void;
   onExportClick?: () => void;
   score?: number;
+  creator?: CreatorProfile;
+  onDateRangeChange?: (range: string) => void;
+  onToggleStar?: (starred: boolean) => void;
 }
 
 export function InsTrackCreatorCard({
   activeTab,
   onTabChange,
   onExportClick,
-  score = 70.1,
+  score,
+  creator = DEFAULT_CREATOR,
+  onDateRangeChange,
+  onToggleStar,
 }: InsTrackCreatorCardProps) {
   const [isStarred, setIsStarred] = useState(true);
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const displayScore = score ?? creator.score;
+
   const handleCopyLink = () => {
-    navigator.clipboard?.writeText("https://instrack.app/instagram/thestevenmellor");
+    navigator.clipboard?.writeText(`https://instrack.app/instagram/${creator.handle}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleStarClick = () => {
+    const nextState = !isStarred;
+    setIsStarred(nextState);
+    onToggleStar?.(nextState);
+  };
+
+  const handleSelectDateRange = (opt: string) => {
+    setDateRange(opt);
+    setShowDateDropdown(false);
+    onDateRangeChange?.(opt);
   };
 
   return (
@@ -56,23 +112,23 @@ export function InsTrackCreatorCard({
           <div className="flex flex-col items-center shrink-0">
             <div className="w-20 h-20 rounded-full p-1 bg-[#FACC15] shadow-md">
               <img
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80"
-                alt="thestevenmellor"
+                src={creator.avatar}
+                alt={creator.handle}
                 className="w-full h-full rounded-full object-cover bg-slate-900 border-2 border-white dark:border-[#161F30]"
               />
             </div>
             {/* Quick Action Icons below avatar: Orange Star + Instagram logo */}
             <div className="flex items-center space-x-2 mt-2">
               <button
-                onClick={() => setIsStarred(!isStarred)}
+                onClick={handleStarClick}
                 className={`p-1 rounded-md transition-colors ${
                   isStarred
                     ? "text-[#F59E0B]"
                     : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 }`}
-                title="Star account"
+                title={isStarred ? "Starred account" : "Star account"}
               >
-                <Star className="w-4 h-4 fill-current" />
+                <Star className={`w-4 h-4 ${isStarred ? "fill-current" : ""}`} />
               </button>
               <a
                 href="https://instagram.com"
@@ -88,30 +144,35 @@ export function InsTrackCreatorCard({
 
           {/* Details */}
           <div className="space-y-1">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              thestevenmellor
-            </h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+                {creator.handle}
+              </h2>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400">
+                Verified Creator
+              </span>
+            </div>
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-              Steve | Growth Marketing
+              {creator.name}
             </p>
             <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-1 space-y-0.5">
-              <p>I help you Grow and Launch your brand on Instagram</p>
-              <p>👨‍💻 ex corporate 9-5 &gt; 🚀 6-figure creator</p>
-              <p>👇 Join my &apos;Gram Accelerator Program ⏳</p>
+              {creator.bioLines.map((line, idx) => (
+                <p key={idx}>{line}</p>
+              ))}
             </div>
             <div className="pt-2 text-[11px] space-y-1">
               <div>
                 <a
-                  href="http://linktr.ee/thestevenmellor/"
+                  href={creator.linkUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
                 >
-                  http://linktr.ee/thestevenmellor/
+                  {creator.linkUrl}
                 </a>
               </div>
               <div className="text-slate-400 dark:text-slate-500">
-                Tracked since May, 01 2019. Updated 16 minutes ago.
+                {creator.trackedSince}
               </div>
             </div>
           </div>
@@ -124,44 +185,44 @@ export function InsTrackCreatorCard({
             <div className="text-left lg:text-right">
               <span className="text-[11px] text-slate-400 font-medium">Followers</span>
               <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                173,435
+                {creator.followers.toLocaleString()}
               </div>
               <span className="text-[11px] font-bold text-[#10B981]">
-                +4,227 (2.5%)
+                {creator.followersDelta}
               </span>
             </div>
 
             <div className="text-left lg:text-right">
               <span className="text-[11px] text-slate-400 font-medium">Following</span>
               <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                584
+                {creator.following.toLocaleString()}
               </div>
               <span className="text-[11px] font-bold text-[#10B981]">
-                +38 (7.0%)
+                {creator.followingDelta}
               </span>
             </div>
 
             <div className="text-left lg:text-right">
               <span className="text-[11px] text-slate-400 font-medium">Posts</span>
               <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                353
+                {creator.posts.toLocaleString()}
               </div>
               <span className="text-[11px] font-bold text-[#10B981]">
-                +16 (4.7%)
+                {creator.postsDelta}
               </span>
             </div>
           </div>
 
           {/* Rainbow Score Bar with Floating Pill Pointer (Matching Screenshot 2) */}
           <div className="w-full sm:w-80 space-y-1.5">
-            {/* The Floating Purple Pill Tooltip positioned at 70.1% */}
+            {/* The Floating Purple Pill Tooltip positioned at score */}
             <div className="relative h-6">
               <div
-                className="absolute transform -translate-x-1/2 flex flex-col items-center"
-                style={{ left: `${score}%` }}
+                className="absolute transform -translate-x-1/2 flex flex-col items-center transition-all duration-500"
+                style={{ left: `${displayScore}%` }}
               >
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#6366F1] text-white shadow-sm">
-                  {score}%
+                  {displayScore}%
                 </span>
                 <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[4px] border-t-[#6366F1]" />
               </div>
@@ -205,15 +266,16 @@ export function InsTrackCreatorCard({
               </button>
 
               {showDateDropdown && (
-                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-[#1E2638] border border-slate-200 dark:border-[#243048] rounded-xl shadow-xl py-1 z-30 text-xs">
+                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-[#1E2638] border border-slate-200 dark:border-[#243048] rounded-xl shadow-xl py-1 z-30 text-xs animate-scale-up">
                   {["Last 7 Days", "Last 30 Days", "Last 90 Days", "All Time"].map((opt) => (
                     <button
                       key={opt}
-                      onClick={() => {
-                        setDateRange(opt);
-                        setShowDateDropdown(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      onClick={() => handleSelectDateRange(opt)}
+                      className={`w-full text-left px-3 py-2 transition-colors ${
+                        dateRange === opt
+                          ? "bg-indigo-50 dark:bg-indigo-950/50 text-[#6366F1] font-bold"
+                          : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
                     >
                       {opt}
                     </button>
