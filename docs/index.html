@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocioTrack — Autonomous AI Social Media Engagement Agent with Persistent Memory</title>
+  <meta name="description" content="SocioTrack is an autonomous social media content optimization and audience memory agent powered by LangGraph and Hindsight vector memory. Built for Hack With Bangalore 4.0.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%22 fill=%22%236366f1%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22/><text x=%2250%%22 y=%2255%%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22>ST</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            },
+            surface: {
+              DEFAULT: '#0f172a',
+              card: '#1e293b',
+              border: '#334155'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    code, pre { font-family: 'JetBrains Mono', monospace; }
+    .glow-purple {
+      box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.25);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #a5b4fc 0%, #6366f1 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- Top Navigation Banner -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-400 flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/30">
+          ST
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-lg tracking-tight text-white">SocioTrack</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-indigo-950 text-indigo-300 border border-indigo-700/50">Hindsight Hackathon</span>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-400">
+        <a href="#overview" class="hover:text-white transition">Overview</a>
+        <a href="#architecture" class="hover:text-white transition">Architecture</a>
+        <a href="#simulator" class="hover:text-white transition">Live Simulator</a>
+        <a href="#api" class="hover:text-white transition">API Seams</a>
+        <a href="https://github.com/stillzepta/sociotrack" target="_blank" rel="noopener" class="flex items-center space-x-1 text-indigo-400 hover:text-indigo-300 transition">
+          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span>GitHub</span>
+        </a>
+      </nav>
+      <div class="flex items-center space-x-3">
+        <a href="https://github.com/stillzepta/sociotrack" target="_blank" class="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">
+          View Repository
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section id="overview" class="relative overflow-hidden py-20 lg:py-28">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/30 via-slate-950 to-slate-950 -z-10"></div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 mb-8">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span>Hack With Bangalore 4.0 • Devnovate × Hack With India @ Microsoft Office</span>
+      </div>
+      <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6">
+        Autonomous AI Social Media Agent with <br class="hidden sm:inline" />
+        <span class="gradient-text">Persistent Cognitive Memory</span>
+      </h1>
+      <p class="max-w-3xl mx-auto text-lg sm:text-xl text-slate-300 leading-relaxed mb-10">
+        SocioTrack autonomously synthesizes brand-aligned drafts, schedules posts, monitors simulated engagement, and dynamically extracts cognitive behavioral rules using the <strong>Vectorize.io Hindsight Memory Loop</strong> (<em>Retain &rarr; Reflect &rarr; Recall</em>).
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-4">
+        <a href="#simulator" class="px-6 py-3.5 rounded-xl font-semibold text-sm bg-gradient-to-r from-indigo-500 to-sky-500 hover:from-indigo-600 hover:to-sky-600 text-white shadow-xl shadow-indigo-500/25 transition">
+          Try Live Metric Simulator
+        </a>
+        <a href="#architecture" class="px-6 py-3.5 rounded-xl font-semibold text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+          Read Architecture Spec
+        </a>
+        <a href="https://github.com/stillzepta/sociotrack/blob/main/presentation/demo_script.md" target="_blank" class="px-6 py-3.5 rounded-xl font-semibold text-sm bg-slate-900/90 hover:bg-slate-800 text-indigo-300 border border-indigo-900/50 transition">
+          Judging Demo Script &rarr;
+        </a>
+      </div>
+
+      <!-- Feature Pill Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 max-w-4xl mx-auto text-left">
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+          <div class="text-xs text-indigo-400 font-mono mb-1">MEMORY ENGINE</div>
+          <div class="font-semibold text-slate-200 text-sm">Hindsight + pgvector</div>
+          <div class="text-xs text-slate-400 mt-1">1536-dim semantic embeddings for learned audience insights.</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+          <div class="text-xs text-sky-400 font-mono mb-1">REASONING CORE</div>
+          <div class="font-semibold text-slate-200 text-sm">LangGraph StateGraph</div>
+          <div class="text-xs text-slate-400 mt-1">Cyclic reflection loops refining hook style & tone constraints.</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+          <div class="text-xs text-emerald-400 font-mono mb-1">FEEDBACK SEAM</div>
+          <div class="font-semibold text-slate-200 text-sm">Real-Time Simulator</div>
+          <div class="text-xs text-slate-400 mt-1">Deterministic weighted scoring: (2L + 3R + 4S) / Imp.</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+          <div class="text-xs text-purple-400 font-mono mb-1">STABILITY</div>
+          <div class="font-semibold text-slate-200 text-sm">Offline Safe Fallbacks</div>
+          <div class="text-xs text-slate-400 mt-1">Graceful heuristic vector hashes ensuring 100% demo uptime.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Cognitive Memory Simulator -->
+  <section id="simulator" class="py-16 bg-slate-900/50 border-y border-slate-800 relative">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <span class="text-xs font-mono tracking-wider uppercase text-indigo-400 font-semibold">Interactive Prototype Preview</span>
+        <h2 class="text-3xl font-bold text-white mt-2">The Closed-Loop Feedback Engine</h2>
+        <p class="text-slate-400 text-sm max-w-xl mx-auto mt-2">
+          Adjust feed reaction metrics to observe how SocioTrack calculates the normalized <code class="text-indigo-300">engagement_score</code> and triggers automatic memory updates.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        <!-- Controls Column -->
+        <div class="md:col-span-6 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-5">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <span class="text-sm font-semibold text-slate-300">Target Post</span>
+            <span class="text-xs font-mono text-emerald-400 px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800">Contrarian Hook</span>
+          </div>
+          <p class="text-xs text-slate-300 italic bg-slate-950 p-3 rounded-lg border border-slate-800">
+            "Stop using microservices for early MVPs. 95% of engineering teams spend 30% more time debugging network hops than shipping value. Here is why a modular monolith wins:"
+          </p>
+
+          <div class="space-y-4 pt-2">
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Impressions</span>
+                <span id="val-impressions" class="font-mono text-white">12,500</span>
+              </div>
+              <input id="slider-impressions" type="range" min="1000" max="50000" step="500" value="12500" class="w-full accent-indigo-500 bg-slate-800">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Likes (Weight: 2x)</span>
+                <span id="val-likes" class="font-mono text-white">420</span>
+              </div>
+              <input id="slider-likes" type="range" min="10" max="2000" step="10" value="420" class="w-full accent-indigo-500 bg-slate-800">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Replies (Weight: 3x)</span>
+                <span id="val-replies" class="font-mono text-white">88</span>
+              </div>
+              <input id="slider-replies" type="range" min="5" max="500" step="5" value="88" class="w-full accent-indigo-500 bg-slate-800">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Shares (Weight: 4x)</span>
+                <span id="val-shares" class="font-mono text-white">65</span>
+              </div>
+              <input id="slider-shares" type="range" min="0" max="300" step="5" value="65" class="w-full accent-indigo-500 bg-slate-800">
+            </div>
+          </div>
+        </div>
+
+        <!-- Calculated Live Feedback Column -->
+        <div class="md:col-span-6 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between h-full">
+          <div>
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+              <span class="text-sm font-semibold text-slate-300">Cognitive Feedback Loop Output</span>
+              <span id="loop-state" class="text-xs font-mono text-sky-400 px-2 py-0.5 rounded bg-sky-950 border border-sky-800">STATE: REFLECTING</span>
+            </div>
+
+            <div class="my-6 text-center">
+              <div class="text-xs uppercase tracking-wider text-slate-400 font-medium">Computed Engagement Score</div>
+              <div class="text-5xl font-extrabold text-white mt-2 font-mono tracking-tight" id="score-display">
+                10.91%
+              </div>
+              <div class="text-xs text-slate-400 mt-2 font-mono">
+                Formula: (Likes×2 + Replies×3 + Shares×4) / Impressions × 100
+              </div>
+            </div>
+
+            <!-- Dynamic Memory Insight Box -->
+            <div class="rounded-xl bg-slate-950 p-4 border border-slate-800 mt-4 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-indigo-400 font-semibold font-mono" id="insight-category">HOOK_RULE REINFORCEMENT</span>
+                <span class="text-slate-400 font-mono" id="insight-confidence">Confidence: 0.88</span>
+              </div>
+              <p class="text-xs text-slate-300 leading-relaxed" id="insight-text">
+                "Contrarian opening patterns debating architectural orthodoxy consistently exceed baseline engagement by +42% across senior tech audiences."
+              </p>
+              <div class="text-[11px] text-slate-500 font-mono pt-1 border-t border-slate-900 flex items-center justify-between">
+                <span>Vector Dimension: 1536</span>
+                <span class="text-emerald-400">Memory Saved to pgvector & Hindsight</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Seam: <code class="text-slate-300">POST /api/simulator/feed-metrics</code></span>
+            <span class="text-emerald-400 font-medium">Test Coverage: 19/19 Passing</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture & System Topology -->
+  <section id="architecture" class="py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16">
+      <span class="text-xs font-mono tracking-wider uppercase text-sky-400 font-semibold">Deep Module Engineering</span>
+      <h2 class="text-3xl sm:text-4xl font-bold text-white mt-2">Architecture & Public Seam Boundaries</h2>
+      <p class="text-slate-400 text-sm max-w-2xl mx-auto mt-2">
+        Following the Pocock-OS and Ousterhout's Deep Module Doctrine, SocioTrack isolates complexity within robust domain modules while providing clean public seams for all 4 team members.
+      </p>
+    </div>
+
+    <!-- 4-Quadrant Team Seam Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      <!-- Person 1 -->
+      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono text-indigo-400 font-bold px-2 py-0.5 rounded bg-indigo-950 border border-indigo-800">PERSON 1</span>
+          <span class="text-xs text-slate-400 font-medium">Agent Workflow Core</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">LangGraph StateGraph & Hindsight Brain</h3>
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          Orchestrates multi-step reasoning cycles: generates draft proposals, critiques hook quality, recalls high-confidence historical memories, and synthesizes 3 candidate variations per brand topic.
+        </p>
+        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-indigo-300">
+          run_agent_cycle(brand_id, topic) &rarr; list[PostDraft]
+        </div>
+      </div>
+
+      <!-- Person 2 -->
+      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-sky-500/50 transition">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono text-sky-400 font-bold px-2 py-0.5 rounded bg-sky-950 border border-sky-800">PERSON 2 (XiaoArnav)</span>
+          <span class="text-xs text-slate-400 font-medium">Backend API & DB Layer</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">FastAPI Seams & Persistence Layer</h3>
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          Implements the 5 invariant HTTP REST endpoints, handles async SQLite/PostgreSQL schemas, calculates engagement scores, and bridges the creator diagnostic audit engine.
+        </p>
+        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-sky-300">
+          5 Core Routes + pgvector 1536 + Diagnostic Audit Router
+        </div>
+      </div>
+
+      <!-- Person 3 -->
+      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800">PERSON 3</span>
+          <span class="text-xs text-slate-400 font-medium">Frontend Dashboard</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Next.js 14 App Router UI</h3>
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          High-velocity interactive creator dashboard featuring DraftQueue, approval actions, live feed reaction sliders, MemoryDrawer inspection, and pre-authenticated presentation mode.
+        </p>
+        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-emerald-300">
+          DraftQueue • SimulatorBar • MemoryDrawer • 0s Demo Login
+        </div>
+      </div>
+
+      <!-- Person 4 -->
+      <div class="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/50 transition">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-mono text-amber-400 font-bold px-2 py-0.5 rounded bg-amber-950 border border-amber-800">PERSON 4</span>
+          <span class="text-xs text-slate-400 font-medium">Data, Eval & Pitch</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Seed Datasets & Evaluation Matrix</h3>
+        <p class="text-xs text-slate-300 leading-relaxed mb-4">
+          Preloaded realistic multi-brand profiles (Tech SaaS, Health/Wellness, FinTech), 15+ pre-scored posts, presentation slide deck, and stage-ready demo execution script.
+        </p>
+        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono text-xs text-amber-300">
+          seed_data.json • pitch_deck.pdf • demo_script.md
+        </div>
+      </div>
+    </div>
+
+    <!-- The 3-Step Hindsight Loop -->
+    <div class="p-8 rounded-2xl bg-slate-900 border border-slate-800">
+      <h3 class="text-xl font-bold text-white mb-6 text-center">The Hindsight Vector Memory Loop</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="w-8 h-8 rounded-lg bg-indigo-900 text-indigo-300 font-bold flex items-center justify-center text-sm mb-3">1</div>
+          <h4 class="font-bold text-white text-sm mb-1">RETAIN</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Every published post and its simulated audience reactions (impressions, likes, replies, shares) are persisted alongside stylistic metadata (hook style, topic, timestamp).
+          </p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="w-8 h-8 rounded-lg bg-sky-900 text-sky-300 font-bold flex items-center justify-center text-sm mb-3">2</div>
+          <h4 class="font-bold text-white text-sm mb-1">REFLECT</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            The reflection node detects statistical anomalies. When engagement surpasses threshold, it extracts high-level cognitive rules and embeds them into 1536-dim vector space.
+          </p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="w-8 h-8 rounded-lg bg-emerald-900 text-emerald-300 font-bold flex items-center justify-center text-sm mb-3">3</div>
+          <h4 class="font-bold text-white text-sm mb-1">RECALL</h4>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            When drafting subsequent posts for that brand, the LangGraph agent performs cosine similarity search over past memories to inject verified winning strategies into the prompt context.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Public REST API Seams Table -->
+  <section id="api" class="py-16 bg-slate-900/40 border-t border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <span class="text-xs font-mono tracking-wider uppercase text-indigo-400 font-semibold">Contract-First Integration</span>
+        <h2 class="text-3xl font-bold text-white mt-2">Core API Invariant Contracts</h2>
+        <p class="text-slate-400 text-sm max-w-xl mx-auto mt-2">
+          Strictly typed HTTP endpoints ensuring zero change amplification between Frontend and Backend subsystems.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950 text-slate-400 font-mono uppercase text-[11px] border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">Method</th>
+              <th class="py-3 px-4">Endpoint</th>
+              <th class="py-3 px-4">Purpose</th>
+              <th class="py-3 px-4">Input Contract</th>
+              <th class="py-3 px-4">Output Contract</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-slate-300 font-mono">
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/generate-drafts</td>
+              <td class="py-3 px-4 font-sans">Trigger LangGraph cycle to generate 3 drafts</td>
+              <td class="py-3 px-4 text-slate-400">{ brand_id, topic }</td>
+              <td class="py-3 px-4 text-indigo-300">{ drafts: [PostDraft] }</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/posts/approve</td>
+              <td class="py-3 px-4 font-sans">Human sign-off transitioning draft &rarr; scheduled</td>
+              <td class="py-3 px-4 text-slate-400">{ post_id, approved_content, scheduled_time }</td>
+              <td class="py-3 px-4 text-indigo-300">{ id, status: "scheduled" }</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-sky-400 font-bold">GET</td>
+              <td class="py-3 px-4 text-white">/api/posts/queue</td>
+              <td class="py-3 px-4 font-sans">Retrieve active posts and drafts for active brand</td>
+              <td class="py-3 px-4 text-slate-400">?brand_id={id}</td>
+              <td class="py-3 px-4 text-indigo-300">[PostWithMetrics]</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/simulator/feed-metrics</td>
+              <td class="py-3 px-4 font-sans">Feed simulation metric ingestion & memory update</td>
+              <td class="py-3 px-4 text-slate-400">{ post_id, impressions, likes, replies, shares }</td>
+              <td class="py-3 px-4 text-indigo-300">{ engagement_score, insight_generated }</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-sky-400 font-bold">GET</td>
+              <td class="py-3 px-4 text-white">/api/memory/insights</td>
+              <td class="py-3 px-4 font-sans">Fetch top learned cognitive memories for brand</td>
+              <td class="py-3 px-4 text-slate-400">?brand_id={id}</td>
+              <td class="py-3 px-4 text-indigo-300">[AgentMemory]</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-sky-400 font-bold">GET</td>
+              <td class="py-3 px-4 text-white">/api/diagnostics/audit</td>
+              <td class="py-3 px-4 font-sans">Live multi-post diagnostic audit with AI brain</td>
+              <td class="py-3 px-4 text-slate-400">None</td>
+              <td class="py-3 px-4 text-indigo-300">{ total_audited, audit_results }</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-sky-400 font-bold">GET</td>
+              <td class="py-3 px-4 text-white">/api/webhooks/instagram</td>
+              <td class="py-3 px-4 font-sans">Meta Developer Dashboard verification challenge handshake</td>
+              <td class="py-3 px-4 text-slate-400">?hub.mode=subscribe&hub.challenge={val}&hub.verify_token={tok}</td>
+              <td class="py-3 px-4 text-indigo-300">hub.challenge (text/plain)</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/webhooks/instagram</td>
+              <td class="py-3 px-4 font-sans">Meta Graph API real-time event receiver (comments, likes, shares)</td>
+              <td class="py-3 px-4 text-slate-400">{ object: "instagram", entry: [...] }</td>
+              <td class="py-3 px-4 text-indigo-300">{ status: "EVENT_RECEIVED", processed_entries }</td>
+            </tr>
+            <tr class="hover:bg-slate-800/50">
+              <td class="py-3 px-4 text-emerald-400 font-bold">POST</td>
+              <td class="py-3 px-4 text-white">/api/webhooks/instagram/simulate</td>
+              <td class="py-3 px-4 font-sans">Simulate Meta webhook event to verify closed-loop memory learning</td>
+              <td class="py-3 px-4 text-slate-400">{ brand_name, topic, likes, comments, shares, impressions }</td>
+              <td class="py-3 px-4 text-indigo-300">{ composite_score, memory_reinforced, extracted_lesson }</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Documentation Quick Links & Resources -->
+  <section class="py-16 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-10">
+      <h2 class="text-2xl font-bold text-white">Core Project Documents</h2>
+      <p class="text-slate-400 text-xs mt-1">Direct repository references for hackathon judges and evaluators</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <a href="https://github.com/stillzepta/sociotrack/blob/main/docs/ARCHITECTURE.md" target="_blank" class="p-5 rounded-xl bg-slate-900 border border-slate-800 hover:border-indigo-500 transition block group">
+        <div class="text-indigo-400 font-mono text-xs mb-1">SPECIFICATION</div>
+        <div class="font-bold text-white group-hover:text-indigo-300 text-sm">System Architecture Spec &rarr;</div>
+        <p class="text-xs text-slate-400 mt-2">Comprehensive data topology, Mermaid sequence diagrams, and failover contracts.</p>
+      </a>
+      <a href="https://github.com/stillzepta/sociotrack/blob/main/docs/PRD.md" target="_blank" class="p-5 rounded-xl bg-slate-900 border border-slate-800 hover:border-sky-500 transition block group">
+        <div class="text-sky-400 font-mono text-xs mb-1">PRODUCT STRATEGY</div>
+        <div class="font-bold text-white group-hover:text-sky-300 text-sm">Product Requirements Doc &rarr;</div>
+        <p class="text-xs text-slate-400 mt-2">Problem statement, target persona, functional requirements, and judging criteria alignment.</p>
+      </a>
+      <a href="https://github.com/stillzepta/sociotrack/blob/main/presentation/demo_script.md" target="_blank" class="p-5 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500 transition block group">
+        <div class="text-emerald-400 font-mono text-xs mb-1">PITCH RUNBOOK</div>
+        <div class="font-bold text-white group-hover:text-emerald-300 text-sm">Judge Presentation Script &rarr;</div>
+        <p class="text-xs text-slate-400 mt-2">Step-by-step 3-minute stage pitch sequence, cues, and live interactive milestones.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-800 py-8 bg-slate-950 text-slate-500 text-xs text-center">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-semibold text-slate-400">SocioTrack</span>
+        <span>— Hack With Bangalore 4.0 (Devnovate × Hack With India)</span>
+      </div>
+      <div>
+        Built with LangGraph, FastAPI, Next.js 14, and Vectorize.io Hindsight Memory.
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="https://github.com/stillzepta/sociotrack" class="hover:text-slate-300 transition" target="_blank">Main Repo</a>
+        <a href="https://github.com/XiaoArnav/sociotrack" class="hover:text-slate-300 transition" target="_blank">Fork Repo</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Interactive Simulator Script -->
+  <script>
+    const elImpressions = document.getElementById('slider-impressions');
+    const elLikes = document.getElementById('slider-likes');
+    const elReplies = document.getElementById('slider-replies');
+    const elShares = document.getElementById('slider-shares');
+
+    const valImpressions = document.getElementById('val-impressions');
+    const valLikes = document.getElementById('val-likes');
+    const valReplies = document.getElementById('val-replies');
+    const valShares = document.getElementById('val-shares');
+
+    const scoreDisplay = document.getElementById('score-display');
+    const loopState = document.getElementById('loop-state');
+    const insightCategory = document.getElementById('insight-category');
+    const insightConfidence = document.getElementById('insight-confidence');
+    const insightText = document.getElementById('insight-text');
+
+    function updateSimulation() {
+      const imp = parseInt(elImpressions.value, 10);
+      const likes = parseInt(elLikes.value, 10);
+      const replies = parseInt(elReplies.value, 10);
+      const shares = parseInt(elShares.value, 10);
+
+      valImpressions.textContent = imp.toLocaleString();
+      valLikes.textContent = likes.toLocaleString();
+      valReplies.textContent = replies.toLocaleString();
+      valShares.textContent = shares.toLocaleString();
+
+      // Canonical formula: (likes*2 + replies*3 + shares*4) / impressions * 100
+      const weightedSum = (likes * 2) + (replies * 3) + (shares * 4);
+      const score = (weightedSum / Math.max(imp, 1)) * 100;
+      scoreDisplay.textContent = score.toFixed(2) + '%';
+
+      if (score >= 12.0) {
+        loopState.textContent = 'STATE: RETAINING WINNING HOOK';
+        loopState.className = 'text-xs font-mono text-emerald-400 px-2 py-0.5 rounded bg-emerald-950 border border-emerald-800';
+        insightCategory.textContent = 'HOOK_RULE REINFORCEMENT';
+        insightConfidence.textContent = 'Confidence: 0.94';
+        insightText.textContent = '"Contrarian opening patterns debating architectural orthodoxy consistently exceed baseline engagement by +42% across senior tech audiences."';
+      } else if (score >= 6.0) {
+        loopState.textContent = 'STATE: BALANCED ENGAGEMENT';
+        loopState.className = 'text-xs font-mono text-sky-400 px-2 py-0.5 rounded bg-sky-950 border border-sky-800';
+        insightCategory.textContent = 'TIMING_RULE CONFIRMATION';
+        insightConfidence.textContent = 'Confidence: 0.82';
+        insightText.textContent = '"Mid-week afternoon publication slots (Tuesday–Thursday 2-4 PM) generate stable reply depth for engineering topic discussions."';
+      } else {
+        loopState.textContent = 'STATE: REFLECTING ON LOW SCORE';
+        loopState.className = 'text-xs font-mono text-amber-400 px-2 py-0.5 rounded bg-amber-950 border border-amber-800';
+        insightCategory.textContent = 'AUDIENCE_PAIN_POINT DISCOVERY';
+        insightConfidence.textContent = 'Confidence: 0.76';
+        insightText.textContent = '"High impression count with low share velocity suggests topic fatigue; recommend pivoting opener from broad theory to concrete code benchmarks."';
+      }
+    }
+
+    [elImpressions, elLikes, elReplies, elShares].forEach(el => {
+      el.addEventListener('input', updateSimulation);
+    });
+
+    updateSimulation();
+  </script>
+</body>
+</html>
