@@ -1,176 +1,301 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Sparkles, RefreshCw, Wand2, Terminal, ChevronRight } from "lucide-react";
-import { Navbar } from "@/components/Navbar";
-import { DraftQueue } from "@/components/DraftQueue";
-import { MemoryDrawer } from "@/components/MemoryDrawer";
-import { SimulatorBar } from "@/components/SimulatorBar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import React, { useState } from "react";
+import { AuthPage, UserSession } from "@/components/auth/AuthPage";
+import { Sidebar, NavItem } from "@/components/Sidebar";
+import { Header, DashboardMetrics } from "@/components/Header";
+import { IntelligenceCore, IntelligenceNode } from "@/components/IntelligenceCore";
+import { GenerationStudio } from "@/components/GenerationStudio";
+import { AgentMemoryPanel } from "@/components/AgentMemoryPanel";
+import { LiveEngagementLab } from "@/components/LiveEngagementLab";
 import {
-  fetchGenerateDrafts,
-  fetchMemoryInsights,
-  approvePostAPI,
-  feedSimulatorMetricsAPI,
-  SimulatorFeedbackResult,
-} from "@/lib/api";
+  ApprovalQueueView,
+  AudienceIntelligenceView,
+  PerformanceAnalyticsView,
+  SettingsView,
+  HelpCenterView,
+} from "@/components/ExtraViews";
 import {
-  MOCK_DRAFTS,
-  MOCK_SELECTED_POST,
-  MOCK_MEMORY_INSIGHTS,
-  MockPostVariation,
-  MockSelectedPost,
-  MockMemoryInsights,
+  PostDraft,
+  LearnedInsight,
+  INITIAL_DRAFTS,
+  INITIAL_INSIGHTS,
 } from "@/mocks/mockData";
+import { CheckCircle2, Sparkles, X } from "lucide-react";
 
-const SAMPLE_TOPICS = [
-  "Deterministic State Management with LangGraph",
-  "Agent Latency & Token Optimization in Production",
-  "Memory Checkpointing vs Infinite Hallucination Loops",
-  "Enterprise Agentic Architecture Playbook",
-];
+export default function App() {
+  // 1. Authentication State: Always start at Login!
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
 
-export default function DashboardPage() {
-  const [brandName, setBrandName] = useState<string>("SocioTrack");
-  const [topic, setTopic] = useState<string>("Deterministic State Management with LangGraph");
-  const [drafts, setDrafts] = useState<MockPostVariation[]>(MOCK_DRAFTS);
-  const [selectedPost, setSelectedPost] = useState<MockSelectedPost | null>(MOCK_SELECTED_POST);
-  const [memoryInsights, setMemoryInsights] = useState<MockMemoryInsights | null>(MOCK_MEMORY_INSIGHTS);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [postForSimulation, setPostForSimulation] = useState<string>(MOCK_DRAFTS[0].full_text);
+  // 2. Navigation State
+  const [currentTab, setCurrentTab] = useState<NavItem>("overview");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Initial load of insights
-  useEffect(() => {
-    refreshMemory();
-  }, [brandName]);
+  // 3. Application Data State
+  const [drafts, setDrafts] = useState<PostDraft[]>(INITIAL_DRAFTS);
+  const [insights, setInsights] = useState<LearnedInsight[]>(INITIAL_INSIGHTS);
 
-  const refreshMemory = async () => {
-    const data = await fetchMemoryInsights(brandName, topic);
-    setMemoryInsights(data);
+  // 4. Intelligence Core Reactive State
+  const [activeCoreNode, setActiveCoreNode] = useState<IntelligenceNode>("idle");
+
+  // 5. Memory Recalibration State
+  const [isRecalibrating, setIsRecalibrating] = useState(false);
+
+  // 6. Global Notification Toast
+  const [toastMessage, setToastMessage] = useState<{
+    title: string;
+    description: string;
+    type?: "success" | "info";
+  } | null>(null);
+
+  // Overview metrics
+  const pendingApprovals = drafts.filter((d) => d.status === "Draft").length;
+  const publishedPosts = 42;
+  const metrics: DashboardMetrics = {
+    totalDrafts: drafts.length + 15,
+    pendingApprovals: pendingApprovals,
+    publishedPosts: publishedPosts,
+    insightsLearned: insights.length + 10,
   };
 
-  const handleGenerate = async () => {
-    if (!topic.trim()) return;
-    setIsGenerating(true);
-    const result = await fetchGenerateDrafts(brandName, topic);
-    setDrafts(result.drafts);
-    setSelectedPost(result.selected_post);
-    if (result.selected_post) {
-      setPostForSimulation(result.selected_post.draft.full_text);
-    }
-    setIsGenerating(false);
-    await refreshMemory();
+  // Login handler
+  const handleLoginSuccess = (user: UserSession) => {
+    setCurrentUser(user);
+    showToast(
+      "Signed in successfully",
+      `Welcome to SocioTrack workspace, ${user.name}.`,
+      "success"
+    );
   };
 
-  const handleApprove = async (postContent: string, format: string) => {
-    await approvePostAPI(postContent, format);
+  // Logout handler
+  const handleLogout = () => {
+    setCurrentUser(null);
   };
 
-  const handleSimulate = async (metrics: {
-    impressions: number;
-    shares: number;
-    replies: number;
-    likes: number;
-  }): Promise<SimulatorFeedbackResult | null> => {
-    const targetContent = postForSimulation || drafts[0]?.full_text || "";
-    return await feedSimulatorMetricsAPI(brandName, topic, targetContent, metrics);
+  // Toast trigger helper
+  const showToast = (
+    title: string,
+    description: string,
+    type: "success" | "info" = "success"
+  ) => {
+    setToastMessage({ title, description, type });
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4500);
   };
 
+  // Approve & Schedule Draft Handler
+  const handleApproveDraft = (draft: PostDraft) => {
+    setDrafts((prev) =>
+      prev.map((d) =>
+        d.id === draft.id
+          ? {
+              ...d,
+              status: "Approved" as const,
+              scheduledTime: "Tuesday at 2:30 PM (Peak Reply Window)",
+            }
+          : d
+      )
+    );
+
+    showToast(
+      "Draft Approved & Scheduled",
+      `Post scheduled for ${draft.platform} on Tuesday at 2:30 PM (Peak Window).`,
+      "success"
+    );
+  };
+
+  // Send Draft to Simulator
+  const handleSendToSimulator = (content: string) => {
+    showToast(
+      "Post Injected into Simulator",
+      "Expand the Live Engagement Lab at the bottom to test metrics.",
+      "info"
+    );
+  };
+
+  // Recalibrate Memory Handler
+  const handleRecalibrateMemory = () => {
+    setIsRecalibrating(true);
+    setActiveCoreNode("analysis");
+
+    setTimeout(() => {
+      setIsRecalibrating(false);
+      setActiveCoreNode("memory");
+
+      showToast(
+        "Memory Recalibrated Successfully",
+        "Vector weights updated across all 15 indexed audience clusters.",
+        "success"
+      );
+
+      setTimeout(() => {
+        setActiveCoreNode("idle");
+      }, 1500);
+    }, 1200);
+  };
+
+  // Live Engagement Feedback Loop Handler (The key Hackathon demo!)
+  const handlePatternDiscovered = (newInsight: LearnedInsight) => {
+    // Prepend new insight into Agent Memory immediately!
+    setInsights((prev) => [newInsight, ...prev]);
+
+    // Highlight Memory node on Intelligence Core
+    setActiveCoreNode("memory");
+
+    setTimeout(() => {
+      setActiveCoreNode("idle");
+    }, 3000);
+  };
+
+  // If user is not authenticated, render Authentication Split-Screen!
+  if (!currentUser) {
+    return <AuthPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Once authenticated, render Main SocioTrack Dashboard
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-gray-100 flex flex-col pb-28">
-      {/* 1. Global Navigation */}
-      <Navbar
-        brandName={brandName}
-        onBrandChange={setBrandName}
-        isGenerating={isGenerating}
+    <div className="min-h-screen bg-[#F6F7FB] flex text-[#172033] selection:bg-[#ECE9FF] selection:text-[#5146D8]">
+      {/* Global Interactive Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 max-w-sm bg-white border border-[#E6E9F0] rounded-2xl p-4 shadow-float animate-slide-up flex items-start space-x-3">
+          <div className="w-8 h-8 rounded-xl bg-[#E8F8F3] text-[#16A477] flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <div className="flex-1 space-y-0.5">
+            <h4 className="text-xs font-bold text-[#172033]">
+              {toastMessage.title}
+            </h4>
+            <p className="text-[11px] text-[#718096] leading-relaxed">
+              {toastMessage.description}
+            </p>
+          </div>
+          <button
+            onClick={() => setToastMessage(null)}
+            className="text-[#718096] hover:text-[#172033]"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* A. LEFT NAVIGATION SIDEBAR */}
+      <Sidebar
+        currentTab={currentTab}
+        onSelectTab={setCurrentTab}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        user={currentUser}
+        onLogout={handleLogout}
+        pendingApprovalsCount={pendingApprovals}
       />
 
-      {/* 2. Topic Input & Generation Control Bar */}
-      <section className="border-b border-gray-800 bg-[#111726]/60 px-6 py-4">
-        <div className="max-w-7xl mx-auto space-y-3">
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
-              <Input
-                type="text"
-                placeholder="Enter technical topic to generate content for..."
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
-                className="pl-3.5 pr-10 bg-gray-900 border-gray-700 text-sm h-11"
-              />
-              <Sparkles className="w-4 h-4 text-blue-400 absolute right-3.5 top-3.5 pointer-events-none" />
+      {/* MAIN WORKSPACE COLUMN */}
+      <div className="flex-1 flex flex-col min-w-0 pb-28">
+        {/* B. DASHBOARD HEADER */}
+        <Header user={currentUser} metrics={metrics} />
+
+        {/* WORKSPACE CONTENT AREA */}
+        <main className="flex-1 p-4 lg:p-6 max-w-7xl w-full mx-auto space-y-6">
+          {/* Active Tab: Overview (The complete flagship workspace) */}
+          {currentTab === "overview" && (
+            <div className="space-y-6">
+              {/* SocioTrack Intelligence Core Visualization Banner */}
+              <IntelligenceCore activeNode={activeCoreNode} />
+
+              {/* 2-Column Split: Center Queue (visual priority) + Right Agent Memory */}
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+                {/* Center Column: Generation & Approval Queue */}
+                <div className="flex-1 min-w-0 w-full">
+                  <GenerationStudio
+                    drafts={drafts}
+                    onDraftsChange={setDrafts}
+                    onApproveDraft={handleApproveDraft}
+                    onSendToSimulator={handleSendToSimulator}
+                    onAgentGeneratingStart={() => setActiveCoreNode("generation")}
+                    onAgentGeneratingEnd={() => setActiveCoreNode("idle")}
+                  />
+                </div>
+
+                {/* Right Sidebar: Agent Memory & Learned Audience Insights */}
+                <AgentMemoryPanel
+                  insights={insights}
+                  onRecalibrateMemory={handleRecalibrateMemory}
+                  isRecalibrating={isRecalibrating}
+                />
+              </div>
             </div>
+          )}
 
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="h-11 px-6 bg-blue-600 hover:bg-blue-700 font-semibold flex items-center space-x-2 shrink-0 w-full sm:w-auto"
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Agent Generating...</span>
-                </>
-              ) : (
-                <>
-                  <Wand2 className="w-4 h-4" />
-                  <span>Draft 3 Variations</span>
-                </>
-              )}
-            </Button>
-          </div>
+          {/* Subview: Generation Studio */}
+          {currentTab === "studio" && (
+            <div className="space-y-6">
+              <IntelligenceCore activeNode={activeCoreNode} />
+              <GenerationStudio
+                drafts={drafts}
+                onDraftsChange={setDrafts}
+                onApproveDraft={handleApproveDraft}
+                onSendToSimulator={handleSendToSimulator}
+                onAgentGeneratingStart={() => setActiveCoreNode("generation")}
+                onAgentGeneratingEnd={() => setActiveCoreNode("idle")}
+              />
+            </div>
+          )}
 
-          {/* Quick topic pills */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="text-gray-400 text-[11px] font-medium flex items-center space-x-1">
-              <span>Quick Topics:</span>
-            </span>
-            {SAMPLE_TOPICS.map((t, idx) => (
-              <button
-                key={idx}
-                onClick={() => setTopic(t)}
-                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
-                  topic === t
-                    ? "bg-blue-900/50 text-blue-300 border-blue-700"
-                    : "bg-gray-900/80 text-gray-400 border-gray-800 hover:text-gray-200 hover:border-gray-700"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
+          {/* Subview: Approval Queue */}
+          {currentTab === "queue" && (
+            <ApprovalQueueView drafts={drafts} onApproveDraft={handleApproveDraft} />
+          )}
 
-      {/* 3. Main Dashboard Workspace (Center Queue + Right Memory Drawer) */}
-      <main className="max-w-7xl mx-auto w-full px-6 py-6 flex-1">
-        <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* Center Column: Draft Queue */}
-          <DraftQueue
-            drafts={drafts}
-            selectedPost={selectedPost}
-            onApprove={handleApprove}
-            onSelectForSimulation={(content) => setPostForSimulation(content)}
-            isGenerating={isGenerating}
-          />
+          {/* Subview: Audience Intelligence */}
+          {currentTab === "audience" && <AudienceIntelligenceView />}
 
-          {/* Right Column: Learned Memory Drawer */}
-          <MemoryDrawer
-            memoryData={memoryInsights}
-            onSelectTopic={(t) => setTopic(t)}
-          />
-        </div>
-      </main>
+          {/* Subview: Agent Memory Dedicated Explorer */}
+          {currentTab === "memory" && (
+            <div className="space-y-6">
+              <IntelligenceCore activeNode={activeCoreNode} />
+              <div className="flex justify-center">
+                <AgentMemoryPanel
+                  insights={insights}
+                  onRecalibrateMemory={handleRecalibrateMemory}
+                  isRecalibrating={isRecalibrating}
+                />
+              </div>
+            </div>
+          )}
 
-      {/* 4. Bottom Metric Injection Simulator Bar */}
-      <SimulatorBar
-        postContentToSimulate={postForSimulation}
-        topic={topic}
-        brandName={brandName}
-        onSimulate={handleSimulate}
-        onRefreshMemory={refreshMemory}
+          {/* Subview: Performance Analytics */}
+          {currentTab === "analytics" && <PerformanceAnalyticsView />}
+
+          {/* Subview: Engagement Simulator */}
+          {currentTab === "simulator" && (
+            <div className="space-y-6">
+              <IntelligenceCore activeNode={activeCoreNode} />
+              <div className="bg-white rounded-2xl border border-[#E6E9F0] p-6 shadow-card space-y-4">
+                <h3 className="text-sm font-bold text-[#172033]">
+                  Interactive Engagement Simulator
+                </h3>
+                <p className="text-xs text-[#718096]">
+                  Use the floating drawer docked at the bottom of the screen to adjust impressions, shares, and likes in real time and trigger autonomous memory updating.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Subview: Settings */}
+          {currentTab === "settings" && <SettingsView />}
+
+          {/* Subview: Help Center */}
+          {currentTab === "help" && <HelpCenterView />}
+        </main>
+      </div>
+
+      {/* FLOATING BOTTOM DRAWER – LIVE ENGAGEMENT LAB */}
+      <LiveEngagementLab
+        onPatternDiscovered={handlePatternDiscovered}
+        onSimulationStart={() => setActiveCoreNode("memory")}
+        onSimulationEnd={() => setActiveCoreNode("idle")}
       />
     </div>
   );

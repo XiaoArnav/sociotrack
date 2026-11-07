@@ -1,3 +1,214 @@
+export type PlatformType = "LinkedIn" | "X" | "Instagram";
+export type TargetTone =
+  | "Professional"
+  | "Conversational"
+  | "Educational"
+  | "Witty"
+  | "Thought Leadership";
+
+export interface PostDraft {
+  id: string;
+  platform: PlatformType;
+  tone: TargetTone;
+  hookStyle: string;
+  status: "Draft" | "Approved" | "Scheduled";
+  scheduledTime?: string;
+  content: string;
+  predictedEngagement: "LOW" | "MEDIUM" | "HIGH";
+  confidenceScore: number; // e.g. 94%
+  aiExplanation: string;
+  createdAt: string;
+  dosMatched: string[];
+  dontsAvoided: string[];
+}
+
+export interface LearnedInsight {
+  id: string;
+  type: "performance" | "timing" | "sentiment" | "preference" | "discovered";
+  title: string;
+  insight: string;
+  metric?: string;
+  confidence: string;
+  timestamp: string;
+  isNew?: boolean;
+  metadata?: any;
+}
+
+export const INITIAL_DRAFTS: PostDraft[] = [
+  {
+    id: "draft_01",
+    platform: "LinkedIn",
+    tone: "Thought Leadership",
+    hookStyle: "Contrarian Thought Leadership",
+    status: "Draft",
+    content: `Everyone talks about scaling their business. But what if the real competitive advantage isn't spending more?
+
+It's understanding where your existing resources are being wasted.
+
+We benchmarked 4,200 production workflows across 18 teams:
+• 78% of runtime budget was burnt on recursive agent re-prompts
+• Deterministic checkpointing slashed recovery latency by 64%
+• Vectorized audience memory dropped token costs from $14.20/run to $1.85/run (-87%)
+
+Stop brute-forcing token scale. Tighten your state architecture.
+
+What is your current cost per successful AI task?`,
+    predictedEngagement: "HIGH",
+    confidenceScore: 94,
+    aiExplanation:
+      "Your audience has historically saved opinion-driven technical posts more frequently than generic tutorials. The agent selected a contrarian hook based on this learned preference.",
+    createdAt: "Just now",
+    dosMatched: [
+      "Quantified benchmark claim in opening 3 lines",
+      "Contrarian angle addressing architectural waste",
+      "Direct question call to action",
+    ],
+    dontsAvoided: ["No hype words ('groundbreaking', 'game changer')", "No generic buzzwords"],
+  },
+  {
+    id: "draft_02",
+    platform: "X",
+    tone: "Educational",
+    hookStyle: "Data-First Technical Breakdown",
+    status: "Draft",
+    content: `The dirty secret of enterprise AI agents:
+
+Most 'failures' aren't model hallucinations.
+They are unconstrained state machines running in loops.
+
+Here is the 3-step checklist we use to keep agents deterministic:
+1. Checkpoint state after every tool execution
+2. Enforce strict Pydantic schemas over raw JSON
+3. Cap conversation memory to top-5 vector embeddings
+
+Save this before your next LangGraph deploy. 🧵👇`,
+    predictedEngagement: "HIGH",
+    confidenceScore: 91,
+    aiExplanation:
+      "Learned audience pattern #3 indicates engineers engage 3.1x more on numbered technical checklists than high-level commentary.",
+    createdAt: "5 mins ago",
+    dosMatched: ["Numbered procedural checklist", "Specific framework attribution (LangGraph)"],
+    dontsAvoided: ["No vague generalities"],
+  },
+  {
+    id: "draft_03",
+    platform: "Instagram",
+    tone: "Conversational",
+    hookStyle: "Visual Architecture Carousel",
+    status: "Draft",
+    content: `Building AI agents that actually remember? 🧠✨
+
+Swipe through to see the exact memory loop SocioTrack uses:
+→ Ingests live analytics in under 120ms
+→ Re-ranks vector embeddings by audience resonance
+→ Automatically prunes low-signal impressions
+
+Drop a 'MEMORY' in the comments for our architectural whitepaper! 👇`,
+    predictedEngagement: "MEDIUM",
+    confidenceScore: 82,
+    aiExplanation:
+      "Visual carousel format aligns with Instagram technical micro-creators. Generates strong DM saves.",
+    createdAt: "12 mins ago",
+    dosMatched: ["Clear swipe incentive", "Visual slide progression mapping"],
+    dontsAvoided: ["No wall of dense prose"],
+  },
+];
+
+export const INITIAL_INSIGHTS: LearnedInsight[] = [
+  {
+    id: "insight_01",
+    type: "performance",
+    title: "Contrarian Content Wins",
+    insight: "Contrarian technical takes get 3.4x more saves than tutorials.",
+    metric: "3.4x",
+    confidence: "High Confidence (96%)",
+    timestamp: "Updated 10m ago",
+    metadata: {
+      metricLabel: "Save Multiplier",
+      comparison: [
+        { label: "Contrarian", value: 85, color: "#5146D8" },
+        { label: "Tutorial", value: 25, color: "#CBD5E1" },
+      ],
+    },
+  },
+  {
+    id: "insight_02",
+    type: "timing",
+    title: "Peak Reply Window",
+    insight: "Tuesday & Thursday, 2:00 PM – 4:30 PM.",
+    metric: "2:00 PM - 4:30 PM",
+    confidence: "High Confidence (92%)",
+    timestamp: "Synchronized",
+    metadata: {
+      peakDays: ["Tue", "Thu"],
+      windows: [
+        { day: "Mon", intensity: 45 },
+        { day: "Tue", intensity: 95 },
+        { day: "Wed", intensity: 60 },
+        { day: "Thu", intensity: 90 },
+        { day: "Fri", intensity: 40 },
+      ],
+    },
+  },
+  {
+    id: "insight_03",
+    type: "sentiment",
+    title: "Audience Interest",
+    insight: "68% of your audience is currently curious about cost optimization.",
+    metric: "68%",
+    confidence: "Solid Consensus (88%)",
+    timestamp: "Refreshed today",
+    metadata: {
+      percentage: 68,
+      topics: ["Cost Optimization", "Token Caching", "Agent Latency"],
+    },
+  },
+  {
+    id: "insight_04",
+    type: "preference",
+    title: "Emerging Audience Preference",
+    insight: "Practical, data-backed opinions generate stronger audience conversations.",
+    metric: "+48% Replies",
+    confidence: "AI Discovered (94%)",
+    timestamp: "Learned 2 hours ago",
+    metadata: {
+      aiDiscovered: true,
+      tag: "Vector Clustered",
+    },
+  },
+];
+
+export const PUBLISHED_POSTS_OPTIONS = [
+  {
+    id: "pub_101",
+    title: "Why Multi-Agent Swarms Fail in Production",
+    platform: "LinkedIn",
+    defaultImpressions: 18200,
+    defaultShares: 320,
+    defaultLikes: 740,
+    defaultReplies: 95,
+  },
+  {
+    id: "pub_102",
+    title: "The 4-Step Playbook for Checkpointing AI State",
+    platform: "X",
+    defaultImpressions: 9800,
+    defaultShares: 110,
+    defaultLikes: 390,
+    defaultReplies: 42,
+  },
+  {
+    id: "pub_103",
+    title: "How We Slashed Token Spend by 87% with Memory Pruning",
+    platform: "LinkedIn",
+    defaultImpressions: 24500,
+    defaultShares: 580,
+    defaultLikes: 1120,
+    defaultReplies: 160,
+  },
+];
+
+// Preserved backwards compatibility for original lib/api contracts
 export interface MockPostVariation {
   id: string;
   format: "Format A: Data-first" | "Format B: Hot take" | "Format C: Tactical breakdown";
@@ -15,6 +226,8 @@ export interface MockSelectedPost {
   evaluation_summary: string;
   dos_matched: string[];
   donts_avoided: string[];
+  dosMatched?: string[];
+  dontsAvoided?: string[];
   scheduled_time: string;
 }
 
@@ -78,162 +291,131 @@ The top-performing teams aren't using bigger models—they are building tighter 
 Are you tracking token cost per successful agent task yet? What is your baseline?
 
 #AgenticAI #LangGraph #ProductionAI`,
-    rationale: "Anchored on quantitative latency and cost benchmarks to capture technical leadership attention.",
-    match_score: 9.8,
+    rationale: "Data-backed benchmark with quantifiable percentages matching top audience save signals.",
+    match_score: 9.4,
   },
   {
     id: "var_b",
     format: "Format B: Hot take",
-    hook: "Hot take: 90% of teams building multi-agent systems don't need autonomous agent swarms.",
-    body: `They need a deterministic, checkpointed state machine.
+    hook: "Everyone talks about scaling their business. But what if the real competitive advantage isn't spending more?",
+    body: `It's understanding where your existing resources are being wasted.
 
-Autonomous open loops look magical in investor decks, but in production they burn enterprise budgets on infinite hallucination loops.
+Most AI initiatives fail not from inadequate models, but from catastrophic state leakage and untracked latency loops. The winners of this hackathon won't be the ones who chained 10 agents together; it will be the ones who made 1 agent reliable.`,
+    call_to_action: "Simplicity beats hype every single time. Agree or disagree?",
+    full_text: `Everyone talks about scaling their business. But what if the real competitive advantage isn't spending more?
 
-Here is what actually works:
-1. A rigid LangGraph StateGraph with explicit memory contracts.
-2. Deterministic validation checkpoints before external tool execution.
-3. Memory is not a side effect—it is your entire operational moat.`,
-    call_to_action: "Disagree? Where have you seen unconstrained autonomous multi-agent loops beat explicit workflows in prod?",
-    full_text: `Hot take: 90% of teams building multi-agent systems don't need autonomous agent swarms.
+It's understanding where your existing resources are being wasted.
 
-They need a deterministic, checkpointed state machine.
+Most AI initiatives fail not from inadequate models, but from catastrophic state leakage and untracked latency loops. The winners of this hackathon won't be the ones who chained 10 agents together; it will be the ones who made 1 agent reliable.
 
-Autonomous open loops look magical in investor decks, but in production they burn enterprise budgets on infinite hallucination loops.
+Simplicity beats hype every single time. Agree or disagree?
 
-Here is what actually works:
-1. A rigid LangGraph StateGraph with explicit memory contracts.
-2. Deterministic validation checkpoints before external tool execution.
-3. Memory is not a side effect—it is your entire operational moat.
-
-Disagree? Where have you seen unconstrained autonomous multi-agent loops beat explicit workflows in prod?
-
-#SoftwareEngineering #AIAgents #TechDebate`,
-    rationale: "Challenges prevailing industry hype with a battle-tested contrarian thesis to trigger practitioner debate.",
-    match_score: 9.2,
+#AIArchitecture #SocioTrack #PragmaticAI`,
+    rationale: "Contrarian hook debunking industry obsession with agent swarm complexity.",
+    match_score: 9.1,
   },
   {
     id: "var_c",
     format: "Format C: Tactical breakdown",
-    hook: "How to architect an enterprise-ready agentic pipeline for LangGraph in 4 steps:",
-    body: `Reliable production agents are built on disciplined state design, not prompt magic.
+    hook: "A 4-step architectural checklist for deterministic agent memory.",
+    body: `1. Checkpoint node outputs after every state mutation
+2. Vectorize past winners into ChromaDB using composite viral score > 5.0
+3. Calculate dynamic topic weights on live impressions
+4. Feed negative reinforcement back into system prompt exclusions`,
+    call_to_action: "Bookmark this post for your next agent deployment sprint.",
+    full_text: `A 4-step architectural checklist for deterministic agent memory:
 
-1. Enforce Typed State via Pydantic
-   Never pass raw mutable dicts. Type-check memory_context, draft queues, and evaluation scores.
+1. Checkpoint node outputs after every state mutation
+2. Vectorize past winners into ChromaDB using composite viral score > 5.0
+3. Calculate dynamic topic weights on live impressions
+4. Feed negative reinforcement back into system prompt exclusions
 
-2. Decouple Memory Retrieval from LLM Generation
-   Query winning patterns and real-time audience sentiment before invoking generation passes.
+Bookmark this post for your next agent deployment sprint.
 
-3. Embed a Brand Voice Critique Node
-   Critique candidate outputs against Brand Dos & Don'ts before dispatching to users.
-
-4. Closed-Loop Feedback Ingestion
-   Calculate composite score: (Shares*3 + Replies*2 + Likes*1) / Impressions * 100. If > 5.0, embed winning lessons into long-term vector memory.`,
-    call_to_action: "Bookmark this blueprint for your next sprint. Which step is currently your team's biggest challenge?",
-    full_text: `How to architect an enterprise-ready agentic pipeline for LangGraph in 4 steps:
-
-Reliable production agents are built on disciplined state design, not prompt magic.
-
-1. Enforce Typed State via Pydantic
-   Never pass raw mutable dicts. Type-check memory_context, draft queues, and evaluation scores.
-
-2. Decouple Memory Retrieval from LLM Generation
-   Query winning patterns and real-time audience sentiment before invoking generation passes.
-
-3. Embed a Brand Voice Critique Node
-   Critique candidate outputs against Brand Dos & Don'ts before dispatching to users.
-
-4. Closed-Loop Feedback Ingestion
-   Calculate composite score: (Shares*3 + Replies*2 + Likes*1) / Impressions * 100. If > 5.0, embed winning lessons into long-term vector memory.
-
-Bookmark this blueprint for your next sprint. Which step is currently your team's biggest challenge?
-
-#SystemDesign #LangGraph #SoftwareArchitecture`,
-    rationale: "Step-by-step practical blueprint designed to maximize engineering bookmarks and repost velocity.",
-    match_score: 9.6,
+#Engineering #LangGraph #Memory`,
+    rationale: "Numbered procedural steps optimized for bookmarking and engineering teams.",
+    match_score: 8.7,
   },
 ];
 
 export const MOCK_SELECTED_POST: MockSelectedPost = {
-  draft: MOCK_DRAFTS[0],
-  match_score: 9.8,
+  draft: MOCK_DRAFTS[1],
+  match_score: 9.4,
   evaluation_summary:
-    "Evaluated against brand voice (Authoritative yet conversational, high-signal, zero-fluff). Achieved match score of 9.8/10. Demonstrated 5 brand dos and avoided all marketing hype constraints.",
+    "Your audience has historically saved opinion-driven technical posts more frequently than generic tutorials. The agent selected a contrarian hook based on this learned preference.",
+  dosMatched: [
+    "Quantified claim in opening 3 lines",
+    "Contrarian angle addressing architectural waste",
+    "Direct question call to action",
+  ],
+  dontsAvoided: ["No hype words ('groundbreaking', 'game changer')", "No generic buzzwords"],
   dos_matched: [
-    "Backed by quantitative metrics & benchmarks (+0.8)",
-    "Scannable bullet points and structured layout (+0.6)",
-    "Engaging practitioner CTA (+0.5)",
-    "Directly calibrated with audience demand for benchmark metrics (+0.5)",
+    "Quantified claim in opening 3 lines",
+    "Contrarian angle addressing architectural waste",
+    "Direct question call to action",
   ],
-  donts_avoided: [
-    "Zero hollow marketing buzzwords or unsubstantiated superlatives",
-    "Controlled hashtag usage (3 tags used)",
-  ],
-  scheduled_time: "Optimal distribution slot: Mon-Thu 09:30 AM EST",
+  donts_avoided: ["No hype words ('groundbreaking', 'game changer')", "No generic buzzwords"],
+  scheduled_time: "Tuesday at 2:30 PM (Peak Reply Window)",
 };
 
 export const MOCK_MEMORY_INSIGHTS: MockMemoryInsights = {
   brand_name: "SocioTrack",
-  total_winning_posts: 12,
-  total_lessons_learned: 8,
+  total_winning_posts: 14,
+  total_lessons_learned: 28,
   current_sentiment: {
-    topic: "Deterministic State Management with LangGraph",
+    topic: "Cost Optimization & Deterministic State",
     sentiment_label: "cautious_and_demanding",
-    sentiment_score: 0.74,
-    summary: "Engineers want verifiable benchmarks and state machine architectures over toy demos.",
-    keywords: ["benchmarks", "state machines", "deterministic agents", "cost reduction"],
+    sentiment_score: 0.68,
+    summary: "68% of your audience is currently curious about cost optimization and ROI.",
+    keywords: ["latency", "token-cost", "stategraph", "benchmarks", "roi"],
   },
   top_winning_posts: [
     {
-      id: "post_01",
-      topic: "Deterministic State Management with LangGraph",
-      content: "We migrated our multi-agent pipelines to LangGraph StateGraph. P99 latency dropped 73% and recovery hit 99.4%.",
-      hook: "We migrated our multi-agent pipelines from unbounded loops to LangGraph StateGraph.",
-      composite_score: 8.8,
-      impressions: 25000,
+      id: "win_1",
+      topic: "Deterministic State Management",
+      hook: "Everyone talks about scaling their business...",
+      content: "Everyone talks about scaling their business. But what if the real competitive advantage isn't spending more?...",
+      composite_score: 9.42,
+      impressions: 24500,
+      shares: 580,
+      replies: 160,
+      likes: 1120,
+      key_takeaway: "Contrarian opinions outperform tutorials by 3.4x in saves.",
+    },
+    {
+      id: "win_2",
+      topic: "Token Cost Optimization",
+      hook: "We analyzed 4,200 production runs across 18 teams...",
+      content: "We analyzed 4,200 production runs across 18 teams deploying LangGraph StateGraph...",
+      composite_score: 8.71,
+      impressions: 18200,
       shares: 320,
-      replies: 140,
-      likes: 850,
-      key_takeaway: "Concrete latency & token cost benchmarks trigger 3x higher engineering shares.",
-    },
-    {
-      id: "post_02",
-      topic: "Agent Architecture Realities",
-      content: "Hot take: 90% of 'multi-agent systems' are just overcomplicated while-loops.",
-      hook: "Hot take: 90% of 'multi-agent systems' are overcomplicated while-loops.",
-      composite_score: 7.2,
-      impressions: 18000,
-      shares: 210,
-      replies: 190,
-      likes: 620,
-      key_takeaway: "Contrarian hook debunking agent swarms creates viral comment threads.",
-    },
-    {
-      id: "post_03",
-      topic: "Production LangGraph Framework",
-      content: "4 rules for building bulletproof LangGraph workflows in production.",
-      hook: "4 rules for building bulletproof LangGraph workflows in production:",
-      composite_score: 7.9,
-      impressions: 22000,
-      shares: 290,
       replies: 95,
-      likes: 710,
-      key_takeaway: "Numbered actionable playbooks maximize bookmarking and reposts.",
+      likes: 740,
+      key_takeaway: "Benchmark numbers in opening sentence yield 92% scroll-stop rate.",
     },
   ],
   learned_lessons: [
     {
-      id: "lesson_01",
-      topic: "Deterministic State Management with LangGraph",
-      key_lesson: "P99 latency benchmarks and token reduction stats drive highest technical leadership share rates.",
-      composite_score: 9.75,
-      derived_at: "2026-11-06T18:20:00Z",
+      id: "les_1",
+      topic: "Contrarian Content",
+      key_lesson: "Contrarian technical takes get 3.4x more saves than tutorials.",
+      composite_score: 9.42,
+      derived_at: "2026-11-06T14:20:00Z",
     },
     {
-      id: "lesson_02",
-      topic: "Agent Architecture Realities",
-      key_lesson: "Debunking unconstrained autonomous swarms with deterministic state proof sparks 2.4x more comments.",
-      composite_score: 8.4,
-      derived_at: "2026-11-05T14:10:00Z",
+      id: "les_2",
+      topic: "Peak Reply Window",
+      key_lesson: "Tuesday & Thursday, 2:00 PM – 4:30 PM yields highest comment volume.",
+      composite_score: 8.95,
+      derived_at: "2026-11-05T18:10:00Z",
+    },
+    {
+      id: "les_3",
+      topic: "Practical Examples",
+      key_lesson: "Posts featuring practical cost-saving examples generate 2.1x more shares.",
+      composite_score: 8.64,
+      derived_at: "2026-11-04T11:00:00Z",
     },
   ],
 };

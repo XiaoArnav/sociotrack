@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SocioTrack | Social Media Engagement Agent Core",
+  title: "SocioTrack | AI-Powered Social Media Engagement & Audience Intelligence Agent",
   description:
-    "Autonomous Social Media Engagement Agent with LangGraph StateGraph, Brand Voice Evaluation, and Reinforcement Learning.",
+    "An intelligent social media engagement agent that understands your audience, predicts engagement, and continuously improves your content strategy. Microsoft Hackathon Edition.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -13,8 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-[#0b0f19] text-gray-100 antialiased min-h-screen">
+    <html lang="en">
+      <body className="bg-[#F6F7FB] text-[#172033] antialiased min-h-screen selection:bg-[#ECE9FF] selection:text-[#5146D8]">
         {children}
       </body>
     </html>
