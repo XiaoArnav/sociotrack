@@ -180,7 +180,56 @@ def _get_benchmark_fallback(creator_handle: str) -> InstagramCrawlResult:
     clean_handle = creator_handle.lower().strip().lstrip("@")
 
     # Tailored profiles for standard benchmark creators
-    if "steven" in clean_handle or "mellor" in clean_handle:
+    if "arnav" in clean_handle or "patel" in clean_handle:
+        posts = [
+            RawPost(
+                post_id="arnav_1",
+                media_type="REELS",
+                caption="Why 90% of AI Agents Hallucinate in Production: How we mathematically bounded memory using LangGraph and Hindsight vector retrieval.",
+                views_or_reach=58400,
+                likes=3150,
+                comments=210,
+                shares=2450,
+                saves=4600,
+                posted_hour_utc=14,
+            ),
+            RawPost(
+                post_id="arnav_2",
+                media_type="CAROUSEL_ALBUM",
+                caption="Architecture Breakdown: Ingesting 10,000 Live Social Webhooks with Sub-60ms P99 Latency (Full Slide-by-Slide Diagram)",
+                views_or_reach=44200,
+                likes=1890,
+                comments=112,
+                shares=1320,
+                saves=3820,
+                posted_hour_utc=16,
+            ),
+            RawPost(
+                post_id="arnav_3",
+                media_type="REELS",
+                caption="Deterministic State Management vs Infinite Loops: What nobody tells you about deploying autonomous agents to production.",
+                views_or_reach=62000,
+                likes=3450,
+                comments=198,
+                shares=2800,
+                saves=4900,
+                posted_hour_utc=15,
+            ),
+            RawPost(
+                post_id="arnav_4",
+                media_type="IMAGE",
+                caption="Late night engineering sprint at SocioTrack HQ. Ships > Talks. #buildinpublic",
+                views_or_reach=5200,
+                likes=180,
+                comments=14,
+                shares=6,
+                saves=12,
+                posted_hour_utc=18,
+            ),
+        ]
+        followers = 34820
+        bio = "Arnav Patel | Building Autonomous AI Agents & Real-Time Social Analytics 🚀 LangGraph • Next.js • Python Systems"
+    elif "steven" in clean_handle or "mellor" in clean_handle:
         posts = [
             RawPost(
                 post_id="stm_1",

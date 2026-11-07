@@ -55,6 +55,44 @@ import {
 
 // Preset accounts for instantaneous realistic audits
 const CREATOR_PRESETS: Record<string, CreatorProfile> = {
+  "arnav.patel07": {
+    handle: "arnav.patel07",
+    name: "Arnav Patel | AI Systems Architect",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
+      "DevRelay Fellow • Open Source Contributor • Tech Innovator",
+      "📍 Bangalore • High-throughput multi-agent architectures & live analytics",
+    ],
+    linkUrl: "https://github.com/XiaoArnav",
+    trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
+    followers: 34820,
+    followersDelta: "+2,140 (6.55%)",
+    following: 418,
+    followingDelta: "+12 (2.95%)",
+    posts: 84,
+    postsDelta: "+4 (5.0%)",
+    score: 88.4,
+  },
+  arnavpatel07: {
+    handle: "arnav.patel07",
+    name: "Arnav Patel | AI Systems Architect",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
+      "DevRelay Fellow • Open Source Contributor • Tech Innovator",
+      "📍 Bangalore • High-throughput multi-agent architectures & live analytics",
+    ],
+    linkUrl: "https://github.com/XiaoArnav",
+    trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
+    followers: 34820,
+    followersDelta: "+2,140 (6.55%)",
+    following: 418,
+    followingDelta: "+12 (2.95%)",
+    posts: 84,
+    postsDelta: "+4 (5.0%)",
+    score: 88.4,
+  },
   thestevenmellor: DEFAULT_CREATOR,
   mkbhd: {
     handle: "mkbhd",
@@ -198,6 +236,14 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
     return CREATOR_PRESETS[clean];
   }
 
+  const normalized = clean.replace(/[\._\-]/g, "");
+  if (normalized.includes("arnav") || normalized.includes("patel")) {
+    return CREATOR_PRESETS["arnav.patel07"];
+  }
+  if (CREATOR_PRESETS[normalized]) {
+    return CREATOR_PRESETS[normalized];
+  }
+
   let hash = 0;
   for (let i = 0; i < clean.length; i++) {
     hash = (hash << 5) - hash + clean.charCodeAt(i);
@@ -211,12 +257,16 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
   const deltaF = 80 + (abs % 850);
   const pctF = ((deltaF / followers) * 100).toFixed(2);
 
-  const displayTitle = clean.charAt(0).toUpperCase() + clean.slice(1);
+  const displayTitle = clean
+    .split(/[\._\-]/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
 
   return {
     handle: clean,
-    name: `${displayTitle} | Content Architect`,
-    avatar: `https://images.unsplash.com/photo-1535713875002?w=200&auto=format&fit=crop&q=80`,
+    name: `${displayTitle || clean} | Content Architect`,
+    avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80`,
     bioLines: [
       `Official Instagram account for @${clean}`,
       "Digital Strategy • Creative Storytelling • Community Growth",
@@ -271,6 +321,7 @@ export default function App() {
   // 3. Active Creator Profile State
   const [activeCreator, setActiveCreator] = useState<CreatorProfile>(DEFAULT_CREATOR);
   const [isAuditingAccount, setIsAuditingAccount] = useState(false);
+  const [telemetryStep, setTelemetryStep] = useState<string | null>(null);
 
   // 4. Navigation State: Sub-navigation active tab (Default: "growth")
   const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("growth");
@@ -311,6 +362,8 @@ export default function App() {
     if (!handle) return;
 
     setIsAuditingAccount(true);
+    setTelemetryStep(`Connecting to Meta Graph API for @${handle}...`);
+
     showToast(
       "Auditing Account via Meta Graph API",
       `Connecting to @${handle} telemetry and indexing historical signals...`,
@@ -318,20 +371,34 @@ export default function App() {
     );
 
     setTimeout(() => {
+      setTelemetryStep(`Observing @${handle}: Ingesting media nodes & Reel engagement...`);
+    }, 350);
+
+    setTimeout(() => {
+      setTelemetryStep("Calculating algorithmic virality ratio & health benchmarks...");
+    }, 700);
+
+    setTimeout(() => {
+      setTelemetryStep("Synthesizing AI content recommendations & winning hook formulas...");
+    }, 1050);
+
+    setTimeout(() => {
       const profile = generateCreatorProfile(handle);
       setActiveCreator(profile);
+      setActiveSubTab("audit"); // Auto-switch to Audit view
       setIsAuditingAccount(false);
+      setTelemetryStep(null);
 
       // Scroll smoothly to the creator card
       const el = document.getElementById("creator-card-section");
       el?.scrollIntoView({ behavior: "smooth" });
 
       showToast(
-        "Audit Complete",
-        `Loaded fresh analytics for @${profile.handle} (InsTrack Score: ${profile.score}%).`,
+        "AI Diagnostic Audit Complete",
+        `Synthesized real-time telemetry and winning predictions for @${profile.handle} (Score: ${profile.score}%).`,
         "success"
       );
-    }, 600);
+    }, 1400);
   };
 
   // 9. Handler: Date Range Adjustment
@@ -541,7 +608,7 @@ export default function App() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search any account on Instagram (e.g. mkbhd, mrbeast)"
+                  placeholder="Search any account on Instagram (e.g. arnav.patel07, mkbhd)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-12 pl-11 pr-28 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
@@ -562,10 +629,34 @@ export default function App() {
                 </button>
               </form>
 
+              {/* Live Telemetry Ingestion Progress Card */}
+              {isAuditingAccount && telemetryStep && (
+                <div className="mt-4 p-4 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/40 border-2 border-indigo-500/50 dark:border-indigo-500/40 shadow-xl backdrop-blur-md animate-fade-in text-left space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 animate-spin" />
+                      <span className="text-xs font-bold text-indigo-900 dark:text-indigo-200 uppercase tracking-wider">
+                        AI Social Telemetry Engine
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-200/80 dark:bg-indigo-900/80 text-indigo-800 dark:text-indigo-200">
+                      Live Ingestion
+                    </span>
+                  </div>
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-500 shrink-0" />
+                    <span>{telemetryStep}</span>
+                  </div>
+                  <div className="w-full bg-indigo-200/60 dark:bg-indigo-900/60 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 h-1.5 rounded-full animate-pulse w-full" />
+                  </div>
+                </div>
+              )}
+
               {/* Quick Account Suggestions: Click to immediately audit */}
               <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span className="font-semibold text-slate-400">Quick Audit:</span>
-                {["thestevenmellor", "mkbhd", "mrbeast", "brewhavencafe", "cuppacosmos"].map((handle) => (
+                {["arnav.patel07", "thestevenmellor", "mkbhd", "mrbeast", "brewhavencafe"].map((handle) => (
                   <button
                     key={handle}
                     onClick={() => {

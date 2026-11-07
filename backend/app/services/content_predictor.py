@@ -33,7 +33,10 @@ def _synthesize_deterministic_predictions(
     """
     median_er = stats.get("median_er", 4.2)
     top_format = stats.get("top_performing_format", "REELS")
-    clean_niche = niche or "Technical Systems & Architecture"
+    if "arnav" in creator_handle.lower() or "patel" in creator_handle.lower():
+        clean_niche = niche or "Autonomous Agent Systems & Persistent Memory"
+    else:
+        clean_niche = niche or "Technical Systems & Architecture"
 
     winning_formats = [
         WinningFormatRanking(

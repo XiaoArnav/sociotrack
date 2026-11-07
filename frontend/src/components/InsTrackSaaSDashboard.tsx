@@ -346,7 +346,7 @@ export function InsTrackSaaSDashboard({
               onClick={onOpenSurvey}
               className="text-xs font-semibold text-slate-300 hover:text-white transition-colors"
             >
-              Pricing
+              Feedback
             </button>
 
             {/* User Profile Pill matching Video 1, 2, 4, 5 */}
@@ -1050,7 +1050,7 @@ export function InsTrackSaaSDashboard({
               Top Accounts
             </button>
             <button onClick={onOpenSurvey} className="hover:text-slate-300 transition-colors">
-              Pricing
+              Feedback Survey
             </button>
             <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
             <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>

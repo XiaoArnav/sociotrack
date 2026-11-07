@@ -131,11 +131,11 @@ export function InsTrackCreatorCard({
                 <Star className={`w-4 h-4 ${isStarred ? "fill-current" : ""}`} />
               </button>
               <a
-                href="https://instagram.com"
+                href={`https://instagram.com/${creator.handle}`}
                 target="_blank"
                 rel="noreferrer"
                 className="p-1 rounded-md text-[#E1306C] hover:opacity-80 transition-opacity"
-                title="View on Instagram"
+                title={`View @${creator.handle} on Instagram`}
               >
                 <Instagram className="w-4 h-4" />
               </a>

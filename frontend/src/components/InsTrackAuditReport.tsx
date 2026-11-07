@@ -58,6 +58,8 @@ export function InsTrackAuditReport({
   const utilityIndex = ((creator.score / 100) * 8.6).toFixed(1);
   const healthGrade =
     creator.score >= 90 ? "A+" : creator.score >= 75 ? "A" : creator.score >= 65 ? "B+" : "B";
+  const isArnav =
+    creator.handle.toLowerCase().includes("arnav") || creator.handle.toLowerCase().includes("patel");
 
   return (
     <div className="space-y-6">
@@ -176,41 +178,83 @@ export function InsTrackAuditReport({
           </div>
 
           <div className="space-y-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
-              <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
-                <span>Data-First Educational Carousels</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                  +3.82% ER
-                </span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
-                Posts opening with concrete numbers within the first slide achieve a 4.2x higher bookmark rate and 84% full-carousel swipe completions.
-              </p>
-            </div>
+            {isArnav ? (
+              <>
+                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                    <span>Contrarian AI Architecture Reels</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      +16.99% ER
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                    Hooks unpacking why 90% of autonomous agents hallucinate in production generate 3.2x higher technical peer shares and 94% retention.
+                  </p>
+                </div>
 
-            <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
-              <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
-                <span>Peak Tuesday Morning Delivery</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                  +42% Reach
-                </span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
-                Publishing between 08:30 and 10:00 AM UTC aligns with audience check-in habits, ensuring algorithm velocity within the initial 45 minutes.
-              </p>
-            </div>
+                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                    <span>Slide-by-Slide System Diagrams</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      +22.94% ER
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                    Carousels visualizing real-time webhook queues and vector memory retrieval achieve a 4.6x higher bookmark rate among developers.
+                  </p>
+                </div>
 
-            <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
-              <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
-                <span>High Save-to-Like Ratio (1:3.8)</span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
-                  Viral Signal
-                </span>
-              </div>
-              <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
-                Instagram&apos;s 2026 ranking engine heavily prioritizes bookmarks over vanity likes. Your content functions as evergreen reference material.
-              </p>
-            </div>
+                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                    <span>High Save-to-Share Ratio (1:4.8)</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      Viral Signal
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                    Evergreen technical breakdowns function as permanent reference bookmarks. Instagram re-serves slide 2 to unswiped feed impressions.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                    <span>Data-First Educational Carousels</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      +3.82% ER
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                    Posts opening with concrete numbers within the first slide achieve a 4.2x higher bookmark rate and 84% full-carousel swipe completions.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                    <span>Peak Tuesday Morning Delivery</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      +42% Reach
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                    Publishing between 08:30 and 10:00 AM UTC aligns with audience check-in habits, ensuring algorithm velocity within the initial 45 minutes.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/40 space-y-1">
+                  <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                    <span>High Save-to-Like Ratio (1:3.8)</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200">
+                      Viral Signal
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed">
+                    Instagram&apos;s 2026 ranking engine heavily prioritizes bookmarks over vanity likes. Your content functions as evergreen reference material.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
