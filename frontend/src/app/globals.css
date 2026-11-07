@@ -1,34 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  --card: 217 33% 17%;
-  --card-foreground: 210 40% 98%;
-  --border: 217 33% 25%;
+  --primary-indigo: #5146D8;
+  --electric-blue: #3478F6;
+  --deep-navy: #172033;
+  --background: #F6F7FB;
+  --card-bg: #FFFFFF;
+  --soft-lavender: #ECE9FF;
+  --success-green: #16A477;
+  --secondary-text: #718096;
+  --border-color: #E6E9F0;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--background);
+  color: var(--deep-navy);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar for clean enterprise look */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #111827;
+  background: #F0F2F7;
 }
 ::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 3px;
+  background: #CBD5E1;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #94A3B8;
+}
+
+/* Subtle AI glow gradients */
+.gradient-ai-primary {
+  background: linear-gradient(135deg, #5146D8 0%, #3478F6 100%);
+}
+
+.gradient-ai-subtle {
+  background: linear-gradient(135deg, rgba(81, 70, 216, 0.08) 0%, rgba(52, 120, 246, 0.08) 100%);
+}
+
+.gradient-ai-lavender {
+  background: linear-gradient(135deg, #ECE9FF 0%, #E0DCFF 100%);
+}
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(230, 233, 240, 0.8);
+}
+
+/* Custom range slider styling */
+input[type="range"] {
+  accent-color: #5146D8;
 }
