@@ -13,6 +13,7 @@ import { InsTrackCompetitorTable } from "@/components/InsTrackCompetitorTable";
 import { InsTrackSurveyModal } from "@/components/InsTrackSurveyModal";
 import { InsTrackAddAccountModal } from "@/components/InsTrackAddAccountModal";
 import { InsTrackSaaSDashboard } from "@/components/InsTrackSaaSDashboard";
+import { InsTrackPredictionCard } from "@/components/InsTrackPredictionCard";
 import { GenerationStudio } from "@/components/GenerationStudio";
 import { AgentMemoryPanel } from "@/components/AgentMemoryPanel";
 import { LiveEngagementLab } from "@/components/LiveEngagementLab";
@@ -360,6 +361,17 @@ export default function App() {
 
           {activeSubTab === "audit" && (
             <div className="space-y-6 animate-fade-in">
+              <InsTrackPredictionCard
+                initialHandle="thestevenmellor"
+                onSendToStudio={(hook, format) => {
+                  setActiveSubTab("aistudio");
+                  showToast(
+                    "Transferred to Studio",
+                    `Loaded predicted hook: "${hook.slice(0, 45)}..."`,
+                    "success"
+                  );
+                }}
+              />
               <InsTrackBenchmarkCards />
               <InsTrackGradeCards />
             </div>

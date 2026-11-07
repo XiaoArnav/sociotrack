@@ -53,9 +53,12 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str = ""
     DEFAULT_MODEL: str = "gemini-1.5-pro"
 
-    # Meta / Instagram Graph API Webhook Settings
+    # Meta / Instagram Graph API Webhook & Crawler Settings
     META_VERIFY_TOKEN: str = "sociotrack_meta_verify_token_2026"
     META_APP_SECRET: str = ""
+    INSTAGRAM_ACCESS_TOKEN: str = ""
+    INSTAGRAM_BUSINESS_ACCOUNT_ID: str = ""
+    RAPIDAPI_KEY: str = ""
 
     # Social Engagement Scoring Thresholds
     MIN_COMPOSITE_SCORE_THRESHOLD: float = 5.0

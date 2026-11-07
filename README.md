@@ -57,6 +57,9 @@ flowchart TD
   - `POST /api/simulator/feed-metrics`: Accepts engagement metrics, calculates weighted score, triggers memory feedback loop.
   - `GET /api/memory/insights?brand_id={id}`: Returns learned audience insights.
   - `GET /api/brands` & `POST /api/brands`: Brand persona management for frontend selectors.
+  - `POST /api/diagnostics/predict-content`: Ingests `{ creator_handle, niche_or_topic }`, crawls Instagram, computes algorithmic signals, and predicts winning formats & hooks via Google Gemini / Groq.
+  - `GET /api/diagnostics/instagram/{handle}/predict`: Instant GET prediction endpoint.
+  - `GET /api/diagnostics/instagram/{handle}/posts`: Crawls and returns raw posts and metrics for any Instagram handle.
 * **Hindsight Memory Client (`backend/app/services/hindsight_client.py`)**: Official integration for retain, recall, reflect.
 * **Seed Data & Tooling (`backend/db/seed.py` / `seed.sql`)**: Pre-populated mock data for immediate testing.
 * **Test Suite (`backend/tests/`)**: Unit & integration test coverage via pytest.
