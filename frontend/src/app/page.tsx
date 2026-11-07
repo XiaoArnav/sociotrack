@@ -93,7 +93,234 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     postsDelta: "+4 (5.0%)",
     score: 88.4,
   },
-  thestevenmellor: DEFAULT_CREATOR,
+  techno_gamerz: {
+    handle: "techno_gamerz",
+    name: "Ujjwal Chaurasia | Techno Gamerz",
+    avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Ujjwal Chaurasia • Gamer & Content Creator 🎮",
+      "YouTube: Techno Gamerz (40M+ Subscribers) • Ujjwal",
+      "Creator of GameOn & Hitman • Delhi, India 🇮🇳",
+    ],
+    linkUrl: "https://youtube.com/technogamerzofficial",
+    trackedSince: "Tracked since Aug, 18 2019. Updated 2 minutes ago via Graph API.",
+    followers: 13420000,
+    followersDelta: "+184,000 (1.39%)",
+    following: 246,
+    followingDelta: "+4 (1.65%)",
+    posts: 492,
+    postsDelta: "+12 (2.50%)",
+    score: 94.6,
+  },
+  mnijungkook: {
+    handle: "mnijungkook",
+    name: "Jung Kook (정국) | BTS",
+    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Jung Kook of BTS • Solo Album 'GOLDEN' 🌟",
+      "BIGHIT MUSIC / HYBE • Seven • 3D • Standing Next to You",
+      "Connecting with global ARMY 💜",
+    ],
+    linkUrl: "https://bts-official.jp",
+    trackedSince: "Tracked since Dec, 06 2021. Updated 10 minutes ago.",
+    followers: 54200000,
+    followersDelta: "+410,000 (0.76%)",
+    following: 7,
+    followingDelta: "+0 (0.0%)",
+    posts: 85,
+    postsDelta: "+2 (2.41%)",
+    score: 98.2,
+  },
+  lalalalisa_m: {
+    handle: "lalalalisa_m",
+    name: "LISA (라리사) | LLOUD",
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Lalisa Manobal • Founder @wearelloud ⚡️",
+      "BLACKPINK • Rockstar • Moonlit Floor • RCA Records",
+      "Louis Vuitton & BVLGARI Global House Ambassador",
+    ],
+    linkUrl: "https://wearelloud.com",
+    trackedSince: "Tracked since Jun, 15 2018. Updated 5 minutes ago.",
+    followers: 104800000,
+    followersDelta: "+620,000 (0.59%)",
+    following: 1,
+    followingDelta: "+0 (0.0%)",
+    posts: 1120,
+    postsDelta: "+6 (0.54%)",
+    score: 99.1,
+  },
+  sooyaaa__: {
+    handle: "sooyaaa__",
+    name: "JISOO (지수) | BLISSOO",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "JISOO • CEO @blissoo_official 🌸",
+      "BLACKPINK • ME (FLOWER) • Actress & Artist",
+      "Dior & Cartier Global Brand Ambassador",
+    ],
+    linkUrl: "https://blissoo.co.kr",
+    trackedSince: "Tracked since Jun, 15 2018. Updated 12 minutes ago.",
+    followers: 79400000,
+    followersDelta: "+390,000 (0.49%)",
+    following: 4,
+    followingDelta: "+0 (0.0%)",
+    posts: 1080,
+    postsDelta: "+8 (0.75%)",
+    score: 97.5,
+  },
+  thv: {
+    handle: "thv",
+    name: "V (뷔) | Kim Taehyung",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "V of BTS • Solo Album 'Layover' 🎷",
+      "CELINE Boy & Cartier Global Brand Ambassador",
+      "Visual Artist, Singer & Songwriter • Seoul 🇰🇷",
+    ],
+    linkUrl: "https://ibighit.com/bts",
+    trackedSince: "Tracked since Dec, 06 2021. Updated 8 minutes ago.",
+    followers: 67100000,
+    followersDelta: "+480,000 (0.72%)",
+    following: 7,
+    followingDelta: "+0 (0.0%)",
+    posts: 112,
+    postsDelta: "+3 (2.75%)",
+    score: 98.4,
+  },
+  "j.m": {
+    handle: "j.m",
+    name: "Jimin (지민) | Park Jimin",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Jimin of BTS • Albums 'FACE' & 'MUSE' 🌙",
+      "Dior Global Ambassador • Tiffany & Co. Ambassador",
+      "Dancer, Singer & Performer",
+    ],
+    linkUrl: "https://ibighit.com/bts",
+    trackedSince: "Tracked since Dec, 06 2021. Updated 15 minutes ago.",
+    followers: 53800000,
+    followersDelta: "+360,000 (0.67%)",
+    following: 7,
+    followingDelta: "+0 (0.0%)",
+    posts: 89,
+    postsDelta: "+1 (1.14%)",
+    score: 97.8,
+  },
+  uarmyhope: {
+    handle: "uarmyhope",
+    name: "j-hope (제이홉) | Jung Hoseok",
+    avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "j-hope of BTS • 'HOPE ON THE STREET' 🐿️",
+      "Jack In The Box • Louis Vuitton House Ambassador",
+      "Dance, Music & Fashion • I'm your hope, you're my hope",
+    ],
+    linkUrl: "https://ibighit.com/bts",
+    trackedSince: "Tracked since Dec, 06 2021. Updated 20 minutes ago.",
+    followers: 50400000,
+    followersDelta: "+310,000 (0.62%)",
+    following: 7,
+    followingDelta: "+0 (0.0%)",
+    posts: 230,
+    postsDelta: "+5 (2.22%)",
+    score: 96.9,
+  },
+  chenzheyuanisssme: {
+    handle: "chenzheyuanisssme",
+    name: "Chen Zheyuan (陈哲远) | Actor",
+    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Chen Zheyuan (陈哲远) • Official Instagram 🎬",
+      "Actor • Hidden Love (偷偷藏不住) • Our Secret",
+      "Beijing, China • Represented by Gramarie Entertainment",
+    ],
+    linkUrl: "https://weibo.com/chenzheyuan",
+    trackedSince: "Tracked since Sep, 14 2021. Updated 35 minutes ago.",
+    followers: 3450000,
+    followersDelta: "+68,000 (2.01%)",
+    following: 92,
+    followingDelta: "+0 (0.0%)",
+    posts: 178,
+    postsDelta: "+3 (1.71%)",
+    score: 92.4,
+  },
+  "tomi.timetraveler": {
+    handle: "tomi.timetraveler",
+    name: "Tomi | Time Traveler CGI",
+    avatar: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Tomi • Visual Storyteller & Cyberpunk CGI ⏳",
+      "Exploring alternate timelines and futuristic worlds",
+      "Tokyo • 3D Motion, Unreal Engine 5 & Generative Art",
+    ],
+    linkUrl: "https://tomitraveler.art",
+    trackedSince: "Tracked since Feb, 02 2022. Updated 40 minutes ago.",
+    followers: 1840000,
+    followersDelta: "+45,000 (2.51%)",
+    following: 312,
+    followingDelta: "+8 (2.63%)",
+    posts: 340,
+    postsDelta: "+11 (3.34%)",
+    score: 89.1,
+  },
+  itsjvke: {
+    handle: "itsjvke",
+    name: "JVKE | Singer & Producer",
+    avatar: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "JVKE • 'golden hour' (3B+ streams worldwide) 🎹",
+      "Singer, Songwriter & Producer • Making beats in my bedroom",
+      "New music on the way • Listen on Spotify & Apple Music",
+    ],
+    linkUrl: "https://itsjvke.com",
+    trackedSince: "Tracked since Jan, 10 2021. Updated 18 minutes ago.",
+    followers: 6850000,
+    followersDelta: "+92,000 (1.36%)",
+    following: 418,
+    followingDelta: "+6 (1.45%)",
+    posts: 360,
+    postsDelta: "+8 (2.27%)",
+    score: 95.3,
+  },
+  moretomihika: {
+    handle: "moretomihika",
+    name: "Tomihika (トミヒカ) | Tokyo Lifestyle",
+    avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "Tomihika • Fashion, Film & Modern Tokyo Living 🇯🇵",
+      "Visual diary • Streetwear, coffee architecture & lifestyle",
+      "Contact: tomihika.mgmt@gmail.com",
+    ],
+    linkUrl: "https://tomihika.jp",
+    trackedSince: "Tracked since Mar, 19 2022. Updated 25 minutes ago.",
+    followers: 1120000,
+    followersDelta: "+24,000 (2.19%)",
+    following: 480,
+    followingDelta: "+15 (3.22%)",
+    posts: 290,
+    postsDelta: "+6 (2.11%)",
+    score: 87.8,
+  },
+  rkive: {
+    handle: "rkive",
+    name: "RM (남준) | Kim Namjoon",
+    avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=200&auto=format&fit=crop&q=80",
+    bioLines: [
+      "RM of BTS • 'Right Place, Wrong Person' • 'Indigo' 🏛️",
+      "Bottega Veneta Ambassador • Modern Art & Architecture Archive",
+      "Seoul, South Korea",
+    ],
+    linkUrl: "https://ibighit.com/bts",
+    trackedSince: "Tracked since Dec, 06 2021. Updated 30 minutes ago.",
+    followers: 47200000,
+    followersDelta: "+280,000 (0.60%)",
+    following: 7,
+    followingDelta: "+0 (0.0%)",
+    posts: 164,
+    postsDelta: "+4 (2.50%)",
+    score: 97.1,
+  },
   mkbhd: {
     handle: "mkbhd",
     name: "Marques Brownlee",
@@ -132,106 +359,25 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     postsDelta: "+4 (0.78%)",
     score: 98.7,
   },
-  brewhavencafe: {
-    handle: "brewhavencafe",
-    name: "Brew Haven Café",
-    avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80",
-    bioLines: [
-      "Artisanal Single-Origin Coffee & Sourdough Pastries",
-      "Open Daily 7am - 8pm • Downtown Bangalore",
-      "Tag @brewhavencafe to be featured in our community cup ☕",
-    ],
-    linkUrl: "https://brewhaven.cafe/order",
-    trackedSince: "Tracked since Mar, 12 2021. Updated 24 minutes ago.",
-    followers: 14038,
-    followersDelta: "+154 (1.11%)",
-    following: 51,
-    followingDelta: "-1 (-1.92%)",
-    posts: 101,
-    postsDelta: "+3 (3.06%)",
-    score: 78.4,
-  },
-  beanblossombrew: {
-    handle: "beanblossombrew",
-    name: "Bean Blossom Brew",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
-    bioLines: [
-      "Craft Roastery & Specialty Cold Brews",
-      "Sustainable organic beans shipped directly to your door",
-      "Brew guides, espresso dial-in & brewing equipment",
-    ],
-    linkUrl: "https://beanblossom.shop",
-    trackedSince: "Tracked since Nov, 04 2020. Updated 45 minutes ago.",
-    followers: 84597,
-    followersDelta: "+564 (0.67%)",
-    following: 239,
-    followingDelta: "+5 (2.13%)",
-    posts: 1793,
-    postsDelta: "+10 (0.56%)",
-    score: 74.3,
-  },
-  cuppacosmos: {
-    handle: "cuppacosmos",
-    name: "Cuppa Cosmos Café",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80",
-    bioLines: [
-      "Intergalactic Specialty Espresso Bar & Bakery",
-      "Award-winning baristas • Seasonal micro-lots",
-      "Order table pickup on our web app 🛸",
-    ],
-    linkUrl: "https://cuppacosmos.com",
-    trackedSince: "Tracked since Jul, 22 2021. Updated 1 hour ago.",
-    followers: 15602,
-    followersDelta: "+42 (0.27%)",
-    following: 2,
-    followingDelta: "+0 (0.0%)",
-    posts: 1768,
-    postsDelta: "+2 (0.11%)",
-    score: 82.1,
-  },
-  mochameadows: {
-    handle: "mochameadows",
-    name: "Mocha Meadows Coffee",
-    avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&auto=format&fit=crop&q=80",
-    bioLines: [
-      "Highland Single Origin Beans & Velvet Mocha Blends",
-      "Cozy spaces for reading, coding & conversing",
-      "Visit our flagship roastery 🌿",
-    ],
-    linkUrl: "https://mochameadows.coffee",
-    trackedSince: "Tracked since Aug, 14 2022. Updated 30 minutes ago.",
-    followers: 3409,
-    followersDelta: "+20 (0.59%)",
-    following: 89,
-    followingDelta: "+2 (2.30%)",
-    posts: 257,
-    postsDelta: "+5 (1.98%)",
-    score: 66.8,
-  },
-  espressoemporium: {
-    handle: "espressoemporium",
-    name: "Espresso Emporium",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
-    bioLines: [
-      "The premier purveyor of Italian roast and lever espresso",
-      "Training the next generation of latte art champions",
-      "Beans roasted fresh in small batches every Tuesday",
-    ],
-    linkUrl: "https://espressoemporium.com",
-    trackedSince: "Tracked since Feb, 18 2020. Updated 12 minutes ago.",
-    followers: 16548,
-    followersDelta: "+69 (0.42%)",
-    following: 349,
-    followingDelta: "-1 (-0.29%)",
-    posts: 495,
-    postsDelta: "+2 (0.41%)",
-    score: 79.5,
-  },
 };
+
+// Helper to extract clean handle from username or full Instagram URL
+function cleanHandleFromInput(input: string): string {
+  let clean = input.trim();
+  try {
+    if (clean.includes("instagram.com/")) {
+      const match = clean.match(/instagram\.com\/([a-zA-Z0-9_\.]+)/);
+      if (match && match[1]) {
+        clean = match[1];
+      }
+    }
+  } catch {}
+  return clean.replace(/^@/, "").toLowerCase().trim();
+}
 
 // Deterministic generator for arbitrary handles entered by the user
 function generateCreatorProfile(rawHandle: string): CreatorProfile {
-  const clean = rawHandle.replace(/^@/, "").toLowerCase().trim();
+  const clean = cleanHandleFromInput(rawHandle);
   if (CREATOR_PRESETS[clean]) {
     return CREATOR_PRESETS[clean];
   }
@@ -265,7 +411,7 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
 
   return {
     handle: clean,
-    name: `${displayTitle || clean} | Content Architect`,
+    name: `${displayTitle || clean} | Content Creator`,
     avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80`,
     bioLines: [
       `Official Instagram account for @${clean}`,
@@ -358,7 +504,7 @@ export default function App() {
 
   // 8. Handler: Audit Any Account with Realistic Telemetry & Animated Transition
   const handleAuditAccount = (rawUsername: string) => {
-    const handle = rawUsername.replace(/^@/, "").toLowerCase().trim();
+    const handle = cleanHandleFromInput(rawUsername);
     if (!handle) return;
 
     setIsAuditingAccount(true);
@@ -608,7 +754,7 @@ export default function App() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search any account on Instagram (e.g. arnav.patel07, mkbhd)"
+                  placeholder="Search or paste Instagram URL (e.g. arnav.patel07, techno_gamerz, lalalalisa_m)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-12 pl-11 pr-28 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
@@ -656,7 +802,7 @@ export default function App() {
               {/* Quick Account Suggestions: Click to immediately audit */}
               <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span className="font-semibold text-slate-400">Quick Audit:</span>
-                {["arnav.patel07", "thestevenmellor", "mkbhd", "mrbeast", "brewhavencafe"].map((handle) => (
+                {["arnav.patel07", "techno_gamerz", "lalalalisa_m", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
                   <button
                     key={handle}
                     onClick={() => {

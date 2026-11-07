@@ -301,10 +301,10 @@ export function InsTrackHistoricalTable({ creator = DEFAULT_CREATOR }: InsTrackH
                   <h3 className="text-base font-black text-slate-900 dark:text-white">
                     SocioTrack Instagram Report
                   </h3>
-                  <p className="text-slate-500">Account: @thestevenmellor</p>
+                  <p className="text-slate-500">Account: @{creator.handle}</p>
                 </div>
                 <div className="text-right text-[11px] text-slate-400">
-                  <span>Feb 26 2022 - Mar 25 2022</span>
+                  <span>Last 30 Days Telemetry</span>
                   <div className="font-mono text-[10px] text-indigo-500">Page 1 of 4</div>
                 </div>
               </div>
@@ -313,23 +313,23 @@ export function InsTrackHistoricalTable({ creator = DEFAULT_CREATOR }: InsTrackH
               <div className="grid grid-cols-4 gap-3 text-center">
                 <div className="bg-slate-50 dark:bg-[#161F30] p-3 rounded-lg border border-slate-200 dark:border-[#243048]">
                   <div className="text-[10px] text-slate-400">Followers</div>
-                  <div className="font-bold text-slate-900 dark:text-white text-sm">176,668</div>
-                  <div className="text-[10px] text-emerald-500 font-bold">+6,766 (+3.98%)</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm">{creator.followers.toLocaleString()}</div>
+                  <div className="text-[10px] text-emerald-500 font-bold">{creator.followersDelta}</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-[#161F30] p-3 rounded-lg border border-slate-200 dark:border-[#243048]">
                   <div className="text-[10px] text-slate-400">Following</div>
-                  <div className="font-bold text-slate-900 dark:text-white text-sm">336</div>
-                  <div className="text-[10px] text-rose-500 font-bold">-221 (-39.68%)</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm">{creator.following.toLocaleString()}</div>
+                  <div className="text-[10px] text-slate-400 font-medium">{creator.followingDelta}</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-[#161F30] p-3 rounded-lg border border-slate-200 dark:border-[#243048]">
                   <div className="text-[10px] text-slate-400">Posts</div>
-                  <div className="font-bold text-slate-900 dark:text-white text-sm">361</div>
-                  <div className="text-[10px] text-emerald-500 font-bold">+19 (+5.56%)</div>
+                  <div className="font-bold text-slate-900 dark:text-white text-sm">{creator.posts.toLocaleString()}</div>
+                  <div className="text-[10px] text-emerald-500 font-bold">{creator.postsDelta}</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-[#161F30] p-3 rounded-lg border border-slate-200 dark:border-[#243048]">
-                  <div className="text-[10px] text-slate-400">Engagement</div>
-                  <div className="font-bold text-slate-900 dark:text-white text-sm">1.08%</div>
-                  <div className="text-[10px] text-rose-500 font-bold">-0.20% (-15.7%)</div>
+                  <div className="text-[10px] text-slate-400">SocioTrack Score</div>
+                  <div className="font-bold text-indigo-600 dark:text-indigo-400 text-sm">{creator.score}%</div>
+                  <div className="text-[10px] text-emerald-500 font-bold">Grade A+</div>
                 </div>
               </div>
 

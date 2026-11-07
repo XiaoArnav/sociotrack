@@ -55,17 +55,17 @@ interface TrackedAccountItem {
 const INITIAL_TRACKED: TrackedAccountItem[] = [
   {
     id: "t1",
-    handle: "thestevenmellor",
-    name: "Steve | Growth Marketing",
+    handle: "arnav.patel07",
+    name: "Arnav Patel | AI Systems Architect",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80",
-    followers: 173435,
-    followersDelta: "+4,227 (+2.5%)",
+    followers: 34820,
+    followersDelta: "+2,140 (+6.55%)",
     isPositiveFollowers: true,
-    following: 584,
-    followingDelta: "+38 (+7.0%)",
-    mediaCount: 353,
-    mediaDelta: "+16 (+4.7%)",
-    engagementRate: 3.8,
+    following: 418,
+    followingDelta: "+12 (+2.95%)",
+    mediaCount: 84,
+    mediaDelta: "+4 (+5.0%)",
+    engagementRate: 16.99,
     group: "My Business",
   },
   {
@@ -99,7 +99,7 @@ const INITIAL_CLIENTS: ClientItem[] = [
     id: "cl1",
     name: "Acme Agency Global",
     type: "Marketing Agency",
-    accounts: ["@thestevenmellor", "@acmemedia"],
+    accounts: ["@arnav.patel07", "@acmemedia"],
     reportCadence: "Weekly",
     dateAdded: "Oct 14, 2026",
   },
@@ -304,16 +304,16 @@ export function InsTrackSaaSDashboard({
           </button>
         </nav>
 
-        {/* Bottom Switcher: Jump back to Public Creator Audit (@thestevenmellor) */}
+        {/* Bottom Switcher: Jump back to Public Creator Audit (@arnav.patel07) */}
         <div className="p-4 border-t border-[#1E2638] space-y-2">
           <div className="p-3 rounded-xl bg-[#161F30] border border-[#243048]">
             <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
               <span>Auditing Account</span>
               <span className="text-[#818CF8] font-bold">Live</span>
             </div>
-            <div className="text-xs font-bold text-white truncate">@thestevenmellor</div>
+            <div className="text-xs font-bold text-white truncate">@arnav.patel07</div>
             <button
-              onClick={() => onViewPublicProfile("thestevenmellor")}
+              onClick={() => onViewPublicProfile("arnav.patel07")}
               className="mt-2.5 w-full py-1.5 rounded-lg bg-[#6366F1] hover:bg-[#5558E6] text-white text-[11px] font-bold flex items-center justify-center space-x-1.5 transition-colors"
             >
               <span>View Public Report</span>
@@ -401,7 +401,7 @@ export function InsTrackSaaSDashboard({
                   <button
                     onClick={() => {
                       setShowProfileDropdown(false);
-                      onViewPublicProfile("thestevenmellor");
+                      onViewPublicProfile("arnav.patel07");
                     }}
                     className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-rose-400 hover:bg-rose-500/10 transition-colors"
                   >
@@ -617,7 +617,7 @@ export function InsTrackSaaSDashboard({
                       id: "cl_" + Date.now(),
                       name: "New Enterprise Partner",
                       type: "Brand",
-                      accounts: ["@thestevenmellor"],
+                      accounts: ["@arnav.patel07"],
                       reportCadence: "Weekly",
                       dateAdded: "Just now",
                     };

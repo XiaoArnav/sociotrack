@@ -39,23 +39,23 @@ export interface CreatorProfile {
 }
 
 export const DEFAULT_CREATOR: CreatorProfile = {
-  handle: "thestevenmellor",
-  name: "Steve | Growth Marketing",
-  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
+  handle: "arnav.patel07",
+  name: "Arnav Patel | AI Systems Architect",
+  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
   bioLines: [
-    "I help you Grow and Launch your brand on Instagram",
-    "👨‍💻 ex corporate 9-5 > 🚀 6-figure creator",
-    "👇 Join my 'Gram Accelerator Program ⏳",
+    "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
+    "DevRelay Fellow • Open Source Contributor • Tech Innovator",
+    "📍 Bangalore • Crafting high-throughput multi-agent architectures & real-time analytics",
   ],
-  linkUrl: "http://linktr.ee/thestevenmellor/",
-  trackedSince: "Tracked since May, 01 2019. Updated 16 minutes ago.",
-  followers: 173435,
-  followersDelta: "+4,227 (2.5%)",
-  following: 584,
-  followingDelta: "+38 (7.0%)",
-  posts: 353,
-  postsDelta: "+16 (4.7%)",
-  score: 70.1,
+  linkUrl: "https://github.com/XiaoArnav",
+  trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
+  followers: 34820,
+  followersDelta: "+2,140 (6.55%)",
+  following: 418,
+  followingDelta: "+12 (2.95%)",
+  posts: 84,
+  postsDelta: "+4 (5.0%)",
+  score: 88.4,
 };
 
 interface InsTrackCreatorCardProps {

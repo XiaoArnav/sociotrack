@@ -27,7 +27,7 @@ router = APIRouter(prefix="/diagnostics", tags=["Diagnostics"])
 
 class PredictContentRequest(BaseModel):
     """Payload to trigger Instagram crawl and AI content prediction."""
-    creator_handle: str = Field(default="thestevenmellor", description="Instagram creator @handle")
+    creator_handle: str = Field(default="arnav.patel07", description="Instagram creator @handle")
     niche_or_topic: Optional[str] = Field(default="Tech & AI Architecture", description="Target niche or topic focus")
     max_posts: int = Field(default=10, ge=1, le=50, description="Max posts to crawl from Instagram")
     posts: Optional[List[RawPost]] = Field(default=None, description="Optional verified real posts provided directly")

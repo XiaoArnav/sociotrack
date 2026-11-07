@@ -29,7 +29,7 @@ class MetaWebhookEvent(BaseModel):
 
 
 class SimulateWebhookRequest(BaseModel):
-    brand_name: str = "thestevenmellor"
+    brand_name: str = "arnav.patel07"
     topic: str = "LangGraph and Autonomous Agent Architecture"
     post_caption: str = "Why 78% of autonomous agent failures stem from unconstrained context drift."
     likes: int = 420

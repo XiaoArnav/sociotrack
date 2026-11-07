@@ -17,18 +17,23 @@ interface InsTrackAddAccountModalProps {
   onOpenProfile?: (username: string) => void;
 }
 
-// Built-in accounts matching InsTrack demo and video 4 & 5
+// Real creators and accounts matching SocioTrack live intelligence
 const POPULAR_ACCOUNTS: SuggestedAccount[] = [
-  { username: "chh", fullName: "Press \"Enter\" to open account profile", isExact: true },
-  { username: "chhotabheem", fullName: "Chhota Bheem" },
-  { username: "chhoti_bristi5631", fullName: "Bidhan Mandal" },
-  { username: "chhornsovannareach", fullName: "Chhorn Sovannareach" },
-  { username: "thestevenmellor", fullName: "Steve | Growth Marketing" },
-  { username: "cristiano", fullName: "Cristiano Ronaldo" },
-  { username: "leomessi", fullName: "Leo Messi" },
-  { username: "brewhavencafe", fullName: "Brew Haven Café" },
-  { username: "espressoemporium", fullName: "Espresso Emporium" },
-  { username: "cuppacosmos", fullName: "Cuppa Cosmos Café" },
+  { username: "arnav.patel07", fullName: "Arnav Patel | AI Systems Architect" },
+  { username: "techno_gamerz", fullName: "Ujjwal Chaurasia | Techno Gamerz" },
+  { username: "lalalalisa_m", fullName: "LISA (라리사) | LLOUD" },
+  { username: "thv", fullName: "V (뷔) | Kim Taehyung" },
+  { username: "sooyaaa__", fullName: "JISOO (지수) | BLISSOO" },
+  { username: "mnijungkook", fullName: "Jung Kook (정국) | BTS" },
+  { username: "j.m", fullName: "Jimin (지민) | Park Jimin" },
+  { username: "uarmyhope", fullName: "j-hope (제이홉) | Jung Hoseok" },
+  { username: "rkive", fullName: "RM (남준) | Kim Namjoon" },
+  { username: "itsjvke", fullName: "JVKE | Singer & Producer" },
+  { username: "chenzheyuanisssme", fullName: "Chen Zheyuan (陈哲远) | Actor" },
+  { username: "tomi.timetraveler", fullName: "Tomi | Time Traveler CGI" },
+  { username: "moretomihika", fullName: "Tomihika (トミヒカ) | Tokyo Lifestyle" },
+  { username: "mkbhd", fullName: "Marques Brownlee" },
+  { username: "mrbeast", fullName: "Jimmy Donaldson" },
 ];
 
 export function InsTrackAddAccountModal({
