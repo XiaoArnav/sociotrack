@@ -132,6 +132,24 @@ Every user journey is interactive and functional:
   - [x] Mobile: Single-column layout, touch-friendly metric sliders, responsive auth cards.
   - [x] Production build tested with `next build`: **Zero errors, 100% static compilation**.
 
+- [x] **9. Matt Pocock Engineering Skills (Pocock-OS) Integration**
+  - [x] Integrated 14 canonical Matt Pocock skills into `.agents/skills/` and global config:
+    - `codebase-design`: Ousterhout's Razor / Deep Modules doctrine.
+    - `tdd`: Public-seam testing discipline with horizontal vs vertical slicing.
+    - `diagnosing-bugs`: Systematic 6-phase debugging feedback loop.
+    - `domain-modeling`: Ubiquitous language documentation (`GLOSSARY.md`).
+    - `prototype`: High-velocity interactive UI demonstrators.
+    - `implement-spec` & `to-tickets`: Frontier ticket DAG execution.
+    - `code-review`: Fowler smell detection and two-axis review.
+    - `grill-me` & `grilling`: Interactive design tree convergence.
+    - `writing-for-agents` & `handoff`: Context pointer hygiene.
+    - `wait-what`: Cognitive assumption checking.
+  - [x] Authored `GLOSSARY.md` standardizing domain language across frontend, backend, and agent state.
+  - [x] Authored Architectural Decision Records in `docs/adr/`:
+    - `docs/adr/0001-split-screen-authentication-and-session-gating.md`
+    - `docs/adr/0002-closed-loop-feedback-and-dynamic-memory-injection.md`
+  - [x] Implemented pure domain deep module `frontend/src/lib/domain.ts` and automated public-seam test suite `frontend/src/tests/domain.test.js` (`npm test` passes 4/4 tests in **~28ms**).
+
 ---
 
 ## Component Architecture Tree

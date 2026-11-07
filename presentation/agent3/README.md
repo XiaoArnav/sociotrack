@@ -13,3 +13,4 @@
 - [x] **Live Engagement Lab (Core Hackathon Feature)**: Expandable floating bottom drawer, interactive metric sliders (Impressions, Shares, Likes, Replies), dynamic composite score calculation, 5-step feedback loop animation, and dynamic new insight card injection with `NEW` badge into Agent Memory.
 - [x] **Full Subviews & Mobile Responsiveness**: Tailored views for Approval Queue, Audience Intel, Analytics, and Settings; 100% responsive across desktop, tablet, and mobile.
 - [x] **Production Build**: Verified with `next build` (0 lint/type errors, static compilation clean).
+- [x] **Matt Pocock Skills Activated**: 14 engineering and productivity skills installed in `.agents/skills/`; `GLOSSARY.md`, ADRs (`docs/adr/`), and public-seam domain tests passing via `npm test` in 28ms.
