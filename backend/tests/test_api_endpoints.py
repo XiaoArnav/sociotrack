@@ -154,3 +154,19 @@ async def test_endpoint_error_handling_not_found():
             },
         )
         assert res3.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_endpoint_6_diagnostics_audit():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/diagnostics/audit?brand_name=DevRelay")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["creator_handle"] == "DevRelay"
+        assert "health_score" in data
+        assert data["health_score"] >= 0
+        assert "whats_working" in data
+        assert "whats_failing" in data
+        assert "immediate_next_steps" in data
+

@@ -24,8 +24,12 @@ import {
 import { CheckCircle2, Sparkles, X } from "lucide-react";
 
 export default function App() {
-  // 1. Authentication State: Always start at Login!
-  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
+  // 1. Authentication State: Default to demo user for zero-latency presentation flow
+  const [currentUser, setCurrentUser] = useState<UserSession | null>({
+    name: "Alex Chen",
+    email: "alex.chen@enterprise.com",
+    role: "Principal Content Architect",
+  });
 
   // 2. Navigation State
   const [currentTab, setCurrentTab] = useState<NavItem>("overview");
