@@ -7,17 +7,21 @@ Run directly via:
 import sys
 import os
 
-# Support direct imports as shown in Person 1 spec
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "backend")))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "backend/app/core")))
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+# Support direct imports
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+BACKEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+CORE_DIR = os.path.join(BACKEND_DIR, "app/core")
+
+for d in (ROOT_DIR, BACKEND_DIR, CORE_DIR):
+    if d not in sys.path:
+        sys.path.insert(0, d)
 
 try:
-    from schemas import RawPost
-    from diagnostics_agent import run_creator_audit
-except ImportError:
     from backend.app.core.schemas import RawPost
     from backend.app.core.diagnostics_agent import run_creator_audit
+except ImportError:
+    from schemas import RawPost
+    from diagnostics_agent import run_creator_audit
 
 
 mock_posts = [

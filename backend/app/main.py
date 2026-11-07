@@ -8,7 +8,7 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
-from app.routers import drafts, posts, simulator, memory, brands
+from app.routers import drafts, posts, simulator, memory, brands, diagnostics
 
 
 @asynccontextmanager
@@ -52,6 +52,7 @@ app.include_router(posts.router, prefix=settings.API_V1_STR)
 app.include_router(simulator.router, prefix=settings.API_V1_STR)
 app.include_router(memory.router, prefix=settings.API_V1_STR)
 app.include_router(brands.router, prefix=settings.API_V1_STR)
+app.include_router(diagnostics.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["System"], summary="General health check")
