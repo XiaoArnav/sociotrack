@@ -9,6 +9,7 @@ import { InsTrackHistoricalTable } from "@/components/InsTrackHistoricalTable";
 import { InsTrackCompetitorTable } from "@/components/InsTrackCompetitorTable";
 import { InsTrackSurveyModal } from "@/components/InsTrackSurveyModal";
 import { InsTrackAddAccountModal } from "@/components/InsTrackAddAccountModal";
+import { InsTrackSaaSDashboard } from "@/components/InsTrackSaaSDashboard";
 import { GenerationStudio } from "@/components/GenerationStudio";
 import { AgentMemoryPanel } from "@/components/AgentMemoryPanel";
 import { LiveEngagementLab } from "@/components/LiveEngagementLab";
@@ -53,6 +54,8 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  // View mode switcher: "public_report" (landing / creator audit) vs "saas_dashboard" (logged-in InsTrack app from video 4 & 5)
+  const [viewMode, setViewMode] = useState<"public_report" | "saas_dashboard">("public_report");
 
   useEffect(() => {
     try {
@@ -224,16 +227,42 @@ export default function App() {
         </div>
 
         {/* Center: InsTrack Logo with Circular Gradient Icon (Screenshot 3 & 4) */}
-        <div className="flex items-center space-x-2">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-md">
-            <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-md">
+              <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+            </div>
+            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+              InsTrack
+            </span>
+            <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
+              SocioTrack AI
+            </span>
           </div>
-          <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            InsTrack
-          </span>
-          <span className="hidden sm:inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-            SocioTrack AI
-          </span>
+
+          {/* Segmented View Mode Switcher */}
+          <div className="hidden lg:flex items-center p-1 rounded-xl bg-slate-100 dark:bg-[#161F30] border border-slate-200 dark:border-[#243048] text-[11px] font-semibold">
+            <button
+              onClick={() => setViewMode("public_report")}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                viewMode === "public_report"
+                  ? "bg-white dark:bg-[#6366F1] text-slate-900 dark:text-white shadow-xs"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              Public Report
+            </button>
+            <button
+              onClick={() => setViewMode("saas_dashboard")}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                viewMode === "saas_dashboard"
+                  ? "bg-white dark:bg-[#6366F1] text-slate-900 dark:text-white shadow-xs"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              }`}
+            >
+              SaaS Dashboard
+            </button>
+          </div>
         </div>
 
         {/* Right: Pricing, Log in, Create a Free Account (Screenshot 3 & 4) */}
@@ -261,7 +290,16 @@ export default function App() {
         </div>
       </header>
 
-      {/* HERO SECTION (Matching Screenshot 3 & 4) */}
+      {viewMode === "saas_dashboard" ? (
+        <InsTrackSaaSDashboard
+          isDarkMode={isDarkMode}
+          onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+          onViewPublicProfile={() => setViewMode("public_report")}
+          onOpenSurvey={() => setShowSurveyModal(true)}
+        />
+      ) : (
+        <>
+          {/* HERO SECTION (Matching Screenshot 3 & 4) */}
       <section className="relative pt-12 pb-6 px-4 sm:px-8 max-w-5xl mx-auto text-center space-y-4">
         {/* Background Ambient Shapes */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl pointer-events-none" />
@@ -482,6 +520,39 @@ export default function App() {
         </div>
       </main>
 
+      {/* FOOTER */}
+      <footer className="border-t border-slate-200 dark:border-[#243048] bg-white dark:bg-[#0B0F19] py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+          <div>
+            <div className="font-extrabold text-slate-900 dark:text-white text-sm">
+              InsTrack by SocioTrack
+            </div>
+            <p className="text-[11px] mt-0.5">
+              Autonomous Social Media Agent with Persistent Memory. Built for Hack With Bangalore 4.0.
+            </p>
+          </div>
+          <div className="flex items-center space-x-6 text-[11px] font-medium">
+            <button onClick={() => setActiveSubTab("overview")} className="hover:text-indigo-500">
+              Overview
+            </button>
+            <button onClick={() => setActiveSubTab("growth")} className="hover:text-indigo-500">
+              Growth
+            </button>
+            <button onClick={() => setActiveSubTab("historical")} className="hover:text-indigo-500">
+              History
+            </button>
+            <button onClick={() => setActiveSubTab("aistudio")} className="hover:text-indigo-500">
+              AI Studio
+            </button>
+          </div>
+          <div className="text-[11px] font-mono">
+            © 2026 InsTrack / SocioTrack. All rights reserved.
+          </div>
+        </div>
+      </footer>
+      </>
+      )}
+
       {/* 5. FLOATING LIVE ENGAGEMENT LAB & META WEBHOOK SIMULATOR */}
       <LiveEngagementLab onPatternDiscovered={handlePatternDiscovered} />
 
@@ -553,7 +624,8 @@ export default function App() {
               onLoginSuccess={(u) => {
                 setCurrentUser(u);
                 setShowAuthModal(false);
-                showToast("Signed In Successfully", `Welcome back, ${u.name}!`);
+                setViewMode("saas_dashboard");
+                showToast("Signed In Successfully", `Welcome to your InsTrack Dashboard, ${u.name}!`);
               }}
             />
           </div>
@@ -565,6 +637,7 @@ export default function App() {
         isOpen={showSurveyModal}
         onClose={() => setShowSurveyModal(false)}
         onComplete={(data) => {
+          setViewMode("saas_dashboard");
           showToast(
             "Welcome to InsTrack!",
             `Workspace configured for ${data.persona} focusing on ${data.goals.join(", ")}.`,
@@ -573,7 +646,7 @@ export default function App() {
         }}
       />
 
-      {/* ADD ACCOUNT MODAL (from video 5) */}
+      {/* ADD ACCOUNT MODAL (from video 4 & 5) */}
       <InsTrackAddAccountModal
         isOpen={showAddAccountModal}
         onClose={() => setShowAddAccountModal(false)}
@@ -584,38 +657,12 @@ export default function App() {
             "success"
           );
         }}
+        onOpenProfile={(handle) => {
+          setViewMode("public_report");
+          setActiveSubTab("overview");
+          showToast("Opening Creator Profile", `Viewing @${handle} audit report.`);
+        }}
       />
-
-      {/* FOOTER */}
-      <footer className="border-t border-slate-200 dark:border-[#243048] bg-white dark:bg-[#0B0F19] py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <div>
-            <div className="font-extrabold text-slate-900 dark:text-white text-sm">
-              InsTrack by SocioTrack
-            </div>
-            <p className="text-[11px] mt-0.5">
-              Autonomous Social Media Agent with Persistent Memory. Built for Hack With Bangalore 4.0.
-            </p>
-          </div>
-          <div className="flex items-center space-x-6 text-[11px] font-medium">
-            <button onClick={() => setActiveSubTab("overview")} className="hover:text-indigo-500">
-              Overview
-            </button>
-            <button onClick={() => setActiveSubTab("growth")} className="hover:text-indigo-500">
-              Growth
-            </button>
-            <button onClick={() => setActiveSubTab("historical")} className="hover:text-indigo-500">
-              History
-            </button>
-            <button onClick={() => setActiveSubTab("aistudio")} className="hover:text-indigo-500">
-              AI Studio
-            </button>
-          </div>
-          <div className="text-[11px] font-mono">
-            © 2026 InsTrack / SocioTrack. All rights reserved.
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

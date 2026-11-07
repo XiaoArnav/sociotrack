@@ -1,10 +1,11 @@
 # SocioTrack: Autonomous AI Social Media Engagement & Intelligence Agent
 
-> **Live Demo (GitHub Pages)**: [https://stillzepta.github.io/sociotrack/](https://stillzepta.github.io/sociotrack/)  
-> **API Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs) • **Local App**: [http://localhost:3000](http://localhost:3000)
+> **Live Demo (Upstream)**: [https://stillzepta.github.io/sociotrack/](https://stillzepta.github.io/sociotrack/)  
+> **Live Demo (Fork / Verified Author)**: [https://xiaoarnav.github.io/sociotrack/](https://xiaoarnav.github.io/sociotrack/)  
+> **API Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs) • **Local Next.js App**: [http://localhost:3000](http://localhost:3000) • **Meta Webhook**: `/api/webhooks/instagram`
 
 **Project Bio**:  
-SocioTrack is the autonomous, closed-loop AI social media engagement and audience intelligence engine engineered for the Microsoft Hackathon. Built with **Python 3**, **LangGraph**, **ChromaDB / Supabase pgvector**, **FastAPI**, and **Next.js 14**, SocioTrack fuses statistical anomaly detection ($ER, VI, UI$), dynamic memory weights, and deterministic state machines. By ingesting real-world post engagement metrics (impressions, shares, replies, likes), it autonomously recalibrates brand memory weights, optimizes future hook styles, and transforms social feeds into high-converting audience growth loops.
+SocioTrack is the autonomous, closed-loop AI social media engagement and audience intelligence engine engineered for the Microsoft Hackathon (**Hack With Bangalore 4.0**) & the **Vectorize.io Hindsight Hackathon**. Built with **Python 3**, **LangGraph**, **ChromaDB / Supabase pgvector**, **FastAPI**, and **Next.js 14**, SocioTrack fuses statistical anomaly detection ($ER, VI, UI$), dynamic memory weights, and deterministic state machines. By ingesting real-world post engagement metrics (impressions, shares, replies, likes, Meta Developer Webhooks), it autonomously recalibrates brand memory weights, optimizes future hook styles, and transforms social feeds into high-converting audience growth loops. Featuring the high-fidelity **InsTrack (`instrack.app`)** design system with dark/light themes, onboarding survey, creator audit, and SaaS dashboard.
 
 ---
 
