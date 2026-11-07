@@ -71,7 +71,7 @@ async def simulate_feed_metrics(
         await db.flush()
 
     # 3. Calculate Scores
-    # Hackathon engagement score formula: (likes*2 + replies*3 + shares*4) / impressions * 100
+    # Composite engagement score formula: (likes*2 + replies*3 + shares*4) / impressions * 100
     engagement_score = calculate_engagement_score(
         impressions=impressions,
         likes=likes,

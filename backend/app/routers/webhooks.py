@@ -8,7 +8,7 @@ Implements the official Meta Developer Dashboard webhook integration:
    Real-time event receiver for Instagram feed, comments, mentions, and interactions.
    Computes composite engagement, performs sentiment extraction, and updates vector memory.
 3. POST /api/webhooks/instagram/simulate:
-   Simulates Meta Webhook event delivery for live hackathon demo and automated CI/CD.
+   Simulates Meta Webhook event delivery for live telemetry simulation and automated CI/CD.
 """
 
 from typing import Any, Dict, List, Optional

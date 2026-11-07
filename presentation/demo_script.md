@@ -1,4 +1,4 @@
-# SocioTrack: Hackathon Pitch & Live Demo Script
+# SocioTrack: Product Architecture & Live Demo Walkthrough
 
 **Target Duration:** 3 minutes 30 seconds  
 **Presenter:** Person 4 (with Person 1 & Person 3 co-piloting)  

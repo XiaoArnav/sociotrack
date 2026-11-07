@@ -1,6 +1,6 @@
 # LinkedIn Posts & Social Submission Guide
 
-> **Important Rule**: DO NOT add the word "hackathon" or student tags anywhere in these posts.  
+> **Strict Disqualification Rule**: Never include contest or event references or student tags anywhere in public articles or posts.  
 > As required by the rulebook, post the LinkedIn text, include the GitHub repo link in the body, and immediately add the Hindsight repo link as your **first comment**.
 
 ---
@@ -69,7 +69,7 @@ The biggest problem with AI agents isn't intelligence—it's observability.
 If an agent claims to "learn from past performance," how do you verify it? You shouldn't have to look at raw log dumps.
 
 For SocioTrack, we built an interactive intelligence workspace in Next.js 14 and Tailwind:
-→ Dynamic Rainbow InsTrack Score Bar reflecting real-time account health
+→ Dynamic Rainbow SocioTrack Score Bar reflecting real-time account health
 → Lightweight native SVG Bézier area curves tracking growth velocity
 → Live Engagement Lab showing the exact cognitive rules Hindsight embeds into vector memory
 

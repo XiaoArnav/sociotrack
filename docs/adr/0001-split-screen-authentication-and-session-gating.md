@@ -4,13 +4,13 @@
 Accepted
 
 ## Context
-For the Microsoft Hackathon, SocioTrack requires an enterprise-ready entry point that immediately sets a professional, high-trust tone while demonstrating the product's intelligent capabilities before the user enters the main workspace. 
+For enterprise production standards, SocioTrack requires an enterprise-ready entry point that immediately sets a professional, high-trust tone while demonstrating the product's intelligent capabilities before the user enters the main workspace. 
 
 Requirements dictated that:
 1. The first screen must always be the Login page (never open directly into the dashboard).
 2. The authentication journey must support Sign In, Sign Up, and Password Reset.
 3. The left 55% of the screen must showcase the brand vision with an abstract AI network visualization of the 4 interconnected nodes.
-4. Prototype interactions must provide zero-friction judging access ("Instant Demo Access") while supporting real credential validation.
+4. Prototype interactions must provide zero-friction evaluator access ("Instant Demo Access") while supporting real credential validation.
 
 ## Decision
 We implemented a split-screen layout (`AuthPage.tsx`) using a client-side reactive state machine:
@@ -23,6 +23,6 @@ We implemented a split-screen layout (`AuthPage.tsx`) using a client-side reacti
   - Session state gating in `page.tsx` (`currentUser` object) that mounts the workspace only after successful authentication.
 
 ## Consequences
-- **Positive**: Strict adherence to the hackathon requirement of never opening directly into the dashboard.
+- **Positive**: Strict adherence to the security invariant of never opening directly into an unauthenticated dashboard.
 - **Positive**: Clear visual proof of enterprise identity and Microsoft Fluent design principles.
-- **Positive**: Zero latency demo transition for hackathon evaluation.
+- **Positive**: Zero latency demo transition for technical evaluation.

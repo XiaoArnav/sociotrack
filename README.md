@@ -5,7 +5,7 @@
 > **API Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs) • **Local Next.js App**: [http://localhost:3000](http://localhost:3000) • **Meta Webhook**: `/api/webhooks/instagram`
 
 **Project Bio**:  
-SocioTrack is the autonomous, closed-loop AI social media engagement and audience intelligence engine engineered for the Microsoft Hackathon (**Hack With Bangalore 4.0**) & the **Vectorize.io Hindsight Hackathon**. Built with **Python 3**, **LangGraph**, **ChromaDB / Supabase pgvector**, **FastAPI**, and **Next.js 14**, SocioTrack fuses statistical anomaly detection ($ER, VI, UI$), dynamic memory weights, and deterministic state machines. By ingesting real-world post engagement metrics (impressions, shares, replies, likes, Meta Developer Webhooks), it autonomously recalibrates brand memory weights, optimizes future hook styles, and transforms social feeds into high-converting audience growth loops. Featuring the high-fidelity **InsTrack (`instrack.app`)** design system with dark/light themes, onboarding survey, creator audit, and SaaS dashboard.
+SocioTrack is the autonomous, closed-loop AI social media engagement and audience intelligence engine powered by **Vectorize.io Hindsight** and **LangGraph**. Built with **Python 3**, **ChromaDB / Supabase pgvector**, **FastAPI**, and **Next.js 14**, SocioTrack fuses statistical anomaly detection ($ER, VI, UI$), dynamic memory weights, and deterministic state machines. By ingesting real-world post engagement metrics (impressions, shares, replies, likes, Meta Developer Webhooks), it autonomously recalibrates brand memory weights, optimizes future hook styles, and transforms social feeds into high-converting audience growth loops. Featuring the modern SocioTrack design system with dark/light themes, onboarding survey, creator audit, and SaaS dashboard.
 
 ---
 
@@ -139,7 +139,7 @@ social-engagement-agent/
     ├── agent3.md                 # Person 3: Complete UI/UX design system & frontend log
     ├── agent3/README.md
     ├── pitch_deck.pdf            # Slide deck PDF
-    ├── demo_script.md            # Hackathon pitch & timed demo walkthrough
+    ├── demo_script.md            # Technical walkthrough & timed demo script
     └── demo_recording_link.txt   # Video recording link & timestamps
 ```
 

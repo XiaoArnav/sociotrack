@@ -617,7 +617,7 @@ export default function App() {
     },
     {
       q: "Do I have to pay to use this service?",
-      a: "No, SocioTrack is free to use with full access to real-time analytics, historical CSV exports, and AI post generation during the Hack With Bangalore evaluation.",
+      a: "No, SocioTrack is free to use with full access to real-time analytics, historical CSV exports, and AI post generation.",
     },
     {
       q: "Do you offer a free trial?",
@@ -1205,7 +1205,7 @@ export default function App() {
                   SocioTrack
                 </div>
                 <p className="text-[11px] mt-0.5">
-                  Autonomous Social Media Agent with Persistent Memory. Built for Hack With Bangalore 4.0.
+                  Autonomous Social Media Agent with Persistent Vector Memory & Real-Time Analytics.
                 </p>
               </div>
               <div className="flex items-center space-x-6 text-[11px] font-medium">

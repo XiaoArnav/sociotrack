@@ -1,6 +1,6 @@
-# SocioTrack — Hackathon Scope & Boundary Contract
+# SocioTrack — System Scope & Boundary Contract
 
-This document locks the architectural and functional boundaries for **Hack With Bangalore 4.0** (Hindsight Track) to eliminate change amplification and scope creep.
+This document locks the architectural and functional boundaries for **SocioTrack** (Hindsight Memory Track) to eliminate change amplification and scope creep.
 
 ---
 

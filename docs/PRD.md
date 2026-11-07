@@ -3,8 +3,7 @@
 | Metadata | Details |
 | :--- | :--- |
 | **Product Name** | **SocioTrack** — Autonomous Social Media Engagement Agent with Persistent Memory |
-| **Hackathon Target** | **Hack With Bangalore 4.0** (Devnovate × Hack With India @ Microsoft Office Bengaluru) |
-| **Hackathon Track** | **Vectorize.io Hindsight Track** (Memory Retention & Reflection) |
+| **Architecture Standard** | **Vectorize.io Hindsight Memory Loop** (Memory Retention & Reflection) |
 | **Target Stage** | Live Stage Prototype & Production Candidate |
 | **Status** | **APPROVED / LOCKED** |
 
@@ -92,7 +91,7 @@ journey
 - The system must prevent unapproved drafts from advancing to published state.
 
 ### FR-4: Real-Time Feed Reaction Simulator
-- Because real social platforms prohibit automated spamming during hackathons, the system must provide a deterministic Feed Reaction Simulator.
+- Because social platforms enforce strict API rate limits and prohibit high-frequency spam, the system provides a deterministic Feed Reaction Simulator.
 - Ingestion endpoint `POST /api/simulator/feed-metrics` receives `impressions`, `likes`, `replies`, and `shares`.
 - Normalized metric formula:
   $$\text{Engagement Score} = \frac{\text{Likes} \times 2 + \text{Replies} \times 3 + \text{Shares} \times 4}{\max(\text{Impressions}, 1)} \times 100$$
@@ -130,7 +129,7 @@ journey
 
 ---
 
-## 6. Judging Criteria & Hackathon Alignment
+## 6. Evaluation Criteria & Architecture Alignment
 
 | Judging Axis | How SocioTrack Exceeds the Bar |
 | :--- | :--- |

@@ -148,12 +148,12 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#5146D8]/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#3478F6]/25 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Top Header: Logo & Hackathon Pill */}
+        {/* Top Header: Logo & Status Pill */}
         <div className="relative z-10 flex items-center justify-between">
           <SocioTrackLogo size="lg" light={true} />
           <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white">
             <span className="w-2 h-2 rounded-full bg-[#16A477] animate-pulse" />
-            <span className="font-semibold tracking-wide">Microsoft Hackathon 2026</span>
+            <span className="font-semibold tracking-wide">Autonomous Agent Platform</span>
           </div>
         </div>
 
@@ -275,7 +275,7 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ECE9FF] text-[#5146D8]">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Hackathon Prototype</span>
+              <span>Interactive Preview</span>
             </span>
             <button
               onClick={handleQuickDemoLogin}

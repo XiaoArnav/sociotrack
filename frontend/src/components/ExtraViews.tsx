@@ -259,7 +259,7 @@ export function SettingsView() {
       <div className="pb-3 border-b border-[#E6E9F0]">
         <h2 className="text-xl font-extrabold text-[#172033]">Agent &amp; Brand Settings</h2>
         <p className="text-xs text-[#718096]">
-          Configure deterministic brand voice guidelines, creator bios, vector storage, and Microsoft Hackathon endpoints.
+          Configure deterministic brand voice guidelines, creator bios, vector storage, and cloud endpoints.
         </p>
       </div>
 
@@ -352,7 +352,7 @@ export function HelpCenterView() {
   return (
     <div className="max-w-3xl space-y-6">
       <div className="pb-3 border-b border-[#E6E9F0]">
-        <h2 className="text-xl font-extrabold text-[#172033]">Help Center &amp; Hackathon Guide</h2>
+        <h2 className="text-xl font-extrabold text-[#172033]">Help Center &amp; User Guide</h2>
         <p className="text-xs text-[#718096]">
           Walkthrough of the SocioTrack closed-loop social intelligence agent.
         </p>

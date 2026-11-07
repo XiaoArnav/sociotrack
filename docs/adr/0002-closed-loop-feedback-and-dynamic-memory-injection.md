@@ -6,7 +6,7 @@ Accepted
 ## Context
 The primary differentiating capability of SocioTrack over static generative AI dashboards is that it **learns from audience behavior and becomes smarter with every interaction**. 
 
-The hackathon demonstration requires an interactive feedback loop where:
+The closed-loop demonstration requires an interactive feedback pipeline where:
 1. A user adjusts live engagement metrics (impressions, shares, replies, likes).
 2. The agent executes a 5-step analysis process.
 3. If the composite score exceeds the 5.0 quality barrier, a new learned audience preference is synthesized.
@@ -21,6 +21,6 @@ We implemented a decoupled event-driven feedback pipeline across `LiveEngagement
 4. **Optimistic Memory Prepending**: The synthesized insight card is prepended to the `insights` state array with `isNew: true`, triggering a distinct border, lavender halo, and `NEW` pill.
 
 ## Consequences
-- **Positive**: Directly satisfies the most critical hackathon demonstration criteria.
+- **Positive**: Directly satisfies the core closed-loop memory demonstration criteria.
 - **Positive**: Zero coupling to slow external network loops—delivers instant feedback with realistic millisecond timing.
 - **Positive**: Clean public seam between metric submission and memory rendering.
