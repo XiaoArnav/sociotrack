@@ -326,25 +326,25 @@ async def get_live_creator_stats(handle: str):
     }
 
 
-# Standard 15 showcase creators config with verified authentic categories
+# Standard 17 showcase creators config with verified authentic categories
 COMPETITOR_SEEDS = [
     {"handle": "zyrohouse", "group": "My Accounts", "id": "c0", "default_name": "Zyro House", "followers": 68, "following": 1, "mediaCount": 1},
     {"handle": "arnav.patel07", "group": "My Accounts", "id": "c1", "default_name": "Arnav Patel 👾", "followers": 13, "following": 61, "mediaCount": 0},
-    {"handle": "techno_gamerz", "group": "Creators", "id": "c1", "default_name": "Techno Gamerz", "followers": 2000000, "following": 3, "mediaCount": 33},
-    {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c2", "default_name": "LISA", "followers": 105000000, "following": 0, "mediaCount": 1260},
-    {"handle": "thv", "group": "Global Icons", "id": "c3", "default_name": "V", "followers": 78000000, "following": 8, "mediaCount": 195},
-    {"handle": "sooyaaa__", "group": "Global Icons", "id": "c4", "default_name": "JISOO🪐", "followers": 80000000, "following": 0, "mediaCount": 1390},
-    {"handle": "mnijungkook", "group": "Global Icons", "id": "c5", "default_name": "JK", "followers": 27000000, "following": 8, "mediaCount": 54},
-    {"handle": "j.m", "group": "Global Icons", "id": "c6", "default_name": "JIMIN", "followers": 61000000, "following": 8, "mediaCount": 25},
-    {"handle": "uarmyhope", "group": "Global Icons", "id": "c7", "default_name": "jhope", "followers": 57000000, "following": 8, "mediaCount": 371},
-    {"handle": "rkive", "group": "Global Icons", "id": "c8", "default_name": "RM", "followers": 54000000, "following": 8, "mediaCount": 41},
-    {"handle": "itsjvke", "group": "Creators", "id": "c9", "default_name": "JVKE", "followers": 4000000, "following": 1364, "mediaCount": 312},
-    {"handle": "chenzheyuanisssme", "group": "Creators", "id": "c10", "default_name": "陈哲远", "followers": 4000000, "following": 0, "mediaCount": 49},
-    {"handle": "tomi.timetraveler", "group": "Creators", "id": "c11", "default_name": "Tomi", "followers": 3000000, "following": 307, "mediaCount": 579},
-    {"handle": "moretomihika", "group": "Creators", "id": "c12", "default_name": "mihika sharma", "followers": 383000, "following": 425, "mediaCount": 549},
-    {"handle": "aviralbhardwaj_ji", "group": "Creators", "id": "c13", "default_name": "Aviral Bhardwaj", "followers": 319, "following": 1052, "mediaCount": 143},
-    {"handle": "zurikrishna", "group": "Creators", "id": "c14", "default_name": "krishna", "followers": 42, "following": 97, "mediaCount": 39},
-    {"handle": "keerz.core", "group": "Creators", "id": "c15", "default_name": "🪐", "followers": 182, "following": 1388, "mediaCount": 1},
+    {"handle": "techno_gamerz", "group": "Creators", "id": "c2", "default_name": "Techno Gamerz", "followers": 2000000, "following": 3, "mediaCount": 33},
+    {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c3", "default_name": "LISA", "followers": 105000000, "following": 0, "mediaCount": 1260},
+    {"handle": "thv", "group": "Global Icons", "id": "c4", "default_name": "V", "followers": 78000000, "following": 8, "mediaCount": 195},
+    {"handle": "sooyaaa__", "group": "Global Icons", "id": "c5", "default_name": "JISOO🪐", "followers": 80000000, "following": 0, "mediaCount": 1390},
+    {"handle": "mnijungkook", "group": "Global Icons", "id": "c6", "default_name": "JK", "followers": 27000000, "following": 8, "mediaCount": 54},
+    {"handle": "j.m", "group": "Global Icons", "id": "c7", "default_name": "JIMIN", "followers": 61000000, "following": 8, "mediaCount": 25},
+    {"handle": "uarmyhope", "group": "Global Icons", "id": "c8", "default_name": "jhope", "followers": 57000000, "following": 8, "mediaCount": 371},
+    {"handle": "rkive", "group": "Global Icons", "id": "c9", "default_name": "RM", "followers": 54000000, "following": 8, "mediaCount": 41},
+    {"handle": "itsjvke", "group": "Creators", "id": "c10", "default_name": "JVKE", "followers": 4000000, "following": 1364, "mediaCount": 312},
+    {"handle": "chenzheyuanisssme", "group": "Creators", "id": "c11", "default_name": "陈哲远", "followers": 4000000, "following": 0, "mediaCount": 49},
+    {"handle": "tomi.timetraveler", "group": "Creators", "id": "c12", "default_name": "Tomi", "followers": 3000000, "following": 307, "mediaCount": 579},
+    {"handle": "moretomihika", "group": "Creators", "id": "c13", "default_name": "mihika sharma", "followers": 383000, "following": 425, "mediaCount": 549},
+    {"handle": "aviralbhardwaj_ji", "group": "Creators", "id": "c14", "default_name": "Aviral Bhardwaj", "followers": 319, "following": 1052, "mediaCount": 143},
+    {"handle": "zurikrishna", "group": "Creators", "id": "c15", "default_name": "krishna", "followers": 42, "following": 97, "mediaCount": 39},
+    {"handle": "keerz.core", "group": "Creators", "id": "c16", "default_name": "🪐", "followers": 182, "following": 1388, "mediaCount": 1},
 ]
 
 

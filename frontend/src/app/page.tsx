@@ -26,6 +26,7 @@ import { InsTrackEngagementView } from "@/components/InsTrackEngagementView";
 import { InsTrackPredictionCard } from "@/components/InsTrackPredictionCard";
 import { InsTrackUnfollowersView } from "@/components/InsTrackUnfollowersView";
 import { InsTrackRecentPostsFeed } from "@/components/InsTrackRecentPostsFeed";
+import { FoundersDispatch } from "@/components/FoundersDispatch";
 import {
   PostDraft,
   LearnedInsight,
@@ -1492,10 +1493,16 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Competitor Table connected to handleAuditAccount */}
+              {/* Competitor Table connected to handleAuditAccount & Account Management */}
               <InsTrackCompetitorTable
                 onAddAccountClick={() => setShowAddAccountModal(true)}
                 onSelectAccount={(handle) => handleAuditAccount(handle)}
+                onSetPrimaryAccount={(handle) => {
+                  handleAuditAccount(handle);
+                  document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                }}
+                primaryHandle={activeCreator.handle}
+                onToast={(title, msg, type) => showToast(title, msg, type)}
               />
             </section>
 
@@ -1570,6 +1577,11 @@ export default function App() {
                 </button>
               </div>
             </section>
+
+            {/* 8. FOUNDERS' DISPATCH // OPEN SOURCE CORE */}
+            <div id="founders-dispatch-section" className="pt-4 scroll-mt-20">
+              <FoundersDispatch />
+            </div>
           </main>
 
           {/* FOOTER */}
@@ -1610,6 +1622,32 @@ export default function App() {
                   className="hover:text-indigo-500"
                 >
                   Growth
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("unfollowers");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  Unfollowers
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveSubTab("aistudio");
+                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500"
+                >
+                  AI Studio
+                </button>
+                <button
+                  onClick={() => {
+                    document.getElementById("founders-dispatch-section")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="hover:text-indigo-500 font-bold text-indigo-600 dark:text-indigo-400"
+                >
+                  Founders’ Dispatch
                 </button>
                 <button
                   onClick={() => {
@@ -1746,9 +1784,16 @@ export default function App() {
         onClose={() => setShowAddAccountModal(false)}
         onAddAccount={(username) => {
           handleAuditAccount(username);
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("sociotrack:track_account", {
+                detail: { username, fullName: `@${username}`, group: "My Accounts" },
+              })
+            );
+          }
           showToast(
             "Account Added to Tracking List",
-            `@${username} is now being audited daily with AI vector memory.`,
+            `@${username} is now being tracked and audited with AI vector memory.`,
             "success"
           );
         }}
