@@ -9,6 +9,7 @@ categorizes content formats and themes, and outputs structured
 
 import os
 import json
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 try:
@@ -16,14 +17,36 @@ try:
 except ImportError:
     OpenAI = None
 
-from backend.app.core.schemas import RawPost, CreatorAuditReport, PostAuditPattern
-from backend.app.core.analytics import compute_post_statistics
+try:
+    from app.core.schemas import RawPost, CreatorAuditReport, PostAuditPattern
+    from app.core.analytics import compute_post_statistics
+except ImportError:
+    from backend.app.core.schemas import RawPost, CreatorAuditReport, PostAuditPattern
+    from backend.app.core.analytics import compute_post_statistics
+
+
+def _determine_provenance_badge(posts: List[RawPost]) -> str:
+    """Derives provenance badge based on individual post metric origins."""
+    if not posts:
+        return "Demo data"
+    prov_set = set()
+    for p in posts:
+        if hasattr(p, "provenance") and isinstance(p.provenance, dict):
+            prov_set.update(p.provenance.values())
+    if "Demo data" in prov_set and len(prov_set) == 1:
+        return "Demo data"
+    if "Verified" in prov_set:
+        return "Verified"
+    return "Retrieved"
 
 
 def _synthesize_deterministic_audit(
     creator_handle: str,
     posts: List[RawPost],
     stats: dict,
+    provenance_badge: Optional[str] = None,
+    data_source: Optional[str] = None,
+    crawled_at: Optional[str] = None,
 ) -> CreatorAuditReport:
     """
     High-fidelity analytical synthesis pass.
@@ -126,6 +149,10 @@ def _synthesize_deterministic_audit(
         "Add explicit utility CTAs ('Save for later') on slide 1 and slide 7 of every carousel.",
     ]
 
+    badge = provenance_badge or _determine_provenance_badge(posts)
+    source = data_source or ("Benchmark Baseline Dataset" if badge == "Demo data" else "Live Ingestion Telemetry")
+    freshness = crawled_at or datetime.utcnow().isoformat()
+
     return CreatorAuditReport(
         creator_handle=creator_handle,
         health_score=health_score,
@@ -134,6 +161,9 @@ def _synthesize_deterministic_audit(
         whats_working=whats_working,
         whats_failing=whats_failing,
         immediate_next_steps=immediate_steps,
+        provenance_badge=badge,
+        data_source=source,
+        crawled_at=freshness,
     )
 
 
@@ -141,6 +171,9 @@ def run_creator_audit(
     creator_handle: str,
     posts: List[RawPost],
     client: Optional[Any] = None,
+    provenance_badge: Optional[str] = None,
+    data_source: Optional[str] = None,
+    crawled_at: Optional[str] = None,
 ) -> CreatorAuditReport:
     """
     Main diagnostic engine function called by Person 2's FastAPI router.
@@ -149,6 +182,9 @@ def run_creator_audit(
     2. LLM structured feature extraction and assessment synthesis.
     """
     stats = compute_post_statistics(posts)
+    badge = provenance_badge or _determine_provenance_badge(posts)
+    source = data_source or ("Benchmark Baseline Dataset" if badge == "Demo data" else "Live Ingestion Telemetry")
+    freshness = crawled_at or datetime.utcnow().isoformat()
 
     # Check for OpenAI API key
     api_key = os.getenv("OPENAI_API_KEY", "")
@@ -160,6 +196,9 @@ def run_creator_audit(
             creator_handle=creator_handle,
             posts=posts,
             stats=stats,
+            provenance_badge=badge,
+            data_source=source,
+            crawled_at=freshness,
         )
 
     try:
@@ -187,11 +226,18 @@ def run_creator_audit(
             ],
             response_format=CreatorAuditReport,
         )
-        return completion.choices[0].message.parsed
+        report = completion.choices[0].message.parsed
+        report.provenance_badge = badge
+        report.data_source = source
+        report.crawled_at = freshness
+        return report
     except Exception as e:
         # Fallback gracefully if API quota/network fails
         return _synthesize_deterministic_audit(
             creator_handle=creator_handle,
             posts=posts,
             stats=stats,
+            provenance_badge=badge,
+            data_source=source,
+            crawled_at=freshness,
         )

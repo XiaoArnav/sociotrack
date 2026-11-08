@@ -20,9 +20,11 @@ from app.core.schemas import RawPost
 
 
 class InstagramCrawlResult(BaseModel):
-    """Normalized Instagram crawl payload."""
+    """Normalized Instagram crawl payload with metric provenance and freshness metadata."""
     handle: str
     source: str = Field(..., description="meta_graph_api | rapidapi | public_web | benchmark_synthetic")
+    provenance_badge: str = Field(default="Retrieved", description="Verified | Retrieved | Estimated | Demo data")
+    data_freshness: str = Field(default="Live Ingestion", description="Description of freshness / source")
     followers: int = 0
     bio: str = ""
     posts: List[RawPost] = Field(default_factory=list)
@@ -62,11 +64,20 @@ async def _fetch_from_meta_graph(creator_handle: str, max_posts: int) -> Optiona
                             shares=int(likes * 0.4),
                             saves=int(likes * 0.7),
                             posted_hour_utc=14,
+                            provenance={
+                                "likes": "Verified",
+                                "comments": "Verified",
+                                "shares": "Estimated",
+                                "saves": "Estimated",
+                                "views_or_reach": "Estimated",
+                            },
                         )
                     )
                 return InstagramCrawlResult(
                     handle=creator_handle,
                     source="meta_graph_api",
+                    provenance_badge="Verified",
+                    data_freshness="Official Meta Graph API (Business Discovery)",
                     followers=data.get("followers_count", 10000),
                     bio=data.get("biography", ""),
                     posts=raw_posts,
@@ -139,6 +150,13 @@ async def _fetch_from_rapidapi(creator_handle: str, max_posts: int) -> Optional[
                             shares=int(likes * 0.35),
                             saves=int(likes * 0.65),
                             posted_hour_utc=14,
+                            provenance={
+                                "likes": "Retrieved",
+                                "comments": "Retrieved",
+                                "shares": "Estimated",
+                                "saves": "Estimated",
+                                "views_or_reach": "Retrieved" if play_count else "Estimated",
+                            },
                         )
                     )
 
@@ -158,6 +176,8 @@ async def _fetch_from_rapidapi(creator_handle: str, max_posts: int) -> Optional[
             return InstagramCrawlResult(
                 handle=creator_handle,
                 source="rapidapi_live",
+                provenance_badge="Retrieved",
+                data_freshness="RapidAPI Live Scraper",
                 followers=followers,
                 bio=bio,
                 posts=raw_posts,
@@ -223,12 +243,21 @@ async def _fetch_from_authenticated_session(creator_handle: str, max_posts: int)
                             shares=int(likes * 0.35),
                             saves=int(likes * 0.65),
                             posted_hour_utc=14,
+                            provenance={
+                                "likes": "Retrieved",
+                                "comments": "Retrieved",
+                                "shares": "Estimated",
+                                "saves": "Estimated",
+                                "views_or_reach": "Retrieved" if is_vid else "Estimated",
+                            },
                         )
                     )
                 if raw_posts:
                     return InstagramCrawlResult(
                         handle=creator_handle,
                         source="live_instagram_session",
+                        provenance_badge="Retrieved",
+                        data_freshness="Direct Authenticated Session Scrape",
                         followers=data.get("edge_followed_by", {}).get("count", 0),
                         bio=data.get("biography", ""),
                         posts=raw_posts,
@@ -274,12 +303,21 @@ async def _fetch_from_public_web(creator_handle: str, max_posts: int) -> Optiona
                             shares=int(likes * 0.4),
                             saves=int(likes * 0.8),
                             posted_hour_utc=14,
+                            provenance={
+                                "likes": "Retrieved",
+                                "comments": "Retrieved",
+                                "shares": "Estimated",
+                                "saves": "Estimated",
+                                "views_or_reach": "Retrieved" if node.get("is_video") else "Estimated",
+                            },
                         )
                     )
                 if raw_posts:
                     return InstagramCrawlResult(
                         handle=creator_handle,
                         source="public_web",
+                        provenance_badge="Retrieved",
+                        data_freshness="Public Web Probe (Lightweight)",
                         followers=data.get("edge_followed_by", {}).get("count", 15000),
                         bio=data.get("biography", ""),
                         posts=raw_posts,
@@ -444,10 +482,21 @@ def _get_benchmark_fallback(creator_handle: str) -> InstagramCrawlResult:
         followers = 28500
         bio = f"Creator @{clean_handle} | Sharing insights, frameworks, and growth systems."
 
-    source_label = "verified_live_telemetry" if ("steven" in clean_handle or "arnav" in clean_handle) else "benchmark_synthetic"
+    # Mark provenance on all benchmark posts as Demo data
+    for p in posts:
+        p.provenance = {
+            "likes": "Demo data",
+            "comments": "Demo data",
+            "shares": "Demo data",
+            "saves": "Demo data",
+            "views_or_reach": "Demo data",
+        }
+
     return InstagramCrawlResult(
         handle=clean_handle,
-        source=source_label,
+        source="benchmark_synthetic",
+        provenance_badge="Demo data",
+        data_freshness="Curated Benchmark Baseline Dataset",
         followers=followers,
         bio=bio,
         posts=posts,

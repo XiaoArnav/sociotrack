@@ -67,16 +67,36 @@ export function InsTrackAuditReport({
       <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 sm:p-8 shadow-sm relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-slate-100 dark:border-[#243048]">
           <div className="space-y-1.5">
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5" />
               </span>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                 Account Diagnostic Audit: @{creator.handle}
               </h2>
+              {creator.provenanceBadge === "Verified" ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60" title="Direct verified Meta Graph API telemetry">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  Verified API
+                </span>
+              ) : creator.provenanceBadge === "Retrieved" ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/60" title="External scraper response telemetry">
+                  <Sparkles className="w-3 h-3 text-cyan-500" />
+                  Retrieved
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60" title="Curated benchmark baseline dataset">
+                  <AlertTriangle className="w-3 h-3 text-amber-500" />
+                  Demo data
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xl leading-relaxed">
-              Autonomous AI audit evaluated against 14,800+ indexed niche creators. Real-time Meta Graph API telemetry &amp; vector retention signals.
+              {creator.provenanceBadge === "Verified"
+                ? "Autonomous AI audit evaluated against official Meta Graph API telemetry with calculated engagement ratios."
+                : creator.provenanceBadge === "Retrieved"
+                ? "Live telemetry retrieved from external scraper. Engagement ratios and pattern detection computed in real time."
+                : "Curated benchmark dataset for exploratory testing. Observed metrics clearly separated from live telemetry."}
             </p>
           </div>
 
