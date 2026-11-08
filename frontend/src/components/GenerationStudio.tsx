@@ -25,6 +25,7 @@ interface GenerationStudioProps {
   onSendToSimulator: (content: string) => void;
   onAgentGeneratingStart?: () => void;
   onAgentGeneratingEnd?: () => void;
+  initialTopic?: string;
 }
 
 const SAMPLE_TOPICS = [
@@ -41,9 +42,17 @@ export function GenerationStudio({
   onSendToSimulator,
   onAgentGeneratingStart,
   onAgentGeneratingEnd,
+  initialTopic,
 }: GenerationStudioProps) {
-  const [topic, setTopic] = useState("Deterministic State Management with LangGraph");
+  const [topic, setTopic] = useState(initialTopic || "Deterministic State Management with LangGraph");
   const [targetTone, setTargetTone] = useState<TargetTone>("Thought Leadership");
+
+  React.useEffect(() => {
+    if (initialTopic) {
+      setTopic(initialTopic);
+      setSelectedPlatform("Instagram");
+    }
+  }, [initialTopic]);
   const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>("LinkedIn");
   const [isGenerating, setIsGenerating] = useState(false);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);

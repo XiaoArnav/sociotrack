@@ -3,6 +3,7 @@ SocioTrack FastAPI Application Entry Point.
 AI Social Media Engagement Agent Backend & Memory Layer.
 Owned by Person 1 & Person 2.
 """
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,8 +22,22 @@ async def lifespan(app: FastAPI):
         init_db_legacy()
     except Exception:
         pass
+
+    # Background 6-hour automated snapshot cron loop
+    async def _snapshot_cron_loop():
+        # Wait 30 seconds after startup so server is warm
+        await asyncio.sleep(30)
+        while True:
+            try:
+                from app.services.snapshot_service import poll_all_indexed_creators
+                await poll_all_indexed_creators()
+            except Exception:
+                pass
+            await asyncio.sleep(21600)  # 6 hours
+
+    cron_task = asyncio.create_task(_snapshot_cron_loop())
     yield
-    # Shutdown logic if needed
+    cron_task.cancel()
 
 
 app = FastAPI(

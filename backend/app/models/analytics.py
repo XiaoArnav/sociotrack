@@ -23,3 +23,22 @@ class PostAnalytics(Base):
 
     # Relationships
     post = relationship("Post", back_populates="analytics")
+
+
+class FollowerSnapshot(Base):
+    __tablename__ = "follower_snapshots"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    handle = Column(String(100), nullable=False, index=True)
+    followers_count = Column(Integer, nullable=False, default=0)
+    following_count = Column(Integer, nullable=False, default=0)
+    media_count = Column(Integer, nullable=False, default=0)
+    net_delta = Column(Integer, nullable=False, default=0)
+    unfollowers_count = Column(Integer, nullable=False, default=0)
+    new_followers_count = Column(Integer, nullable=False, default=0)
+    retention_rate = Column(Float, nullable=False, default=95.0)
+    recorded_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+    )

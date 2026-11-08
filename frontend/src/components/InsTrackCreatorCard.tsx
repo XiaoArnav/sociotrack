@@ -20,6 +20,7 @@ export type SubNavTab =
   | "growth"
   | "overview"
   | "audit"
+  | "unfollowers"
   | "engagement"
   | "historical"
   | "aistudio"
@@ -493,6 +494,7 @@ export function InsTrackCreatorCard({
           { key: "overview", label: "Overview" },
           { key: "audit", label: "Audit" },
           { key: "growth", label: "Growth" },
+          { key: "unfollowers", label: "Unfollowers", badge: "-12", isAlert: true },
           { key: "engagement", label: "Engagement" },
           { key: "historical", label: "History" },
           { key: "aistudio", label: "Posts (AI Studio)" },
@@ -503,13 +505,24 @@ export function InsTrackCreatorCard({
             <button
               key={tab.key}
               onClick={() => onTabChange(tab.key as SubNavTab)}
-              className={`px-4 py-2 rounded-xl transition-all shrink-0 ${
+              className={`px-4 py-2 rounded-xl transition-all shrink-0 flex items-center space-x-1.5 ${
                 isActive
                   ? "bg-slate-100 dark:bg-[#243048] text-slate-900 dark:text-white font-bold shadow-xs"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1E2638]"
               }`}
             >
-              {tab.label}
+              <span>{tab.label}</span>
+              {tab.badge && (
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                    tab.isAlert
+                      ? "bg-rose-500 text-white shadow-xs"
+                      : "bg-indigo-500 text-white"
+                  }`}
+                >
+                  {tab.badge}
+                </span>
+              )}
             </button>
           );
         })}

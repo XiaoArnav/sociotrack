@@ -24,6 +24,8 @@ import { LiveEngagementLab } from "@/components/LiveEngagementLab";
 import { InsTrackAuditReport } from "@/components/InsTrackAuditReport";
 import { InsTrackEngagementView } from "@/components/InsTrackEngagementView";
 import { InsTrackPredictionCard } from "@/components/InsTrackPredictionCard";
+import { InsTrackUnfollowersView } from "@/components/InsTrackUnfollowersView";
+import { InsTrackRecentPostsFeed } from "@/components/InsTrackRecentPostsFeed";
 import {
   PostDraft,
   LearnedInsight,
@@ -51,6 +53,8 @@ import {
   Layers,
   Database,
   ArrowUpRight,
+  AlertTriangle,
+  Info,
 } from "lucide-react";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -690,6 +694,7 @@ export default function App() {
   const [insights, setInsights] = useState<LearnedInsight[]>(INITIAL_INSIGHTS);
   const [searchQuery, setSearchQuery] = useState("");
   const [bookmarkedHandles, setBookmarkedHandles] = useState<string[]>([]);
+  const [selectedStudioHook, setSelectedStudioHook] = useState<string>("");
 
   // Memory search query state in Memory Bank
   const [memorySearchQuery, setMemorySearchQuery] = useState("");
@@ -698,7 +703,7 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<{
     title: string;
     description: string;
-    type?: "success" | "info";
+    type?: "success" | "info" | "warning";
   } | null>(null);
 
   // 7. FAQ State
@@ -708,7 +713,7 @@ export default function App() {
   const showToast = (
     title: string,
     description: string,
-    type: "success" | "info" = "success"
+    type: "success" | "info" | "warning" = "success"
   ) => {
     setToastMessage({ title, description, type });
     setTimeout(() => {
@@ -884,9 +889,31 @@ export default function App() {
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0B0F19] text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white transition-colors duration-200">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 max-w-sm bg-white dark:bg-[#161F30] border-2 border-emerald-500 rounded-2xl p-4 shadow-2xl flex items-start space-x-3 animate-slide-up">
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-4 h-4" />
+        <div
+          className={`fixed top-5 right-5 z-50 max-w-sm bg-white dark:bg-[#161F30] border-2 rounded-2xl p-4 shadow-2xl flex items-start space-x-3 animate-slide-up ${
+            toastMessage.type === "warning"
+              ? "border-amber-500"
+              : toastMessage.type === "info"
+              ? "border-indigo-500"
+              : "border-emerald-500"
+          }`}
+        >
+          <div
+            className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+              toastMessage.type === "warning"
+                ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400"
+                : toastMessage.type === "info"
+                ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
+                : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
+            }`}
+          >
+            {toastMessage.type === "warning" ? (
+              <AlertTriangle className="w-4 h-4" />
+            ) : toastMessage.type === "info" ? (
+              <Info className="w-4 h-4" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4" />
+            )}
           </div>
           <div className="flex-1 space-y-0.5">
             <h4 className="text-xs font-bold text-slate-900 dark:text-white">
@@ -1206,6 +1233,16 @@ export default function App() {
                 </div>
               )}
 
+              {/* UNFOLLOWERS SUBTAB (Who Unfollowed Me Tracker) */}
+              {activeSubTab === "unfollowers" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackUnfollowersView
+                    creator={activeCreator}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
+
               {/* ENGAGEMENT SUBTAB */}
               {activeSubTab === "engagement" && (
                 <div className="space-y-6 animate-fade-in">
@@ -1220,14 +1257,30 @@ export default function App() {
                 </div>
               )}
 
-              {/* AI GENERATION STUDIO */}
+              {/* AI GENERATION STUDIO & RECENT POSTS / REELS INTELLIGENCE */}
               {activeSubTab === "aistudio" && (
                 <div className="space-y-8 animate-fade-in">
+                  {/* Recent Posts & Reels Feed Scraper */}
+                  <InsTrackRecentPostsFeed
+                    creator={activeCreator}
+                    onSelectHook={(hook) => {
+                      setSelectedStudioHook(hook);
+                      showToast(
+                        "Hook Sent to AI Studio",
+                        `Loaded hook: "${hook.slice(0, 48)}..." into generator prompt.`,
+                        "success"
+                      );
+                    }}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+
+                  {/* AI Generation Studio with passed hook */}
                   <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm">
                     <GenerationStudio
                       drafts={drafts}
                       onDraftsChange={setDrafts}
                       onApproveDraft={handleApproveDraft}
+                      initialTopic={selectedStudioHook}
                       onSendToSimulator={() => {
                         showToast(
                           "Post Sent to Simulator",
