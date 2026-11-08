@@ -17,24 +17,27 @@ interface InsTrackAddAccountModalProps {
   onOpenProfile?: (username: string) => void;
 }
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 // Real creators and accounts matching SocioTrack live intelligence
 const POPULAR_ACCOUNTS: SuggestedAccount[] = [
-  { username: "arnav.patel07", fullName: "Arnav Patel | AI Systems Architect" },
-  { username: "techno_gamerz", fullName: "Ujjwal Chaurasia | Techno Gamerz" },
-  { username: "aviralbhardwaj_ji", fullName: "Aviral Bhardwaj" },
-  { username: "lalalalisa_m", fullName: "LISA (라리사) | LLOUD" },
-  { username: "thv", fullName: "V (뷔) | Kim Taehyung" },
-  { username: "sooyaaa__", fullName: "JISOO (지수) | BLISSOO" },
-  { username: "mnijungkook", fullName: "Jung Kook (정국) | BTS" },
-  { username: "j.m", fullName: "Jimin (지민) | Park Jimin" },
-  { username: "uarmyhope", fullName: "j-hope (제이홉) | Jung Hoseok" },
-  { username: "rkive", fullName: "RM (남준) | Kim Namjoon" },
-  { username: "itsjvke", fullName: "JVKE | Singer & Producer" },
-  { username: "chenzheyuanisssme", fullName: "Chen Zheyuan (陈哲远) | Actor" },
-  { username: "tomi.timetraveler", fullName: "Tomi (@tomi.timetraveler) | Creator" },
-  { username: "moretomihika", fullName: "Mihika Sharma (@moretomihika) | Creator" },
-  { username: "mkbhd", fullName: "Marques Brownlee" },
-  { username: "mrbeast", fullName: "Jimmy Donaldson" },
+  { username: "arnav.patel07", fullName: "Arnav Patel | AI Systems Architect", avatarUrl: `${BASE_PATH}/avatars/arnav.patel07.png` },
+  { username: "techno_gamerz", fullName: "Ujjwal Chaurasia | Techno Gamerz", avatarUrl: `${BASE_PATH}/avatars/techno_gamerz.png` },
+  { username: "aviralbhardwaj_ji", fullName: "Aviral Bhardwaj", avatarUrl: `${BASE_PATH}/avatars/aviralbhardwaj_ji.png` },
+  { username: "lalalalisa_m", fullName: "LISA", avatarUrl: `${BASE_PATH}/avatars/lalalalisa_m.png` },
+  { username: "thv", fullName: "V (뷔) | Kim Taehyung", avatarUrl: `${BASE_PATH}/avatars/thv.png` },
+  { username: "sooyaaa__", fullName: "JISOO (지수) | BLISSOO", avatarUrl: `${BASE_PATH}/avatars/sooyaaa__.png` },
+  { username: "mnijungkook", fullName: "Jung Kook (정국) | BTS", avatarUrl: `${BASE_PATH}/avatars/mnijungkook.png` },
+  { username: "j.m", fullName: "Jimin (지민) | Park Jimin", avatarUrl: `${BASE_PATH}/avatars/j.m.png` },
+  { username: "uarmyhope", fullName: "j-hope (제이홉) | Jung Hoseok", avatarUrl: `${BASE_PATH}/avatars/uarmyhope.png` },
+  { username: "rkive", fullName: "RM (남준) | Kim Namjoon", avatarUrl: `${BASE_PATH}/avatars/rkive.png` },
+  { username: "itsjvke", fullName: "JVKE | Singer & Producer", avatarUrl: `${BASE_PATH}/avatars/itsjvke.png` },
+  { username: "chenzheyuanisssme", fullName: "Chen Zheyuan (陈哲远) | Actor", avatarUrl: `${BASE_PATH}/avatars/chenzheyuanisssme.png` },
+  { username: "tomi.timetraveler", fullName: "Tomi (@tomi.timetraveler) | Creator", avatarUrl: `${BASE_PATH}/avatars/tomi.timetraveler.png` },
+  { username: "moretomihika", fullName: "Mihika Sharma (@moretomihika) | Creator", avatarUrl: `${BASE_PATH}/avatars/moretomihika.png` },
+  { username: "mkbhd", fullName: "Marques Brownlee", avatarUrl: "https://unavatar.io/youtube/mkbhd" },
+  { username: "mrbeast", fullName: "Jimmy Donaldson", avatarUrl: "https://unavatar.io/youtube/mrbeast" },
 ];
 
 export function InsTrackAddAccountModal({
@@ -67,6 +70,7 @@ export function InsTrackAddAccountModal({
       results.push({
         username: trimmed,
         fullName: 'Press "Enter" to open account profile',
+        avatarUrl: `${API_BASE_URL}/api/creators/${encodeURIComponent(trimmed)}/avatar`,
         isExact: true,
       });
     }
@@ -177,6 +181,16 @@ export function InsTrackAddAccountModal({
                           <img
                             src={acc.avatarUrl}
                             alt={acc.username}
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              const clean = acc.username.replace(/^@/, "").toLowerCase().trim();
+                              if (!target.dataset.triedProxy) {
+                                target.dataset.triedProxy = "1";
+                                target.src = `${API_BASE_URL}/api/creators/${encodeURIComponent(clean)}/avatar`;
+                              } else {
+                                target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}`;
+                              }
+                            }}
                             className="w-full h-full object-cover"
                           />
                         ) : (

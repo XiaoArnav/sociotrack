@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Preset accounts for instantaneous realistic audits
 const CREATOR_PRESETS: Record<string, CreatorProfile> = {
@@ -203,16 +204,16 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   },
   lalalalisa_m: {
     handle: "lalalalisa_m",
-    name: "LISA (라리사) | LLOUD",
+    name: "LISA",
     avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     bioLines: [
-      "Lalisa Manobal • Founder @wearelloud ⚡️",
-      "BLACKPINK • Alter Ego • Rockstar • Moonlit Floor • RCA Records",
-      "Louis Vuitton & BVLGARI Global House Ambassador",
+      "LISA • Musician & Artist ⚡️",
+      "Founder @wearelloud • ALTER EGO",
+      "PRESSPLAY • Contact: contact@wearelloud.com",
     ],
-    linkUrl: "https://wearelloud.com",
-    trackedSince: "Tracked since Jun, 15 2018. Updated 5 minutes ago.",
-    followers: 106000000,
+    linkUrl: "https://lisa.lnk.to/PRESSPLAY",
+    trackedSince: "Tracked since Jun, 15 2018. Updated Just now via Meta Graph API.",
+    followers: 105000000,
     followersDelta: "+540,000 (0.51%)",
     following: 0,
     followingDelta: "+0 (0.0%)",
@@ -522,7 +523,7 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
   return {
     handle: clean,
     name: `${displayTitle || clean} | Content Creator`,
-    avatar: `https://unavatar.io/x/${clean}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${clean}`,
+    avatar: `${API_BASE_URL}/api/creators/${clean}/avatar`,
     bioLines: [
       `Official Instagram account for @${clean}`,
       "Digital Strategy • Creative Storytelling • Community Growth",

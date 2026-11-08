@@ -130,17 +130,15 @@ export function InsTrackCreatorCard({
                 alt={creator.handle}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  if (!target.dataset.triedFallback) {
-                    target.dataset.triedFallback = "1";
-                    target.src = `https://unavatar.io/x/${encodeURIComponent(
-                      creator.handle
-                    )}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-                      creator.handle
-                    )}`;
-                  } else {
-                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-                      creator.handle
-                    )}`;
+                  const apiBase =
+                    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                  const clean = creator.handle.replace(/^@/, "").toLowerCase().trim();
+                  if (!target.dataset.triedProxy) {
+                    target.dataset.triedProxy = "1";
+                    target.src = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
+                  } else if (!target.dataset.triedDicebear) {
+                    target.dataset.triedDicebear = "1";
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}`;
                   }
                 }}
                 className="w-full h-full rounded-full object-cover bg-slate-900 border-2 border-white dark:border-[#161F30]"

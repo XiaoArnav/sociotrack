@@ -83,33 +83,77 @@ def is_valid_square_avatar(data: bytes, is_preset: bool = False) -> bool:
 
 
 async def _download_and_save_avatar(handle: str) -> bool:
-    """Fetches real-time profile picture and saves to disk cache."""
+    """Fetches real-time profile picture directly from Instagram and saves to disk cache."""
+    import re
+    import html
+
     clean_handle = handle.lower().strip().lstrip("@")
     target_file = AVATARS_DIR / f"{clean_handle}.png"
-    is_preset = clean_handle in PRESET_HANDLES
+    fe_file = (
+        Path(__file__).resolve().parent.parent.parent
+        / "frontend"
+        / "public"
+        / "avatars"
+        / f"{clean_handle}.png"
+    )
 
-    # Candidate URLs to resolve live avatar
+    # 1. Primary: Direct Instagram OpenGraph profile picture scraper
+    insta_url = f"https://www.instagram.com/{clean_handle}/"
+    insta_headers = {
+        "User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+            resp = await client.get(insta_url, headers=insta_headers)
+            if resp.status_code == 200:
+                match = re.search(
+                    r'<meta\s+property="og:image"\s+content="([^"]+)"', resp.text
+                )
+                if match:
+                    img_url = html.unescape(match.group(1))
+                    img_resp = await client.get(
+                        img_url, headers={"User-Agent": "Mozilla/5.0"}
+                    )
+                    if (
+                        img_resp.status_code == 200
+                        and len(img_resp.content) > 1000
+                    ):
+                        im = Image.open(io.BytesIO(img_resp.content))
+                        im_resized = im.resize(
+                            (320, 320), Image.Resampling.LANCZOS
+                        )
+                        im_resized.save(str(target_file), "PNG")
+                        if fe_file.parent.exists():
+                            im_resized.save(str(fe_file), "PNG")
+                        return True
+    except Exception:
+        pass
+
+    # 2. Secondary fallback: unavatar
     candidates = [
         f"https://unavatar.io/x/{clean_handle}",
         f"https://unavatar.io/youtube/{clean_handle}",
         f"https://unavatar.io/github/{clean_handle}",
     ]
 
-    headers = {
-        "User-Agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        ),
-        "Referer": "https://www.instagram.com/",
-    }
-
-    async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
+    async with httpx.AsyncClient(timeout=8.0, follow_redirects=True) as client:
         for url in candidates:
             try:
-                resp = await client.get(url, headers=headers)
-                if resp.status_code == 200 and is_valid_square_avatar(resp.content, is_preset=is_preset):
-                    # Valid genuine image bytes received
-                    target_file.write_bytes(resp.content)
+                resp = await client.get(
+                    url, headers={"User-Agent": "Mozilla/5.0"}
+                )
+                if resp.status_code == 200 and is_valid_square_avatar(
+                    resp.content, is_preset=False
+                ):
+                    im = Image.open(io.BytesIO(resp.content))
+                    im_resized = im.resize(
+                        (320, 320), Image.Resampling.LANCZOS
+                    )
+                    im_resized.save(str(target_file), "PNG")
+                    if fe_file.parent.exists():
+                        im_resized.save(str(fe_file), "PNG")
                     return True
             except Exception:
                 continue

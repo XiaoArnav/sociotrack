@@ -78,8 +78,44 @@ def is_valid_square_avatar(data: bytes, is_preset: bool = True) -> bool:
 
 
 def fetch_avatar_bytes(handle: str) -> bytes:
-    """Attempts to fetch authentic avatar bytes."""
+    """Attempts to fetch authentic avatar bytes directly from Instagram."""
+    import re
+    import html
+
     clean = handle.lower().strip().lstrip("@")
+
+    # 1. Primary: Direct Instagram OpenGraph profile picture scraper
+    insta_url = f"https://www.instagram.com/{clean}/"
+    insta_headers = {
+        "User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+    try:
+        req = urllib.request.Request(insta_url, headers=insta_headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            content = resp.read().decode("utf-8", errors="ignore")
+            imgs = re.findall(
+                r'<meta\s+property="og:image"\s+content="([^"]+)"', content
+            )
+            if imgs:
+                img_url = html.unescape(imgs[0])
+                img_req = urllib.request.Request(
+                    img_url, headers={"User-Agent": "Mozilla/5.0"}
+                )
+                with urllib.request.urlopen(img_req, timeout=10) as img_resp:
+                    data = img_resp.read()
+                    if len(data) > 1000:
+                        im = Image.open(io.BytesIO(data))
+                        im_resized = im.resize(
+                            (320, 320), Image.Resampling.LANCZOS
+                        )
+                        buf = io.BytesIO()
+                        im_resized.save(buf, format="PNG")
+                        return buf.getvalue()
+    except Exception:
+        pass
+
+    # 2. Secondary fallback: unavatar
     urls = [
         f"https://unavatar.io/x/{clean}",
         f"https://unavatar.io/youtube/{clean}",
@@ -99,8 +135,14 @@ def fetch_avatar_bytes(handle: str) -> bytes:
             with urllib.request.urlopen(req, timeout=10) as resp:
                 if resp.status == 200:
                     data = resp.read()
-                    if is_valid_square_avatar(data, is_preset=True):
-                        return data
+                    if is_valid_square_avatar(data, is_preset=False):
+                        im = Image.open(io.BytesIO(data))
+                        im_resized = im.resize(
+                            (320, 320), Image.Resampling.LANCZOS
+                        )
+                        buf = io.BytesIO()
+                        im_resized.save(buf, format="PNG")
+                        return buf.getvalue()
         except Exception:
             continue
     return b""

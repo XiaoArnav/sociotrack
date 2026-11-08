@@ -65,8 +65,8 @@ const COMPETITORS: CompetitorAccount[] = [
     id: "c2",
     avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     handle: "lalalalisa_m",
-    name: "LISA (라리사) | LLOUD",
-    followers: 106000000,
+    name: "LISA",
+    followers: 105000000,
     followersDelta: "+540,000 (+0.51%)",
     isPositiveFollowers: true,
     following: 0,
@@ -423,9 +423,15 @@ export function InsTrackCompetitorTable({
                         src={acc.avatar}
                         alt={acc.name}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-                            acc.handle
-                          )}`;
+                          const target = e.target as HTMLImageElement;
+                          const clean = acc.handle.replace(/^@/, "").toLowerCase().trim();
+                          const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                          if (!target.dataset.triedProxy) {
+                            target.dataset.triedProxy = "1";
+                            target.src = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
+                          } else {
+                            target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}`;
+                          }
                         }}
                         className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-[#243048] group-hover:ring-2 group-hover:ring-indigo-500 transition-all"
                       />
