@@ -7,9 +7,12 @@ Implements the Stale-While-Revalidate (SWR) hybrid caching pattern:
 """
 
 import os
+import io
 import time
+import hashlib
 import asyncio
 import httpx
+from PIL import Image
 from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Response
 from fastapi.responses import FileResponse, RedirectResponse
@@ -23,11 +26,63 @@ AVATARS_DIR.mkdir(parents=True, exist_ok=True)
 # Cache TTL: 24 hours in seconds
 CACHE_TTL_SECONDS = 86400
 
+# Known generic/placeholder image hashes to reject
+KNOWN_PLACEHOLDER_HASHES = {
+    "772aa709423494dba2e436c8df1fe643",  # Twitter generic silhouette
+    "d41d8cd98f00b204e9800998ecf8427e",  # Empty file
+}
+
+# Protected presets with authentic crops that should not be replaced by low-res/fallback cards
+PRESET_HANDLES = {
+    "arnav.patel07",
+    "arnavpatel07",
+    "techno_gamerz",
+    "lalalalisa_m",
+    "sooyaaa__",
+    "thv",
+    "mnijungkook",
+    "j.m",
+    "uarmyhope",
+    "chenzheyuanisssme",
+    "rkive",
+    "itsjvke",
+    "tomi.timetraveler",
+    "moretomihika",
+}
+
+
+def is_valid_square_avatar(data: bytes, is_preset: bool = False) -> bool:
+    """Validates that bytes represent a genuine square avatar, rejecting banners and generic placeholders."""
+    if len(data) < 2000:
+        return False
+
+    md5 = hashlib.md5(data).hexdigest()
+    if md5 in KNOWN_PLACEHOLDER_HASHES:
+        return False
+
+    # If it's a protected preset, require higher fidelity (>10KB) to ensure we don't downgrade the authentic crop
+    if is_preset and len(data) < 10000:
+        return False
+
+    try:
+        im = Image.open(io.BytesIO(data))
+        w, h = im.size
+        # Must be roughly square (within 12%)
+        if abs(w - h) > max(w, h) * 0.12:
+            return False
+        # Reject OpenGraph preview cards (typically 1200x630)
+        if w > 1000 and h < 700:
+            return False
+        return True
+    except Exception:
+        return False
+
 
 async def _download_and_save_avatar(handle: str) -> bool:
     """Fetches real-time profile picture and saves to disk cache."""
     clean_handle = handle.lower().strip().lstrip("@")
     target_file = AVATARS_DIR / f"{clean_handle}.png"
+    is_preset = clean_handle in PRESET_HANDLES
 
     # Candidate URLs to resolve live avatar
     candidates = [
@@ -48,8 +103,8 @@ async def _download_and_save_avatar(handle: str) -> bool:
         for url in candidates:
             try:
                 resp = await client.get(url, headers=headers)
-                if resp.status_code == 200 and len(resp.content) > 500:
-                    # Valid image bytes received
+                if resp.status_code == 200 and is_valid_square_avatar(resp.content, is_preset=is_preset):
+                    # Valid genuine image bytes received
                     target_file.write_bytes(resp.content)
                     return True
             except Exception:

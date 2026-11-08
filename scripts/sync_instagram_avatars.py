@@ -6,9 +6,11 @@ Verifies and refreshes profile pictures for all preset showcase creators.
 """
 
 import os
+import io
 import hashlib
 import urllib.request
 from pathlib import Path
+from PIL import Image
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_AVATARS_DIR = ROOT_DIR / "frontend" / "public" / "avatars"
@@ -34,10 +36,44 @@ HANDLES = [
 ]
 
 
+# Known generic/placeholder image hashes to reject
+KNOWN_PLACEHOLDER_HASHES = {
+    "772aa709423494dba2e436c8df1fe643",  # Twitter generic silhouette
+    "d41d8cd98f00b204e9800998ecf8427e",  # Empty file
+}
+
+
 def get_file_hash(filepath: Path) -> str:
     if not filepath.exists():
         return ""
     return hashlib.md5(filepath.read_bytes()).hexdigest()
+
+
+def is_valid_square_avatar(data: bytes, is_preset: bool = True) -> bool:
+    """Validates that bytes represent a genuine square avatar, rejecting banners and generic placeholders."""
+    if len(data) < 2000:
+        return False
+
+    md5 = hashlib.md5(data).hexdigest()
+    if md5 in KNOWN_PLACEHOLDER_HASHES:
+        return False
+
+    # For presets with authentic crops, require higher fidelity (>10KB) so we don't downgrade
+    if is_preset and len(data) < 10000:
+        return False
+
+    try:
+        im = Image.open(io.BytesIO(data))
+        w, h = im.size
+        # Must be roughly square (within 12%)
+        if abs(w - h) > max(w, h) * 0.12:
+            return False
+        # Reject OpenGraph preview cards (typically 1200x630)
+        if w > 1000 and h < 700:
+            return False
+        return True
+    except Exception:
+        return False
 
 
 def fetch_avatar_bytes(handle: str) -> bytes:
@@ -62,20 +98,39 @@ def fetch_avatar_bytes(handle: str) -> bytes:
             with urllib.request.urlopen(req, timeout=10) as resp:
                 if resp.status == 200:
                     data = resp.read()
-                    if len(data) > 1000:
+                    if is_valid_square_avatar(data, is_preset=True):
                         return data
         except Exception:
             continue
     return b""
 
 
+import sys
+
+PRESET_HANDLES = set(HANDLES) | {"arnavpatel07"}
+
+
 def main():
+    force_presets = "--force-presets" in sys.argv
+    cli_handles = [arg for arg in sys.argv[1:] if not arg.startswith("--")]
+    target_handles = cli_handles if cli_handles else HANDLES
+
     print("--- SocioTrack Automated Creator Avatar Sync ---")
+    if force_presets:
+        print("[MODE] Force presets enabled: authentic showcase PFPs may be overwritten if new remote PFP detected.")
+    else:
+        print("[MODE] Preset protection active: authentic showcase crops will be preserved.")
+
     updated_count = 0
 
-    for handle in HANDLES:
+    for handle in target_handles:
         fe_file = FRONTEND_AVATARS_DIR / f"{handle}.png"
         be_file = BACKEND_AVATARS_DIR / f"{handle}.png"
+
+        # If it's a preset and already exists, preserve authentic crop unless force requested
+        if handle in PRESET_HANDLES and fe_file.exists() and not force_presets:
+            print(f"[PRESET PRESERVED] @{handle}: Authentic Instagram showcase crop preserved.")
+            continue
 
         # Check existing hash
         old_hash = get_file_hash(fe_file)
