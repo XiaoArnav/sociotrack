@@ -6,6 +6,13 @@ from app.models.user import User
 from app.models.experiment import ContentExperiment
 from app.models.product_event import ProductEvent
 from app.models.feedback import UserFeedback
+from app.models.workspace import (
+    Workspace,
+    WorkspaceMember,
+    WorkspaceInvite,
+    ApiKey,
+    AuditLog,
+)
 
 __all__ = [
     "Brand",
@@ -17,4 +24,9 @@ __all__ = [
     "ContentExperiment",
     "ProductEvent",
     "UserFeedback",
+    "Workspace",
+    "WorkspaceMember",
+    "WorkspaceInvite",
+    "ApiKey",
+    "AuditLog",
 ]
