@@ -52,9 +52,9 @@ export const DEFAULT_CREATOR: CreatorProfile = {
   name: "Arnav Patel 👾",
   avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
   bioLines: [
-    "Arnav Patel 👾",
     "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
     "DevRelay Fellow • Open Source Contributor • Bangalore 🇮🇳",
+    "High-throughput multi-agent architectures & real-time analytics ⚡️",
   ],
   linkUrl: "https://github.com/XiaoArnav",
   trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
@@ -227,7 +227,17 @@ export function InsTrackCreatorCard({
               {creator.name}
             </p>
             <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-1 space-y-0.5">
-              {creator.bioLines.map((line, idx) => (
+              {creator.bioLines
+                .filter((line) => {
+                  if (!line) return false;
+                  const cleanLine = line.trim().toLowerCase().replace(/[\s\uFE0F\uD83C-\uDBFF\uDC00-\uDFFF]/g, "");
+                  const cleanName = (creator.name || "").trim().toLowerCase().replace(/[\s\uFE0F\uD83C-\uDBFF\uDC00-\uDFFF]/g, "");
+                  if (cleanLine === cleanName) return false;
+                  const handleNoAt = creator.handle.replace(/^@/, "").toLowerCase();
+                  if (cleanName && cleanLine.includes(cleanName) && cleanLine.includes(handleNoAt)) return false;
+                  return true;
+                })
+                .map((line, idx) => (
                 <p key={idx}>
                   {line
                     .split(
