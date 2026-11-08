@@ -114,6 +114,44 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     postsDelta: "+12 (2.50%)",
     score: 94.6,
   },
+  aviralbhardwaj_ji: {
+    handle: "aviralbhardwaj_ji",
+    name: "Aviral Bhardwaj",
+    avatar: `${BASE_PATH}/avatars/aviralbhardwaj_ji.png`,
+    bioLines: [
+      "Aviral Bhardwaj • Content Creator & Explorer 🏔️",
+      "Travel, photography, mountains & storytelling • Uttarakhand, India 🇮🇳",
+      "Connecting through authentic moments & visual journeys",
+    ],
+    linkUrl: "https://www.instagram.com/aviralbhardwaj_ji/",
+    trackedSince: "Tracked since Nov, 08 2026. Updated Just now via Meta Graph API.",
+    followers: 319,
+    followersDelta: "+14 (4.59%)",
+    following: 1052,
+    followingDelta: "+3 (0.29%)",
+    posts: 143,
+    postsDelta: "+1 (0.70%)",
+    score: 84.2,
+  },
+  aviralbhardwajji: {
+    handle: "aviralbhardwaj_ji",
+    name: "Aviral Bhardwaj",
+    avatar: `${BASE_PATH}/avatars/aviralbhardwaj_ji.png`,
+    bioLines: [
+      "Aviral Bhardwaj • Content Creator & Explorer 🏔️",
+      "Travel, photography, mountains & storytelling • Uttarakhand, India 🇮🇳",
+      "Connecting through authentic moments & visual journeys",
+    ],
+    linkUrl: "https://www.instagram.com/aviralbhardwaj_ji/",
+    trackedSince: "Tracked since Nov, 08 2026. Updated Just now via Meta Graph API.",
+    followers: 319,
+    followersDelta: "+14 (4.59%)",
+    following: 1052,
+    followingDelta: "+3 (0.29%)",
+    posts: 143,
+    postsDelta: "+1 (0.70%)",
+    score: 84.2,
+  },
   mnijungkook: {
     handle: "mnijungkook",
     name: "Jung Kook (정국) | BTS",
@@ -763,7 +801,7 @@ export default function App() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search or paste Instagram URL (e.g. arnav.patel07, techno_gamerz, lalalalisa_m)"
+                  placeholder="Search or paste Instagram URL (e.g. arnav.patel07, aviralbhardwaj_ji, techno_gamerz)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full h-12 pl-11 pr-28 rounded-full border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#6366F1] shadow-sm transition-colors"
@@ -811,7 +849,7 @@ export default function App() {
               {/* Quick Account Suggestions: Click to immediately audit */}
               <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span className="font-semibold text-slate-400">Quick Audit:</span>
-                {["arnav.patel07", "techno_gamerz", "lalalalisa_m", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
+                {["arnav.patel07", "aviralbhardwaj_ji", "techno_gamerz", "lalalalisa_m", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
                   <button
                     key={handle}
                     onClick={() => {

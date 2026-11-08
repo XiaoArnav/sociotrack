@@ -22,6 +22,7 @@ BACKEND_AVATARS_DIR.mkdir(parents=True, exist_ok=True)
 HANDLES = [
     "arnav.patel07",
     "techno_gamerz",
+    "aviralbhardwaj_ji",
     "lalalalisa_m",
     "sooyaaa__",
     "thv",
@@ -150,11 +151,16 @@ def main():
         else:
             print(f"[CURRENT] @{handle} -> PFP is already up to date.")
 
-    # Also sync arnavpatel07 alias
+    # Also sync arnavpatel07 and aviralbhardwajji aliases
     src = FRONTEND_AVATARS_DIR / "arnav.patel07.png"
     if src.exists():
         (FRONTEND_AVATARS_DIR / "arnavpatel07.png").write_bytes(src.read_bytes())
         (BACKEND_AVATARS_DIR / "arnavpatel07.png").write_bytes(src.read_bytes())
+
+    src_aviral = FRONTEND_AVATARS_DIR / "aviralbhardwaj_ji.png"
+    if src_aviral.exists():
+        (FRONTEND_AVATARS_DIR / "aviralbhardwajji.png").write_bytes(src_aviral.read_bytes())
+        (BACKEND_AVATARS_DIR / "aviralbhardwajji.png").write_bytes(src_aviral.read_bytes())
 
     print(f"\nCompleted sync. Total updated: {updated_count}")
     return 0

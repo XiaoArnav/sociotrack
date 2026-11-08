@@ -21,6 +21,7 @@ interface InsTrackAddAccountModalProps {
 const POPULAR_ACCOUNTS: SuggestedAccount[] = [
   { username: "arnav.patel07", fullName: "Arnav Patel | AI Systems Architect" },
   { username: "techno_gamerz", fullName: "Ujjwal Chaurasia | Techno Gamerz" },
+  { username: "aviralbhardwaj_ji", fullName: "Aviral Bhardwaj" },
   { username: "lalalalisa_m", fullName: "LISA (라리사) | LLOUD" },
   { username: "thv", fullName: "V (뷔) | Kim Taehyung" },
   { username: "sooyaaa__", fullName: "JISOO (지수) | BLISSOO" },

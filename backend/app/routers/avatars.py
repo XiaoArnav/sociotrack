@@ -37,6 +37,8 @@ PRESET_HANDLES = {
     "arnav.patel07",
     "arnavpatel07",
     "techno_gamerz",
+    "aviralbhardwaj_ji",
+    "aviralbhardwajji",
     "lalalalisa_m",
     "sooyaaa__",
     "thv",

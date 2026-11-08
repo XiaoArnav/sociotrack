@@ -243,6 +243,24 @@ const COMPETITORS: CompetitorAccount[] = [
     isPositiveEngagement: true,
     group: "Creators",
   },
+  {
+    id: "c13",
+    avatar: `${BASE_PATH}/avatars/aviralbhardwaj_ji.png`,
+    handle: "aviralbhardwaj_ji",
+    name: "Aviral Bhardwaj",
+    followers: 319,
+    followersDelta: "+14 (+4.59%)",
+    isPositiveFollowers: true,
+    following: 1052,
+    followingDelta: "+3 (+0.29%)",
+    isPositiveFollowing: true,
+    mediaCount: 143,
+    mediaDelta: "+1 (+0.70%)",
+    engagementRate: 8.42,
+    engagementDelta: "+0.65 (+8.37%)",
+    isPositiveEngagement: true,
+    group: "Creators",
+  },
 ];
 
 interface InsTrackCompetitorTableProps {
