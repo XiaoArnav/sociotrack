@@ -55,10 +55,18 @@ async def approve_post(
         elif isinstance(payload.scheduled_time, datetime):
             scheduled_at = payload.scheduled_time
 
+    original_draft = payload.post_content or (post.content if post else None)
+    is_user_edited = bool(original_draft and approved_text and original_draft.strip() != approved_text.strip())
+
     if not post:
-        brand_res = await db.execute(select(Brand).limit(1))
-        brand = brand_res.scalar_one_or_none()
-        brand_id = brand.id if brand else str(uuid.uuid4())
+        if payload.brand_id:
+            b_res = await db.execute(select(Brand).where(Brand.id == payload.brand_id))
+            brand = b_res.scalar_one_or_none()
+            brand_id = payload.brand_id
+        else:
+            brand_res = await db.execute(select(Brand).limit(1))
+            brand = brand_res.scalar_one_or_none()
+            brand_id = brand.id if brand else str(uuid.uuid4())
 
         post = Post(
             id=str(uuid.uuid4()),
@@ -76,6 +84,48 @@ async def approve_post(
         post.status = "scheduled"
         if payload.format or payload.hook_style:
             post.hook_style = payload.format or payload.hook_style
+
+    # Real Feedback Loop: If user edited the AI draft, capture stylistic preference insight
+    if is_user_edited:
+        from app.models.memory import AgentMemory
+        from app.core.memory import get_memory_manager
+
+        pref_lesson = (
+            f"User editorial preference ({post.hook_style or 'general'}): "
+            f"Prefers custom voice phrasing over raw generation."
+        )
+        user_memory = AgentMemory(
+            brand_id=post.brand_id,
+            insight_text=pref_lesson,
+            category="user_preference",
+            confidence_score=0.92,
+            supporting_evidence=(
+                f"User edited draft prior to approval. Original length: {len(original_draft)}, "
+                f"Approved length: {len(approved_text)}"
+            ),
+            source_post_id=post.id,
+            source_event="user_edit",
+            is_active=True,
+        )
+        db.add(user_memory)
+
+        # Ingest into vector store
+        try:
+            b_res = await db.execute(select(Brand).where(Brand.id == post.brand_id))
+            b_obj = b_res.scalar_one_or_none()
+            brand_name = b_obj.name if b_obj else "SocioTrack"
+            mem_mgr = get_memory_manager(brand_name)
+            mem_mgr.insert_lesson(
+                topic="user_preference",
+                lesson=pref_lesson,
+                score=9.2,
+                format_name=post.hook_style,
+                supporting_evidence=user_memory.supporting_evidence,
+                source_event="user_edit",
+                confidence=0.92,
+            )
+        except Exception:
+            pass
 
     await db.flush()
     await db.refresh(post)

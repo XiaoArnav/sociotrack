@@ -39,8 +39,38 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
+from sqlalchemy import inspect, text
+
 async def init_db() -> None:
-    """Initializes tables for development/testing."""
+    """Initializes tables for development/testing and migrates missing columns."""
     import app.models  # noqa: F401
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _migrate_columns(sync_conn):
+            inspector = inspect(sync_conn)
+            table_names = inspector.get_table_names()
+
+            if "brands" in table_names:
+                brand_cols = {c["name"] for c in inspector.get_columns("brands")}
+                if "user_id" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN user_id VARCHAR(36)"))
+                if "intelligence_profile" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN intelligence_profile TEXT"))
+                if "updated_at" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN updated_at DATETIME"))
+
+            if "agent_memories" in table_names:
+                mem_cols = {c["name"] for c in inspector.get_columns("agent_memories")}
+                if "supporting_evidence" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN supporting_evidence TEXT"))
+                if "source_post_id" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN source_post_id VARCHAR(36)"))
+                if "source_event" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN source_event VARCHAR(50) DEFAULT 'telemetry_ingest'"))
+                if "is_active" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN is_active BOOLEAN DEFAULT 1"))
+                if "updated_at" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN updated_at DATETIME"))
+
+        await conn.run_sync(_migrate_columns)

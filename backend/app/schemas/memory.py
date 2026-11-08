@@ -10,6 +10,10 @@ class AgentMemoryBase(BaseModel):
     insight_text: str = Field(..., min_length=2, description="Audience or engagement rule learned by the agent")
     category: str = Field("hook_rule", description="Classification of the insight")
     confidence_score: float = Field(0.85, ge=0.0, le=1.0, description="Confidence rating from 0.0 to 1.0")
+    supporting_evidence: Optional[str] = None
+    source_post_id: Optional[str] = None
+    source_event: Optional[str] = "telemetry_ingest"
+    is_active: bool = True
 
     model_config = ConfigDict(extra="allow")
 
@@ -18,9 +22,20 @@ class AgentMemoryCreate(AgentMemoryBase):
     embedding: Optional[str] = None
 
 
+class AgentMemoryUpdate(BaseModel):
+    insight_text: Optional[str] = Field(None, min_length=2)
+    category: Optional[str] = None
+    confidence_score: Optional[float] = Field(None, ge=0.0, le=1.0)
+    supporting_evidence: Optional[str] = None
+    is_active: Optional[bool] = None
+
+    model_config = ConfigDict(extra="allow")
+
+
 class AgentMemoryResponse(AgentMemoryBase):
     id: str
     created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
@@ -56,6 +71,10 @@ class LearnedLessonSchema(BaseModel):
     key_lesson: str
     composite_score: float
     derived_at: Optional[str] = None
+    supporting_evidence: Optional[str] = None
+    source_event: Optional[str] = "telemetry_ingest"
+    is_active: bool = True
+    brand_id: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")
 
