@@ -444,7 +444,7 @@ export function InsTrackPredictionCard({
             type="text"
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
-            placeholder="Creator handle, e.g. techno_gamerz, lalalalisa_m, arnav.patel07"
+            placeholder="Enter Instagram creator handle"
             className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg bg-white dark:bg-[#161F30] border border-slate-200 dark:border-[#243048] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
