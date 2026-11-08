@@ -115,9 +115,12 @@ class VectorMemoryManager:
         score: float,
         format_name: Optional[str] = None,
         doc_id: Optional[str] = None,
+        supporting_evidence: Optional[str] = None,
+        source_event: Optional[str] = "telemetry_ingest",
+        confidence: Optional[float] = None,
     ) -> str:
         """
-        Embeds and persists a confirmed high-performing strategic lesson into vector memory.
+        Embeds and persists a confirmed strategic lesson into vector memory.
         Updates dynamic weights and persists them to disk.
         """
         did = doc_id or f"lesson_{int(time.time())}_{uuid.uuid4().hex[:6]}"
@@ -127,6 +130,11 @@ class VectorMemoryManager:
             "format": format_name or "general",
             "type": "lesson",
             "timestamp": time.time(),
+            "supporting_evidence": supporting_evidence or f"Verified composite performance score: {score:.1f}",
+            "source_event": source_event or "telemetry_ingest",
+            "confidence": float(confidence if confidence is not None else min(0.99, max(0.60, score / 10.0))),
+            "is_active": True,
+            "brand_name": self.brand_name,
         }
 
         self.lessons_col.add(
@@ -137,6 +145,37 @@ class VectorMemoryManager:
 
         self.adjust_memory_weights(topic=topic, score=score, format_name=format_name)
         return did
+
+    def update_lesson(
+        self,
+        doc_id: str,
+        new_lesson: Optional[str] = None,
+        metadata_updates: Optional[Dict[str, Any]] = None,
+    ) -> bool:
+        """Updates text or active status/metadata for a persisted lesson."""
+        try:
+            res = self.lessons_col.get(ids=[doc_id])
+            if not res or not res.get("ids") or len(res["ids"]) == 0:
+                return False
+
+            old_doc = res["documents"][0] if res.get("documents") else ""
+            old_meta = res["metadatas"][0] if res.get("metadatas") else {}
+
+            updated_doc = new_lesson if new_lesson is not None else old_doc
+            updated_meta = {**old_meta, **(metadata_updates or {}), "updated_at": time.time()}
+
+            self.lessons_col.update(
+                ids=[doc_id],
+                documents=[updated_doc],
+                metadatas=[updated_meta],
+            )
+            return True
+        except Exception:
+            return False
+
+    def deactivate_lesson(self, doc_id: str) -> bool:
+        """Deactivates a learned lesson so it is excluded from active generation recall."""
+        return self.update_lesson(doc_id=doc_id, metadata_updates={"is_active": False})
 
     def adjust_memory_weights(
         self,
@@ -282,23 +321,51 @@ class VectorMemoryManager:
             "keywords": topic,
         }
 
-    def retrieve_lessons(self, topic: str, limit: int = 3) -> List[Dict[str, Any]]:
-        """Pulls top learned lessons."""
+    def retrieve_lessons(
+        self,
+        topic: str,
+        limit: int = 3,
+        active_only: bool = True,
+    ) -> List[Dict[str, Any]]:
+        """Pulls top learned lessons filtered by active status."""
         count = self.lessons_col.count()
         if count == 0:
             return []
-        n_results = min(limit, count)
+        # Pull extra candidate pool to allow active filtering
+        n_results = min(limit * 2, count)
         res = self.lessons_col.query(query_texts=[topic], n_results=n_results)
         items = []
         if res and res.get("documents") and res["documents"][0]:
             docs = res["documents"][0]
             metas = res.get("metadatas", [[]])[0]
+            ids = res.get("ids", [[]])[0]
             for i in range(len(docs)):
+                meta = metas[i] if i < len(metas) else {}
+                doc_id = ids[i] if i < len(ids) else f"lesson_{i}"
+                if active_only and meta.get("is_active") is False:
+                    continue
                 items.append({
+                    "id": doc_id,
                     "lesson": docs[i],
-                    "metadata": metas[i] if i < len(metas) else {},
+                    "metadata": meta,
                 })
+                if len(items) >= limit:
+                    break
         return items
+
+    def retrieve_recent_hooks(self, limit: int = 10) -> List[str]:
+        """Returns past hook lines from winning posts to enable anti-repetition guardrails."""
+        count = self.posts_col.count()
+        if count == 0:
+            return []
+        n_results = min(limit, count)
+        res = self.posts_col.get(limit=n_results)
+        hooks: List[str] = []
+        if res and res.get("metadatas"):
+            for meta in res["metadatas"]:
+                if meta and "hook" in meta and meta["hook"]:
+                    hooks.append(str(meta["hook"]))
+        return hooks
 
     def record_performance_and_learn(
         self,
@@ -360,6 +427,11 @@ class VectorMemoryManager:
             "impressions": int(metrics.impressions),
             "key_lesson": key_lesson,
             "adjusted_weight": weight_adj["topic_weight"],
+            "supporting_evidence": f"Shares: {metrics.shares}, Replies: {metrics.replies}, Likes: {metrics.likes}, Impressions: {metrics.impressions}",
+            "source_event": "telemetry_ingest",
+            "is_active": True,
+            "confidence": round(min(0.99, max(0.65, score / 10.0)), 2),
+            "brand_name": self.brand_name,
         }
 
         self.lessons_col.add(ids=[lesson_id], documents=[doc_text], metadatas=[metadata])

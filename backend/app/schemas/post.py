@@ -46,6 +46,7 @@ class GenerateDraftsResponse(BaseModel):
 
 class ApprovePostRequest(BaseModel):
     post_id: Optional[str] = Field(None, description="UUID of the post to approve")
+    brand_id: Optional[str] = Field(None, description="UUID of the brand")
     approved_content: Optional[str] = Field(None, description="Final edited or approved post copy")
     post_content: Optional[str] = Field(None, description="Alternative field for post copy")
     format: Optional[str] = Field(None, description="Format style of the post")
