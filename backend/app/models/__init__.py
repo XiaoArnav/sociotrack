@@ -15,6 +15,12 @@ from app.models.workspace import (
 )
 from app.models.competitor import CompetitorTracker
 from app.models.audience_pattern import AudiencePattern
+from app.models.content_operations import (
+    Campaign,
+    ContentTemplate,
+    DraftApproval,
+    DraftComment,
+)
 
 __all__ = [
     "Brand",
@@ -33,4 +39,8 @@ __all__ = [
     "AuditLog",
     "CompetitorTracker",
     "AudiencePattern",
+    "Campaign",
+    "ContentTemplate",
+    "DraftApproval",
+    "DraftComment",
 ]
