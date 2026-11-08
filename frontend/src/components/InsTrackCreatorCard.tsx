@@ -131,14 +131,20 @@ export function InsTrackCreatorCard({
           <div className="flex flex-col items-center shrink-0">
             <div className="w-20 h-20 rounded-full p-1 bg-[#FACC15] shadow-md">
               <img
+                key={creator.handle}
                 src={creator.avatar}
                 alt={creator.handle}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  const apiBase =
-                    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
                   const clean = creator.handle.replace(/^@/, "").toLowerCase().trim();
-                  if (!target.dataset.triedProxy) {
+                  const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+                  const canUseProxy = apiBase && !(isHttps && apiBase.startsWith("http://localhost"));
+
+                  if (!target.dataset.triedStatic) {
+                    target.dataset.triedStatic = "1";
+                    target.src = `${BASE_PATH}/avatars/${encodeURIComponent(clean)}.png`;
+                  } else if (!target.dataset.triedProxy && canUseProxy) {
                     target.dataset.triedProxy = "1";
                     target.src = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
                   } else if (!target.dataset.triedDicebear) {

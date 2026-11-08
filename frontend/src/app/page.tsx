@@ -591,7 +591,7 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
   return {
     handle: clean,
     name: `${displayTitle || clean} | Content Creator`,
-    avatar: `${API_BASE_URL}/api/creators/${clean}/avatar`,
+    avatar: `${BASE_PATH}/avatars/${clean}.png`,
     bioLines: [
       `Official Instagram account for @${clean}`,
       "Digital Strategy • Creative Storytelling • Community Growth",

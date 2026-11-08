@@ -478,13 +478,20 @@ export function InsTrackCompetitorTable({
                   <td className="sticky left-0 z-10 bg-white dark:bg-[#161F30] group-hover:bg-slate-50 dark:group-hover:bg-[#1E2638] py-3 px-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)] border-r border-slate-100 dark:border-[#243048] min-w-[220px] transition-colors">
                     <div className="flex items-center space-x-3">
                       <img
+                        key={acc.handle}
                         src={acc.avatar}
                         alt={acc.name}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           const clean = acc.handle.replace(/^@/, "").toLowerCase().trim();
-                          const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-                          if (!target.dataset.triedProxy) {
+                          const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+                          const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+                          const canUseProxy = apiBase && !(isHttps && apiBase.startsWith("http://localhost"));
+
+                          if (!target.dataset.triedStatic) {
+                            target.dataset.triedStatic = "1";
+                            target.src = `${BASE_PATH}/avatars/${encodeURIComponent(clean)}.png`;
+                          } else if (!target.dataset.triedProxy && canUseProxy) {
                             target.dataset.triedProxy = "1";
                             target.src = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
                           } else {
