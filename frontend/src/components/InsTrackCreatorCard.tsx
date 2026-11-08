@@ -9,6 +9,7 @@ import {
   Calendar,
   ChevronDown,
   Check,
+  CheckCircle2,
   Info,
   Sparkles,
   Mail,
@@ -44,6 +45,8 @@ export interface CreatorProfile {
   contactInfo?: string;
   isPrivate?: boolean;
   isVerified?: boolean;
+  provenanceBadge?: "Verified" | "Retrieved" | "Demo data";
+  dataSource?: string;
 }
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -57,7 +60,7 @@ export const DEFAULT_CREATOR: CreatorProfile = {
     "Connecting with 165,020 engaged followers ✨",
   ],
   linkUrl: "https://zyrohouse.bio.link",
-  trackedSince: "Tracked since Jan, 10 2022. Updated Just now via Meta Graph API.",
+  trackedSince: "Tracked since Jan, 10 2022 • Baseline reference dataset",
   followers: 68,
   followersDelta: "+1 (+0.50%)",
   following: 1,
@@ -68,6 +71,8 @@ export const DEFAULT_CREATOR: CreatorProfile = {
   contactInfo: "No public email listed • Direct Message (DM) on Instagram",
   isPrivate: false,
   isVerified: false,
+  provenanceBadge: "Demo data",
+  dataSource: "Benchmark Baseline Dataset",
 };
 
 interface InsTrackCreatorCardProps {
@@ -219,6 +224,33 @@ export function InsTrackCreatorCard({
               ) : (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                   Creator Profile
+                </span>
+              )}
+
+              {/* Data Provenance Badge */}
+              {creator.provenanceBadge === "Verified" ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 cursor-help"
+                  title="Verified: Direct observed API response from Meta Graph API Business Discovery"
+                >
+                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                  <span>Verified API</span>
+                </span>
+              ) : creator.provenanceBadge === "Retrieved" ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-800/60 cursor-help"
+                  title="Retrieved: Real-time telemetry fetched via external crawler endpoint"
+                >
+                  <Sparkles className="w-3 h-3 text-cyan-500" />
+                  <span>Retrieved</span>
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 cursor-help"
+                  title="Demo data: Curated benchmark baseline dataset for interactive exploration"
+                >
+                  <Info className="w-3 h-3 text-amber-500" />
+                  <span>Demo data</span>
                 </span>
               )}
             </div>

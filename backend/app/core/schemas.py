@@ -3,7 +3,7 @@ Pydantic data contracts for Person 1: AI Diagnostic Brain.
 Defines RawPost, PostAuditPattern, and CreatorAuditReport.
 """
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -18,6 +18,16 @@ class RawPost(BaseModel):
     shares: int = Field(default=0, ge=0)
     saves: int = Field(default=0, ge=0)
     posted_hour_utc: int = Field(default=12, ge=0, le=23, description="Upload hour in UTC (0-23)")
+    provenance: Dict[str, str] = Field(
+        default_factory=lambda: {
+            "likes": "Verified",
+            "comments": "Verified",
+            "shares": "Estimated",
+            "saves": "Estimated",
+            "views_or_reach": "Estimated",
+        },
+        description="Metric provenance: 'Verified' | 'Retrieved' | 'Estimated' | 'Demo data' | 'Not available'",
+    )
 
 
 class PostAuditPattern(BaseModel):
@@ -37,6 +47,9 @@ class CreatorAuditReport(BaseModel):
     whats_working: List[PostAuditPattern] = Field(default_factory=list, description="Patterns statistically outperforming baseline")
     whats_failing: List[PostAuditPattern] = Field(default_factory=list, description="Patterns dragging down reach or engagement")
     immediate_next_steps: List[str] = Field(default_factory=list, description="Top 3-5 immediate execution steps for creator")
+    provenance_badge: str = Field(default="Retrieved", description="'Verified' | 'Retrieved' | 'Demo data'")
+    data_source: str = Field(default="Live API", description="Data pipeline source description")
+    crawled_at: Optional[str] = None
 
 
 class PredictedContentConcept(BaseModel):
