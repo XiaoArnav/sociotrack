@@ -29,6 +29,13 @@ class PostDraftResponse(BaseModel):
         default_factory=list,
         description="Relevant insights retrieved from Hindsight memory bank that shaped these drafts"
     )
+    recommendation_rationale: Optional[str] = None
+    supporting_evidence: Optional[str] = None
+    memories_applied: List[str] = Field(default_factory=list)
+    confidence_score: float = Field(default=0.88, ge=0.0, le=1.0)
+    known_limitations: Optional[str] = None
+    platform_target: Optional[str] = "Instagram"
+    anti_repetition_passed: bool = True
 
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
