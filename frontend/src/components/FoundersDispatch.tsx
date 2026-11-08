@@ -214,28 +214,31 @@ export function FoundersDispatch() {
       </div>
 
       {/* Interactive Philosophy Spotlight Console (Theme adaptive: light & dark) */}
-      <div className="relative rounded-2xl border border-slate-200 dark:border-indigo-500/30 bg-slate-50/80 dark:bg-[#0D1424] text-slate-800 dark:text-slate-100 p-6 shadow-xs dark:shadow-inner font-mono text-xs overflow-hidden transition-colors">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[11px]">
+      <div className="relative rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white/95 dark:bg-[#070D18] text-slate-800 dark:text-slate-100 p-6 sm:p-7 shadow-lg dark:shadow-2xl font-mono text-xs overflow-hidden transition-all">
+        {/* Subtle accent glow */}
+        <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800/90 text-slate-500 dark:text-slate-400 text-[11px]">
           <div className="flex items-center space-x-2">
-            <Terminal className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span className="font-semibold text-slate-700 dark:text-slate-300">
+            <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">&gt;_</span>
+            <span className="font-mono font-medium text-slate-600 dark:text-slate-400 tracking-wider">
               DISPATCH://{activeFounder.name.toLowerCase().replace(/\s+/g, "_")}.md
             </span>
           </div>
-          <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider">
+          <span className="text-[10px] font-mono tracking-widest text-indigo-600 dark:text-indigo-400/90 font-bold uppercase">
             Click any founder card to view perspective
           </span>
         </div>
 
-        <div className="mt-4 flex items-start space-x-3">
-          <Quote className="w-6 h-6 text-indigo-500 dark:text-indigo-400 shrink-0 opacity-80" />
-          <div className="space-y-2">
-            <p className="text-sm font-sans font-medium text-slate-700 dark:text-slate-200 leading-relaxed italic">
+        <div className="mt-5 flex items-start space-x-4">
+          <Quote className="w-7 h-7 text-indigo-500 dark:text-indigo-400 shrink-0 opacity-90 stroke-[2.2] mt-0.5" />
+          <div className="space-y-3">
+            <p className="text-sm sm:text-base font-sans font-medium text-slate-800 dark:text-slate-100 leading-relaxed italic">
               &ldquo;{activeFounder.quote}&rdquo;
             </p>
-            <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-sans">
               <span className="font-bold text-slate-900 dark:text-white">— {activeFounder.name}</span>
-              <span>•</span>
+              <span className="text-slate-400 dark:text-slate-600">•</span>
               <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{activeFounder.role}</span>
             </div>
           </div>

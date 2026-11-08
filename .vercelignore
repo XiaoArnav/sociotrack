@@ -1,0 +1,14 @@
+# Vercel Ignore File
+# Prevents Vercel from triggering unnecessary builds on backend, docs, or non-frontend changes
+backend/
+tests/
+docs/
+.agents/
+.github/
+*.md
+docker-compose*.yml
+Dockerfile*
+render.yaml
+*.png
+*.jpg
+*.mov
