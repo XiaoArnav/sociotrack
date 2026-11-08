@@ -52,12 +52,14 @@ interface TrackedAccountItem {
   group: string;
 }
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const INITIAL_TRACKED: TrackedAccountItem[] = [
   {
     id: "t1",
     handle: "arnav.patel07",
     name: "Arnav Patel | AI Systems Architect",
-    avatar: "https://unavatar.io/github/XiaoArnav",
+    avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     followers: 34820,
     followersDelta: "+2,140 (+6.55%)",
     isPositiveFollowers: true,
@@ -72,7 +74,7 @@ const INITIAL_TRACKED: TrackedAccountItem[] = [
     id: "t2",
     handle: "techno_gamerz",
     name: "Ujjwal Chaurasia | Techno Gamerz",
-    avatar: "https://unavatar.io/youtube/UCX8pnu3DYUnx8qy8V_c6oHg",
+    avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     followers: 2450800,
     followersDelta: "+12,390 (+0.5%)",
     isPositiveFollowers: true,

@@ -53,12 +53,14 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 // Preset accounts for instantaneous realistic audits
 const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   "arnav.patel07": {
     handle: "arnav.patel07",
     name: "Arnav Patel | AI Systems Architect",
-    avatar: "https://unavatar.io/github/XiaoArnav",
+    avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     bioLines: [
       "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
       "DevRelay Fellow • Open Source Contributor • Tech Innovator",
@@ -77,7 +79,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   arnavpatel07: {
     handle: "arnav.patel07",
     name: "Arnav Patel | AI Systems Architect",
-    avatar: "https://unavatar.io/github/XiaoArnav",
+    avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     bioLines: [
       "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
       "DevRelay Fellow • Open Source Contributor • Tech Innovator",
@@ -96,7 +98,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   techno_gamerz: {
     handle: "techno_gamerz",
     name: "Ujjwal Chaurasia | Techno Gamerz",
-    avatar: "https://unavatar.io/youtube/UCX8pnu3DYUnx8qy8V_c6oHg",
+    avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     bioLines: [
       "Ujjwal Chaurasia • Gamer & Content Creator 🎮",
       "YouTube: Techno Gamerz (40M+ Subscribers) • Ujjwal",
@@ -115,7 +117,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   mnijungkook: {
     handle: "mnijungkook",
     name: "Jung Kook (정국) | BTS",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5b/Jungkook_for_BTS_5th_anniversary_party_in_LA_photoshoot_by_Dispatch%2C_May_2018_13.jpg",
+    avatar: `${BASE_PATH}/avatars/mnijungkook.png`,
     bioLines: [
       "Jung Kook of BTS • Solo Album 'GOLDEN' 🌟",
       "BIGHIT MUSIC / HYBE • Seven • 3D • Standing Next to You",
@@ -134,7 +136,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   lalalalisa_m: {
     handle: "lalalalisa_m",
     name: "LISA (라리사) | LLOUD",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/9/93/BLACKPINK%27s_Lisa_for_BULGARI_June_2023_01.jpg",
+    avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     bioLines: [
       "Lalisa Manobal • Founder @wearelloud ⚡️",
       "BLACKPINK • Rockstar • Moonlit Floor • RCA Records",
@@ -153,7 +155,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   sooyaaa__: {
     handle: "sooyaaa__",
     name: "JISOO (지수) | BLISSOO",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/0/08/Jisoo_20220329_2.jpg",
+    avatar: `${BASE_PATH}/avatars/sooyaaa__.png`,
     bioLines: [
       "JISOO • CEO @blissoo_official 🌸",
       "BLACKPINK • ME (FLOWER) • Actress & Artist",
@@ -172,7 +174,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   thv: {
     handle: "thv",
     name: "V (뷔) | Kim Taehyung",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/a/ac/V_%28Kim_Tae-hyung%29_at_a_fanmeet_in_May_2016_01_%28cropped%29.jpg",
+    avatar: `${BASE_PATH}/avatars/thv.png`,
     bioLines: [
       "V of BTS • Solo Album 'Layover' 🎷",
       "CELINE Boy & Cartier Global Brand Ambassador",
@@ -191,7 +193,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   "j.m": {
     handle: "j.m",
     name: "Jimin (지민) | Park Jimin",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/7/70/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%80%EB%AF%BC.jpg",
+    avatar: `${BASE_PATH}/avatars/j.m.png`,
     bioLines: [
       "Jimin of BTS • Albums 'FACE' & 'MUSE' 🌙",
       "Dior Global Ambassador • Tiffany & Co. Ambassador",
@@ -210,7 +212,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   uarmyhope: {
     handle: "uarmyhope",
     name: "j-hope (제이홉) | Jung Hoseok",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/57/J-Hope_at_W_Korea_Breast_Cancer_Campaign%2C_15_October_2025.png",
+    avatar: `${BASE_PATH}/avatars/uarmyhope.png`,
     bioLines: [
       "j-hope of BTS • 'HOPE ON THE STREET' 🐿️",
       "Jack In The Box • Louis Vuitton House Ambassador",
@@ -229,7 +231,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   chenzheyuanisssme: {
     handle: "chenzheyuanisssme",
     name: "Chen Zheyuan (陈哲远) | Actor",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Chen_Zheyuan.jpg",
+    avatar: `${BASE_PATH}/avatars/chenzheyuanisssme.png`,
     bioLines: [
       "Chen Zheyuan (陈哲远) • Official Instagram 🎬",
       "Actor • Hidden Love (偷偷藏不住) • Our Secret",
@@ -248,7 +250,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   "tomi.timetraveler": {
     handle: "tomi.timetraveler",
     name: "Tomi | Time Traveler CGI",
-    avatar: "https://unavatar.io/x/tomi_timetraveler?fallback=https://api.dicebear.com/7.x/initials/svg?seed=tomi",
+    avatar: `${BASE_PATH}/avatars/tomi.timetraveler.png`,
     bioLines: [
       "Tomi • Visual Storyteller & Cyberpunk CGI ⏳",
       "Exploring alternate timelines and futuristic worlds",
@@ -267,7 +269,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   itsjvke: {
     handle: "itsjvke",
     name: "JVKE | Singer & Producer",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/9/9a/JVKE_performing_in_2023.png",
+    avatar: `${BASE_PATH}/avatars/itsjvke.png`,
     bioLines: [
       "JVKE • 'golden hour' (3B+ streams worldwide) 🎹",
       "Singer, Songwriter & Producer • Making beats in my bedroom",
@@ -286,7 +288,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   moretomihika: {
     handle: "moretomihika",
     name: "Tomihika (トミヒカ) | Tokyo Lifestyle",
-    avatar: "https://unavatar.io/x/tomihika?fallback=https://api.dicebear.com/7.x/initials/svg?seed=tomihika",
+    avatar: `${BASE_PATH}/avatars/moretomihika.png`,
     bioLines: [
       "Tomihika • Fashion, Film & Modern Tokyo Living 🇯🇵",
       "Visual diary • Streetwear, coffee architecture & lifestyle",
@@ -305,7 +307,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   rkive: {
     handle: "rkive",
     name: "RM (남준) | Kim Namjoon",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/56/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg",
+    avatar: `${BASE_PATH}/avatars/rkive.png`,
     bioLines: [
       "RM of BTS • 'Right Place, Wrong Person' • 'Indigo' 🏛️",
       "Bottega Veneta Ambassador • Modern Art & Architecture Archive",
@@ -324,7 +326,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   mkbhd: {
     handle: "mkbhd",
     name: "Marques Brownlee",
-    avatar: "https://unavatar.io/youtube/mkbhd",
+    avatar: `${BASE_PATH}/avatars/mkbhd.png`,
     bioLines: [
       "Quality Tech Videos | YouTuber | Geek | Ultimate Frisbee",
       "Crisp tech reviews, automotive deep dives & high-fidelity gadgets",

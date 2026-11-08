@@ -1,0 +1,41 @@
+name: Automated Creator Avatar Sync
+
+on:
+  schedule:
+    # Runs daily at 04:00 UTC (09:30 IST)
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-avatars:
+    name: Sync Live Instagram Profile Pictures
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Avatar Sync Script
+        run: |
+          python scripts/sync_instagram_avatars.py
+
+      - name: Commit and push if avatars updated
+        run: |
+          git config user.name "XiaoArnav"
+          git config user.email "322868724+XiaoArnav@users.noreply.github.com"
+          if [[ -n $(git status -s frontend/public/avatars backend/app/static/avatars) ]]; then
+            git add frontend/public/avatars backend/app/static/avatars
+            git commit -m "chore(avatars): automated daily sync of creator profile pictures from Instagram"
+            git push origin main
+          else
+            echo "All creator profile pictures are already up to date."
+          fi

@@ -38,10 +38,12 @@ export interface CreatorProfile {
   score: number;
 }
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const DEFAULT_CREATOR: CreatorProfile = {
   handle: "arnav.patel07",
   name: "Arnav Patel | AI Systems Architect",
-  avatar: "https://unavatar.io/github/XiaoArnav",
+  avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
   bioLines: [
     "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
     "DevRelay Fellow • Open Source Contributor • Tech Innovator",
@@ -121,9 +123,19 @@ export function InsTrackCreatorCard({
                 src={creator.avatar}
                 alt={creator.handle}
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-                    creator.handle
-                  )}`;
+                  const target = e.target as HTMLImageElement;
+                  if (!target.dataset.triedFallback) {
+                    target.dataset.triedFallback = "1";
+                    target.src = `https://unavatar.io/x/${encodeURIComponent(
+                      creator.handle
+                    )}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+                      creator.handle
+                    )}`;
+                  } else {
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+                      creator.handle
+                    )}`;
+                  }
                 }}
                 className="w-full h-full rounded-full object-cover bg-slate-900 border-2 border-white dark:border-[#161F30]"
               />

@@ -22,10 +22,12 @@ interface CompetitorAccount {
   group: string;
 }
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 const COMPETITORS: CompetitorAccount[] = [
   {
     id: "c0",
-    avatar: "https://unavatar.io/github/XiaoArnav",
+    avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     handle: "arnav.patel07",
     name: "Arnav Patel | AI Systems Architect",
     followers: 34820,
@@ -43,7 +45,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c1",
-    avatar: "https://unavatar.io/youtube/UCX8pnu3DYUnx8qy8V_c6oHg",
+    avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     handle: "techno_gamerz",
     name: "Ujjwal Chaurasia | Techno Gamerz",
     followers: 13420000,
@@ -61,7 +63,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c2",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/9/93/BLACKPINK%27s_Lisa_for_BULGARI_June_2023_01.jpg",
+    avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     handle: "lalalalisa_m",
     name: "LISA (라리사) | LLOUD",
     followers: 104800000,
@@ -77,7 +79,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c3",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/a/ac/V_%28Kim_Tae-hyung%29_at_a_fanmeet_in_May_2016_01_%28cropped%29.jpg",
+    avatar: `${BASE_PATH}/avatars/thv.png`,
     handle: "thv",
     name: "V (뷔) | Kim Taehyung",
     followers: 67100000,
@@ -93,7 +95,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c4",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/0/08/Jisoo_20220329_2.jpg",
+    avatar: `${BASE_PATH}/avatars/sooyaaa__.png`,
     handle: "sooyaaa__",
     name: "JISOO (지수) | BLISSOO",
     followers: 79400000,
@@ -109,7 +111,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c5",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5b/Jungkook_for_BTS_5th_anniversary_party_in_LA_photoshoot_by_Dispatch%2C_May_2018_13.jpg",
+    avatar: `${BASE_PATH}/avatars/mnijungkook.png`,
     handle: "mnijungkook",
     name: "Jung Kook (정국) | BTS",
     followers: 54200000,
@@ -125,7 +127,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c6",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/7/70/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%80%EB%AF%BC.jpg",
+    avatar: `${BASE_PATH}/avatars/j.m.png`,
     handle: "j.m",
     name: "Jimin (지민) | Park Jimin",
     followers: 53800000,
@@ -141,7 +143,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c7",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/57/J-Hope_at_W_Korea_Breast_Cancer_Campaign%2C_15_October_2025.png",
+    avatar: `${BASE_PATH}/avatars/uarmyhope.png`,
     handle: "uarmyhope",
     name: "j-hope (제이홉) | Jung Hoseok",
     followers: 50400000,
@@ -157,7 +159,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c8",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/56/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg",
+    avatar: `${BASE_PATH}/avatars/rkive.png`,
     handle: "rkive",
     name: "RM (남준) | Kim Namjoon",
     followers: 47200000,
@@ -173,7 +175,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c9",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/9/9a/JVKE_performing_in_2023.png",
+    avatar: `${BASE_PATH}/avatars/itsjvke.png`,
     handle: "itsjvke",
     name: "JVKE | Singer & Producer",
     followers: 6850000,
@@ -191,7 +193,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c10",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Chen_Zheyuan.jpg",
+    avatar: `${BASE_PATH}/avatars/chenzheyuanisssme.png`,
     handle: "chenzheyuanisssme",
     name: "Chen Zheyuan (陈哲远) | Actor",
     followers: 3450000,
@@ -207,7 +209,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c11",
-    avatar: "https://unavatar.io/x/tomi_timetraveler?fallback=https://api.dicebear.com/7.x/initials/svg?seed=tomi",
+    avatar: `${BASE_PATH}/avatars/tomi.timetraveler.png`,
     handle: "tomi.timetraveler",
     name: "Tomi | Time Traveler CGI",
     followers: 1840000,
@@ -225,7 +227,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c12",
-    avatar: "https://unavatar.io/x/tomihika?fallback=https://api.dicebear.com/7.x/initials/svg?seed=tomihika",
+    avatar: `${BASE_PATH}/avatars/moretomihika.png`,
     handle: "moretomihika",
     name: "Tomihika (トミヒカ) | Tokyo Lifestyle",
     followers: 1120000,
