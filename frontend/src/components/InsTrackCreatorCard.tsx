@@ -25,7 +25,9 @@ export type SubNavTab =
   | "engagement"
   | "historical"
   | "aistudio"
-  | "memorybank";
+  | "memorybank"
+  | "experiments"
+  | "calendar";
 
 export interface CreatorProfile {
   handle: string;
@@ -535,6 +537,8 @@ export function InsTrackCreatorCard({
             { key: "historical", label: "History" },
             { key: "aistudio", label: "Posts (AI Studio)" },
             { key: "memorybank", label: "Memory Bank" },
+            { key: "experiments", label: "A/B Experiments" },
+            { key: "calendar", label: "Mix Planner" },
           ];
         })().map((tab) => {
           const isActive = activeTab === tab.key;

@@ -20,6 +20,11 @@ export interface PostDraft {
   createdAt: string;
   dosMatched: string[];
   dontsAvoided: string[];
+  recommendationRationale?: string;
+  supportingEvidence?: string;
+  memoriesApplied?: string[];
+  knownLimitations?: string;
+  platformTarget?: string;
 }
 
 export interface LearnedInsight {
@@ -32,6 +37,9 @@ export interface LearnedInsight {
   timestamp: string;
   isNew?: boolean;
   metadata?: any;
+  supportingEvidence?: string;
+  sourceEvent?: string;
+  isActive?: boolean;
 }
 
 export const INITIAL_DRAFTS: PostDraft[] = [

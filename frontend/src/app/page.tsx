@@ -27,6 +27,8 @@ import { InsTrackPredictionCard } from "@/components/InsTrackPredictionCard";
 import { InsTrackUnfollowersView } from "@/components/InsTrackUnfollowersView";
 import { InsTrackRecentPostsFeed } from "@/components/InsTrackRecentPostsFeed";
 import { FoundersDispatch } from "@/components/FoundersDispatch";
+import { InsTrackExperimentsView } from "@/components/InsTrackExperimentsView";
+import { InsTrackCalendarView } from "@/components/InsTrackCalendarView";
 import {
   PostDraft,
   LearnedInsight,
@@ -1511,6 +1513,24 @@ export default function App() {
                       }}
                     />
                   </div>
+                </div>
+              )}
+
+              {/* CONTROLLED CONTENT EXPERIMENTS SUBTAB */}
+              {activeSubTab === "experiments" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackExperimentsView
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
+
+              {/* INTELLIGENT CONTENT CALENDAR SUBTAB */}
+              {activeSubTab === "calendar" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackCalendarView
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
                 </div>
               )}
             </div>
