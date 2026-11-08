@@ -60,6 +60,15 @@ async def init_db() -> None:
                 if "updated_at" not in brand_cols:
                     sync_conn.execute(text("ALTER TABLE brands ADD COLUMN updated_at DATETIME"))
 
+            if "users" in table_names:
+                user_cols = {c["name"] for c in inspector.get_columns("users")}
+                if "telemetry_opt_in" not in user_cols:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN telemetry_opt_in BOOLEAN DEFAULT 1"))
+                if "ai_training_opt_out" not in user_cols:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN ai_training_opt_out BOOLEAN DEFAULT 1"))
+                if "consent_updated_at" not in user_cols:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN consent_updated_at DATETIME"))
+
             if "agent_memories" in table_names:
                 mem_cols = {c["name"] for c in inspector.get_columns("agent_memories")}
                 if "supporting_evidence" not in mem_cols:

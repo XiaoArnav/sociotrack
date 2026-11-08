@@ -19,6 +19,9 @@ class User(Base):
     role = Column(String(50), default="Principal Content Architect")
     is_active = Column(Boolean, default=True)
     is_demo = Column(Boolean, default=False)
+    telemetry_opt_in = Column(Boolean, default=True)
+    ai_training_opt_out = Column(Boolean, default=True)
+    consent_updated_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
