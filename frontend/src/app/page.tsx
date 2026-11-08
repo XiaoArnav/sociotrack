@@ -476,6 +476,7 @@ export default function App() {
   const [drafts, setDrafts] = useState<PostDraft[]>(INITIAL_DRAFTS);
   const [insights, setInsights] = useState<LearnedInsight[]>(INITIAL_INSIGHTS);
   const [searchQuery, setSearchQuery] = useState("");
+  const [bookmarkedHandles, setBookmarkedHandles] = useState<string[]>([]);
 
   // Memory search query state in Memory Bank
   const [memorySearchQuery, setMemorySearchQuery] = useState("");
@@ -567,6 +568,13 @@ export default function App() {
 
   // 10. Handler: Toggle Star / Bookmark
   const handleToggleStar = (starred: boolean) => {
+    setBookmarkedHandles((prev) =>
+      starred
+        ? prev.includes(activeCreator.handle)
+          ? prev
+          : [...prev, activeCreator.handle]
+        : prev.filter((h) => h !== activeCreator.handle)
+    );
     showToast(
       starred ? "Account Bookmarked" : "Removed from Bookmarks",
       `@${activeCreator.handle} is ${starred ? "now" : "no longer"} pinned in your tracking workspace.`,
@@ -849,6 +857,7 @@ export default function App() {
                 score={activeCreator.score}
                 onDateRangeChange={handleDateRangeChange}
                 onToggleStar={handleToggleStar}
+                isStarred={bookmarkedHandles.includes(activeCreator.handle)}
               />
 
               {/* 2. CREATOR TAB CONTENT */}

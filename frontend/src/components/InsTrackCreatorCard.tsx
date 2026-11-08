@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Star,
   Instagram,
@@ -66,6 +66,7 @@ interface InsTrackCreatorCardProps {
   creator?: CreatorProfile;
   onDateRangeChange?: (range: string) => void;
   onToggleStar?: (starred: boolean) => void;
+  isStarred?: boolean;
 }
 
 export function InsTrackCreatorCard({
@@ -76,11 +77,16 @@ export function InsTrackCreatorCard({
   creator = DEFAULT_CREATOR,
   onDateRangeChange,
   onToggleStar,
+  isStarred: propIsStarred,
 }: InsTrackCreatorCardProps) {
-  const [isStarred, setIsStarred] = useState(true);
+  const [isStarred, setIsStarred] = useState(propIsStarred ?? false);
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    setIsStarred(propIsStarred ?? false);
+  }, [propIsStarred, creator.handle]);
 
   const displayScore = score ?? creator.score;
 
@@ -131,7 +137,7 @@ export function InsTrackCreatorCard({
                     ? "text-[#F59E0B]"
                     : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 }`}
-                title={isStarred ? "Starred account" : "Star account"}
+                title={isStarred ? "Bookmarked account (Click to remove)" : "Bookmark account"}
               >
                 <Star className={`w-4 h-4 ${isStarred ? "fill-current" : ""}`} />
               </button>
