@@ -162,6 +162,16 @@ def main():
         (FRONTEND_AVATARS_DIR / "aviralbhardwajji.png").write_bytes(src_aviral.read_bytes())
         (BACKEND_AVATARS_DIR / "aviralbhardwajji.png").write_bytes(src_aviral.read_bytes())
 
+    src_tomi = FRONTEND_AVATARS_DIR / "tomi.timetraveler.png"
+    if src_tomi.exists():
+        (FRONTEND_AVATARS_DIR / "tomitimetraveler.png").write_bytes(src_tomi.read_bytes())
+        (BACKEND_AVATARS_DIR / "tomitimetraveler.png").write_bytes(src_tomi.read_bytes())
+
+    src_tg = FRONTEND_AVATARS_DIR / "techno_gamerz.png"
+    if src_tg.exists():
+        (FRONTEND_AVATARS_DIR / "technogamerz.png").write_bytes(src_tg.read_bytes())
+        (BACKEND_AVATARS_DIR / "technogamerz.png").write_bytes(src_tg.read_bytes())
+
     print(f"\nCompleted sync. Total updated: {updated_count}")
     return 0
 

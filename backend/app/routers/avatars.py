@@ -37,6 +37,7 @@ PRESET_HANDLES = {
     "arnav.patel07",
     "arnavpatel07",
     "techno_gamerz",
+    "technogamerz",
     "aviralbhardwaj_ji",
     "aviralbhardwajji",
     "lalalalisa_m",
@@ -49,6 +50,7 @@ PRESET_HANDLES = {
     "rkive",
     "itsjvke",
     "tomi.timetraveler",
+    "tomitimetraveler",
     "moretomihika",
 }
 

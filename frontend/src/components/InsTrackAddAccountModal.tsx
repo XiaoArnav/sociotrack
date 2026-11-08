@@ -31,8 +31,8 @@ const POPULAR_ACCOUNTS: SuggestedAccount[] = [
   { username: "rkive", fullName: "RM (남준) | Kim Namjoon" },
   { username: "itsjvke", fullName: "JVKE | Singer & Producer" },
   { username: "chenzheyuanisssme", fullName: "Chen Zheyuan (陈哲远) | Actor" },
-  { username: "tomi.timetraveler", fullName: "Tomi | Time Traveler CGI" },
-  { username: "moretomihika", fullName: "Tomihika (トミヒカ) | Tokyo Lifestyle" },
+  { username: "tomi.timetraveler", fullName: "Tomi (@tomi.timetraveler) | Creator" },
+  { username: "moretomihika", fullName: "Mihika Sharma (@moretomihika) | Creator" },
   { username: "mkbhd", fullName: "Marques Brownlee" },
   { username: "mrbeast", fullName: "Jimmy Donaldson" },
 ];
