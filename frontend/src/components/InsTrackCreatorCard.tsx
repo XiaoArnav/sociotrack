@@ -27,7 +27,8 @@ export type SubNavTab =
   | "aistudio"
   | "memorybank"
   | "experiments"
-  | "calendar";
+  | "calendar"
+  | "telemetry";
 
 export interface CreatorProfile {
   handle: string;
@@ -539,6 +540,7 @@ export function InsTrackCreatorCard({
             { key: "memorybank", label: "Memory Bank" },
             { key: "experiments", label: "A/B Experiments" },
             { key: "calendar", label: "Mix Planner" },
+            { key: "telemetry", label: "Product Telemetry", badge: "Pilot" },
           ];
         })().map((tab) => {
           const isActive = activeTab === tab.key;
