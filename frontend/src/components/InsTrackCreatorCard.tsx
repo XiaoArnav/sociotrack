@@ -41,7 +41,7 @@ export interface CreatorProfile {
 export const DEFAULT_CREATOR: CreatorProfile = {
   handle: "arnav.patel07",
   name: "Arnav Patel | AI Systems Architect",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80",
+  avatar: "https://unavatar.io/github/XiaoArnav",
   bioLines: [
     "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
     "DevRelay Fellow • Open Source Contributor • Tech Innovator",
@@ -114,6 +114,11 @@ export function InsTrackCreatorCard({
               <img
                 src={creator.avatar}
                 alt={creator.handle}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+                    creator.handle
+                  )}`;
+                }}
                 className="w-full h-full rounded-full object-cover bg-slate-900 border-2 border-white dark:border-[#161F30]"
               />
             </div>
@@ -148,8 +153,29 @@ export function InsTrackCreatorCard({
               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {creator.handle}
               </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400">
-                Verified Creator
+              {/* Official Meta Verified Scalloped Blue Checkmark Badge */}
+              <span
+                className="inline-flex items-center text-[#0095F6] cursor-help"
+                title="Verified Account (Meta Verified)"
+                aria-label="Verified Account"
+              >
+                <svg
+                  className="w-[18px] h-[18px] shrink-0"
+                  viewBox="0 0 40 40"
+                  fill="none"
+                >
+                  <path
+                    d="M19.998 3.333c-1.353 0-2.613.52-3.57 1.455l-2.09 2.046a2.667 2.667 0 0 1-1.873.776H9.539c-2.032 0-3.684 1.652-3.684 3.684v2.926c0 .707-.281 1.385-.776 1.873l-2.046 2.09a5.056 5.056 0 0 0-1.455 3.57c0 1.353.52 2.613 1.455 3.57l2.046 2.09c.495.488.776 1.166.776 1.873v2.926c0 2.032 1.652 3.684 3.684 3.684h2.926c.707 0 1.385.281 1.873.776l2.09 2.046c.957.935 2.217 1.455 3.57 1.455 1.353 0 2.613-.52 3.57-1.455l2.09-2.046c.488-.495 1.166-.776 1.873-.776h2.926c2.032 0 3.684-1.652 3.684-3.684v-2.926c0-.707.281-1.385.776-1.873l2.046-2.09c.935-.957 1.455-2.217 1.455-3.57 0-1.353-.52-2.613-1.455-3.57l-2.046-2.09a2.667 2.667 0 0 1-.776-1.873v-2.926c0-2.032-1.652-3.684-3.684-3.684h-2.926a2.667 2.667 0 0 1-1.873-.776l-2.09-2.046a5.056 5.056 0 0 0-3.57-1.455z"
+                    fill="#0095F6"
+                  />
+                  <path
+                    d="M17.447 26.667l-6.114-6.114 2.357-2.357 3.757 3.757 8.424-8.424 2.357 2.357-10.781 10.781z"
+                    fill="#FFFFFF"
+                  />
+                </svg>
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#0095F6] border border-blue-200/50 dark:border-blue-800/40">
+                Official Account
               </span>
             </div>
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
@@ -157,7 +183,34 @@ export function InsTrackCreatorCard({
             </p>
             <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-1 space-y-0.5">
               {creator.bioLines.map((line, idx) => (
-                <p key={idx}>{line}</p>
+                <p key={idx}>
+                  {line.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_\.]+)/g).map((part, pIdx) => {
+                    if (part.startsWith("@")) {
+                      return (
+                        <a
+                          key={pIdx}
+                          href={`https://instagram.com/${part.replace("@", "")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                        >
+                          {part}
+                        </a>
+                      );
+                    }
+                    if (part.startsWith("#")) {
+                      return (
+                        <span
+                          key={pIdx}
+                          className="text-indigo-500 dark:text-indigo-400 font-medium"
+                        >
+                          {part}
+                        </span>
+                      );
+                    }
+                    return part;
+                  })}
+                </p>
               ))}
             </div>
             <div className="pt-2 text-[11px] space-y-1">
@@ -180,12 +233,22 @@ export function InsTrackCreatorCard({
 
         {/* Top Metric Counters & Rainbow InsTrack Score (Matching Screenshot 2) */}
         <div className="flex flex-col items-start lg:items-end justify-between space-y-5">
-          {/* Numbers Row */}
+          {/* Numbers Row with Instagram notation and exact counters */}
           <div className="flex items-center space-x-6 sm:space-x-8">
             <div className="text-left lg:text-right">
               <span className="text-[11px] text-slate-400 font-medium">Followers</span>
-              <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                {creator.followers.toLocaleString()}
+              <div
+                className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white"
+                title={`${creator.followers.toLocaleString()} total followers`}
+              >
+                {creator.followers >= 1_000_000
+                  ? `${(creator.followers / 1_000_000).toFixed(1)}M`
+                  : creator.followers >= 10_000
+                  ? `${(creator.followers / 1_000).toFixed(1)}K`
+                  : creator.followers.toLocaleString()}
+                <span className="text-xs font-normal text-slate-400 block sm:inline sm:ml-1.5">
+                  ({creator.followers.toLocaleString()})
+                </span>
               </div>
               <span className="text-[11px] font-bold text-[#10B981]">
                 {creator.followersDelta}

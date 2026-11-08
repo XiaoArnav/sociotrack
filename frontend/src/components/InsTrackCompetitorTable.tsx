@@ -25,7 +25,7 @@ interface CompetitorAccount {
 const COMPETITORS: CompetitorAccount[] = [
   {
     id: "c0",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://unavatar.io/github/XiaoArnav",
     handle: "arnav.patel07",
     name: "Arnav Patel | AI Systems Architect",
     followers: 34820,
@@ -43,7 +43,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c1",
-    avatar: "https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://unavatar.io/youtube/UCX8pnu3DYUnx8qy8V_c6oHg",
     handle: "techno_gamerz",
     name: "Ujjwal Chaurasia | Techno Gamerz",
     followers: 13420000,
@@ -61,7 +61,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c2",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/9/93/BLACKPINK%27s_Lisa_for_BULGARI_June_2023_01.jpg",
     handle: "lalalalisa_m",
     name: "LISA (라리사) | LLOUD",
     followers: 104800000,
@@ -77,7 +77,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c3",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/a/ac/V_%28Kim_Tae-hyung%29_at_a_fanmeet_in_May_2016_01_%28cropped%29.jpg",
     handle: "thv",
     name: "V (뷔) | Kim Taehyung",
     followers: 67100000,
@@ -93,7 +93,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c4",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/0/08/Jisoo_20220329_2.jpg",
     handle: "sooyaaa__",
     name: "JISOO (지수) | BLISSOO",
     followers: 79400000,
@@ -109,7 +109,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c5",
-    avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5b/Jungkook_for_BTS_5th_anniversary_party_in_LA_photoshoot_by_Dispatch%2C_May_2018_13.jpg",
     handle: "mnijungkook",
     name: "Jung Kook (정국) | BTS",
     followers: 54200000,
@@ -125,7 +125,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c6",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/7/70/180125_%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8_%EC%A7%80%EB%AF%BC.jpg",
     handle: "j.m",
     name: "Jimin (지민) | Park Jimin",
     followers: 53800000,
@@ -141,7 +141,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c7",
-    avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/57/J-Hope_at_W_Korea_Breast_Cancer_Campaign%2C_15_October_2025.png",
     handle: "uarmyhope",
     name: "j-hope (제이홉) | Jung Hoseok",
     followers: 50400000,
@@ -157,7 +157,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c8",
-    avatar: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/56/RM_at_W_Korea_Love_Your_W%2C_November_2023.jpg",
     handle: "rkive",
     name: "RM (남준) | Kim Namjoon",
     followers: 47200000,
@@ -173,7 +173,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c9",
-    avatar: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/9/9a/JVKE_performing_in_2023.png",
     handle: "itsjvke",
     name: "JVKE | Singer & Producer",
     followers: 6850000,
@@ -191,7 +191,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c10",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Chen_Zheyuan.jpg",
     handle: "chenzheyuanisssme",
     name: "Chen Zheyuan (陈哲远) | Actor",
     followers: 3450000,
@@ -207,7 +207,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c11",
-    avatar: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://unavatar.io/x/tomi_timetraveler?fallback=https://api.dicebear.com/7.x/initials/svg?seed=tomi",
     handle: "tomi.timetraveler",
     name: "Tomi | Time Traveler CGI",
     followers: 1840000,
@@ -225,7 +225,7 @@ const COMPETITORS: CompetitorAccount[] = [
   },
   {
     id: "c12",
-    avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&auto=format&fit=crop&q=80",
+    avatar: "https://unavatar.io/x/tomihika?fallback=https://api.dicebear.com/7.x/initials/svg?seed=tomihika",
     handle: "moretomihika",
     name: "Tomihika (トミヒカ) | Tokyo Lifestyle",
     followers: 1120000,
@@ -402,6 +402,11 @@ export function InsTrackCompetitorTable({
                       <img
                         src={acc.avatar}
                         alt={acc.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+                            acc.handle
+                          )}`;
+                        }}
                         className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-[#243048] group-hover:ring-2 group-hover:ring-indigo-500 transition-all"
                       />
                       <div>
