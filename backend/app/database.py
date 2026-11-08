@@ -53,6 +53,8 @@ async def init_db() -> None:
 
             if "brands" in table_names:
                 brand_cols = {c["name"] for c in inspector.get_columns("brands")}
+                if "workspace_id" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN workspace_id VARCHAR(36)"))
                 if "user_id" not in brand_cols:
                     sync_conn.execute(text("ALTER TABLE brands ADD COLUMN user_id VARCHAR(36)"))
                 if "intelligence_profile" not in brand_cols:

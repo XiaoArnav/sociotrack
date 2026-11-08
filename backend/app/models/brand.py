@@ -9,6 +9,7 @@ class Brand(Base):
     __tablename__ = "brands"
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    workspace_id = Column(String(36), nullable=True, index=True)
     user_id = Column(String(36), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     voice_description = Column(Text, nullable=True)
