@@ -380,13 +380,10 @@ export function InsTrackCreatorCard({
                 title={`${creator.followers.toLocaleString()} total followers`}
               >
                 {creator.followers >= 1_000_000
-                  ? `${(creator.followers / 1_000_000).toFixed(1)}M`
+                  ? `${parseFloat((creator.followers / 1_000_000).toFixed(1))}M`
                   : creator.followers >= 10_000
-                  ? `${(creator.followers / 1_000).toFixed(1)}K`
+                  ? `${parseFloat((creator.followers / 1_000).toFixed(1))}K`
                   : creator.followers.toLocaleString()}
-                <span className="text-xs font-normal text-slate-400 block sm:inline sm:ml-1.5">
-                  ({creator.followers.toLocaleString()})
-                </span>
               </div>
               <span className="text-[11px] font-bold text-[#10B981]">
                 {creator.followersDelta}

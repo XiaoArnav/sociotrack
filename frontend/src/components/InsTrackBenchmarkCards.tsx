@@ -36,9 +36,19 @@ export function InsTrackBenchmarkCards({ creator }: InsTrackBenchmarkCardsProps 
     ? Math.min(96.5, (creator.score * 1.26)).toFixed(2)
     : "88.37";
 
-  const dailyFollowers = Math.round(279 * scale).toLocaleString();
-  const weeklyFollowers = Math.round(1954 * scale).toLocaleString();
-  const monthlyFollowers = Math.round(8491 * scale).toLocaleString();
+  const dailyNum = followers < 50
+    ? 1
+    : Math.max(1, Math.round(followers * 0.0016));
+  const weeklyNum = followers < 50
+    ? 2
+    : Math.max(2, Math.round(followers * 0.0112));
+  const monthlyNum = followers < 50
+    ? 4
+    : Math.max(5, Math.round(followers * 0.048));
+
+  const dailyFollowers = dailyNum >= 10000 ? `${parseFloat((dailyNum / 1000).toFixed(1))}K` : dailyNum.toLocaleString();
+  const weeklyFollowers = weeklyNum >= 1000000 ? `${parseFloat((weeklyNum / 1000000).toFixed(1))}M` : weeklyNum >= 10000 ? `${parseFloat((weeklyNum / 1000).toFixed(1))}K` : weeklyNum.toLocaleString();
+  const monthlyFollowers = monthlyNum >= 1000000 ? `${parseFloat((monthlyNum / 1000000).toFixed(1))}M` : monthlyNum >= 10000 ? `${parseFloat((monthlyNum / 1000).toFixed(1))}K` : monthlyNum.toLocaleString();
   return (
     <div className="space-y-4">
       {/* Top Row: 2 Wide Metric Cards (Matching Screenshot 2 & 4) */}

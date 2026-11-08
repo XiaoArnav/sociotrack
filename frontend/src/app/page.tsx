@@ -735,49 +735,78 @@ export default function App() {
       "info"
     );
 
+    // Pre-fetch live data immediately
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
+    let livePromise: Promise<any> | null = null;
+    if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+      livePromise = fetch(`${apiBase}/api/creators/live/${encodeURIComponent(handle)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null);
+    }
+
     setTimeout(() => {
       setTelemetryStep(`Observing @${handle}: Ingesting media nodes & Reel engagement...`);
-    }, 350);
+    }, 300);
 
     setTimeout(() => {
       setTelemetryStep("Calculating algorithmic virality ratio & health benchmarks...");
-    }, 700);
+    }, 600);
 
     setTimeout(() => {
       setTelemetryStep("Synthesizing AI content recommendations & winning hook formulas...");
-    }, 1050);
+    }, 900);
 
-    setTimeout(() => {
-      const profile = generateCreatorProfile(handle);
+    setTimeout(async () => {
+      let profile = generateCreatorProfile(handle);
+
+      // Await or apply live stats if arrived
+      if (livePromise) {
+        try {
+          const liveStats = await Promise.race([
+            livePromise,
+            new Promise((resolve) => setTimeout(() => resolve(null), 300)),
+          ]);
+          if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
+            profile = {
+              ...profile,
+              name: liveStats.name || profile.name,
+              followers: liveStats.followers,
+              followersDelta: liveStats.followersDelta || profile.followersDelta,
+              following: liveStats.following !== undefined ? liveStats.following : profile.following,
+              posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : profile.posts,
+              isPrivate: liveStats.is_private !== undefined ? liveStats.is_private : profile.isPrivate,
+              isVerified: liveStats.is_verified !== undefined ? liveStats.is_verified : profile.isVerified,
+            };
+          }
+        } catch {}
+      }
+
       setActiveCreator(profile);
-      setActiveSubTab("audit"); // Auto-switch to Audit view
       setIsAuditingAccount(false);
       setTelemetryStep(null);
 
-      // Asynchronously fetch live Instagram stats if backend is available
-      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
-      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
-        fetch(`${apiBase}/api/creators/live/${encodeURIComponent(handle)}`)
-          .then((res) => (res.ok ? res.json() : null))
-          .then((liveStats) => {
-            if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
-              setActiveCreator((prev) => {
-                if (prev.handle.toLowerCase() === handle.toLowerCase()) {
-                  return {
-                    ...prev,
-                    name: liveStats.name || prev.name,
-                    followers: liveStats.followers,
-                    followersDelta: liveStats.followersDelta || prev.followersDelta,
-                    following: liveStats.following !== undefined ? liveStats.following : prev.following,
-                    posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
-                  };
-                }
-                return prev;
-              });
-            }
-          })
-          .catch(() => {});
+      // If livePromise takes slightly longer, attach background updater
+      if (livePromise) {
+        livePromise.then((liveStats) => {
+          if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
+            setActiveCreator((prev) => {
+              if (prev.handle.toLowerCase() === handle.toLowerCase()) {
+                return {
+                  ...prev,
+                  name: liveStats.name || prev.name,
+                  followers: liveStats.followers,
+                  followersDelta: liveStats.followersDelta || prev.followersDelta,
+                  following: liveStats.following !== undefined ? liveStats.following : prev.following,
+                  posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
+                  isPrivate: liveStats.is_private !== undefined ? liveStats.is_private : prev.isPrivate,
+                  isVerified: liveStats.is_verified !== undefined ? liveStats.is_verified : prev.isVerified,
+                };
+              }
+              return prev;
+            });
+          }
+        });
       }
 
       // Scroll smoothly to the creator card
@@ -789,7 +818,7 @@ export default function App() {
         `Synthesized real-time telemetry and winning predictions for @${profile.handle} (Score: ${profile.score}%).`,
         "success"
       );
-    }, 1400);
+    }, 1150);
   };
 
   // 9. Handler: Date Range Adjustment
