@@ -669,12 +669,8 @@ export default function App() {
     }
   }, [isDarkMode]);
 
-  // 2. Authentication State
-  const [currentUser, setCurrentUser] = useState<UserSession | null>({
-    name: "Alex Chen",
-    email: "alex.chen@enterprise.com",
-    role: "Principal Content Architect",
-  });
+  // 2. Authentication State - Null by default; authenticated or demo sessions loaded from localStorage
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
@@ -1027,27 +1023,42 @@ export default function App() {
         {/* Right: SaaS App / Log In, Create a Free Account, and Dark Mode Toggle on extreme right */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           {currentUser ? (
-            <button
-              onClick={() => setViewMode(viewMode === "public_report" ? "saas_dashboard" : "public_report")}
-              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
-            >
-              {viewMode === "public_report" ? "SaaS App →" : "Public View"}
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setViewMode(viewMode === "public_report" ? "saas_dashboard" : "public_report")}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
+              >
+                {viewMode === "public_report" ? "SaaS App →" : "Public View"}
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("sociotrack_user_session");
+                  setCurrentUser(null);
+                  setViewMode("public_report");
+                  showToast("Signed Out", "Your session has been securely ended.");
+                }}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                title="Sign out of current workspace"
+              >
+                Sign Out
+              </button>
+            </div>
           ) : (
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
-            >
-              Log in
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
+              >
+                Log in
+              </button>
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="px-4 py-1.5 rounded-lg bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-semibold shadow-sm transition-colors"
+              >
+                Create Account
+              </button>
+            </div>
           )}
-
-          <button
-            onClick={() => setShowSurveyModal(true)}
-            className="px-4 py-1.5 rounded-lg bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-semibold shadow-sm transition-colors"
-          >
-            Create a Free Account
-          </button>
 
           {/* Extreme Right: Moon / Sun Toggle Button */}
           <button
@@ -1064,6 +1075,37 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {/* Demo Sandbox Alert Header */}
+      {currentUser?.isDemo && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-200">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            <span className="font-semibold">Interactive Demo Sandbox Mode:</span>
+            <span className="text-slate-600 dark:text-slate-400">
+              Exploring with curated benchmark datasets &amp; isolated vector memory.
+            </span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="font-bold underline hover:opacity-80 text-indigo-600 dark:text-indigo-400"
+            >
+              Sign in with work email
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem("sociotrack_user_session");
+                setCurrentUser(null);
+                setViewMode("public_report");
+              }}
+              className="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 font-medium"
+            >
+              Exit Sandbox
+            </button>
+          </div>
+        </div>
+      )}
 
       {viewMode === "saas_dashboard" ? (
         <InsTrackSaaSDashboard
