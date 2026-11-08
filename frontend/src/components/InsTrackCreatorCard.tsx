@@ -136,9 +136,9 @@ export function InsTrackCreatorCard({
                 alt={creator.handle}
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-                  const clean = creator.handle.replace(/^@/, "").toLowerCase().trim();
                   const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+                  const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
+                  const clean = creator.handle.replace(/^@/, "").toLowerCase().trim();
                   const canUseProxy = apiBase && !(isHttps && apiBase.startsWith("http://localhost"));
 
                   if (!target.dataset.triedStatic) {

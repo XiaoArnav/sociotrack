@@ -650,7 +650,7 @@ export default function App() {
   useEffect(() => {
     let isMounted = true;
     const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
     if (!apiBase || (isHttps && apiBase.startsWith("http://localhost"))) return;
 
     fetch(`${apiBase}/api/creators/live/${encodeURIComponent(activeCreator.handle)}`)
@@ -751,7 +751,7 @@ export default function App() {
 
       // Asynchronously fetch live Instagram stats if backend is available
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
       if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
         fetch(`${apiBase}/api/creators/live/${encodeURIComponent(handle)}`)
           .then((res) => (res.ok ? res.json() : null))

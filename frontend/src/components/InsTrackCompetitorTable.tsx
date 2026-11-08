@@ -317,7 +317,7 @@ export function InsTrackCompetitorTable({
   // Hydrate live from Meta Graph / backend proxy whenever available
   useEffect(() => {
     const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
     if (!apiBase || (isHttps && apiBase.startsWith("http://localhost"))) return;
 
     let isMounted = true;
@@ -487,8 +487,8 @@ export function InsTrackCompetitorTable({
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           const clean = acc.handle.replace(/^@/, "").toLowerCase().trim();
-                          const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
                           const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+                          const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
                           const canUseProxy = apiBase && !(isHttps && apiBase.startsWith("http://localhost"));
 
                           if (!target.dataset.triedStatic) {
