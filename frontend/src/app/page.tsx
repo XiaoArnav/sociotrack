@@ -32,6 +32,12 @@ import { InsTrackCalendarView } from "@/components/InsTrackCalendarView";
 import { ProductAnalyticsView } from "@/components/ProductAnalyticsView";
 import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
 import { UserFeedbackModal } from "@/components/UserFeedbackModal";
+import { WorkspaceSelector } from "@/components/WorkspaceSelector";
+import { TeamCollaborationModal } from "@/components/TeamCollaborationModal";
+import { NaturalLanguageExplorer } from "@/components/NaturalLanguageExplorer";
+import { CompetitorBenchmarkCard } from "@/components/CompetitorBenchmarkCard";
+import { ApprovalQueueWidget } from "@/components/ApprovalQueueWidget";
+import { AdvancedReportsView } from "@/components/AdvancedReportsView";
 import {
   PostDraft,
   LearnedInsight,
@@ -682,6 +688,12 @@ export default function App() {
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [workspaceBrands, setWorkspaceBrands] = useState<{ id: string; name: string }[]>([
+    { id: "brd_default", name: "Apex Content Studio" },
+    { id: "brd_saas", name: "SaaS Growth Lab" },
+    { id: "brd_ecom", name: "NextGen D2C Brand" },
+  ]);
   const [activeBrandId, setActiveBrandId] = useState<string>("brd_default");
   const [viewMode, setViewMode] = useState<"public_report" | "saas_dashboard">("public_report");
 
@@ -754,7 +766,7 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<{
     title: string;
     description: string;
-    type?: "success" | "info" | "warning";
+    type?: "success" | "info" | "warning" | "error";
   } | null>(null);
 
   // 7. FAQ State
@@ -764,7 +776,7 @@ export default function App() {
   const showToast = (
     title: string,
     description: string,
-    type: "success" | "info" | "warning" = "success"
+    type: "success" | "info" | "warning" | "error" = "success"
   ) => {
     setToastMessage({ title, description, type });
     setTimeout(() => {
@@ -971,7 +983,9 @@ export default function App() {
       {toastMessage && (
         <div
           className={`fixed top-5 right-5 z-50 max-w-sm bg-white dark:bg-[#161F30] border-2 rounded-2xl p-4 shadow-2xl flex items-start space-x-3 animate-slide-up ${
-            toastMessage.type === "warning"
+            toastMessage.type === "error"
+              ? "border-rose-500"
+              : toastMessage.type === "warning"
               ? "border-amber-500"
               : toastMessage.type === "info"
               ? "border-indigo-500"
@@ -980,14 +994,18 @@ export default function App() {
         >
           <div
             className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-              toastMessage.type === "warning"
+              toastMessage.type === "error"
+                ? "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400"
+                : toastMessage.type === "warning"
                 ? "bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400"
                 : toastMessage.type === "info"
                 ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400"
                 : "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
             }`}
           >
-            {toastMessage.type === "warning" ? (
+            {toastMessage.type === "error" ? (
+              <AlertTriangle className="w-4 h-4" />
+            ) : toastMessage.type === "warning" ? (
               <AlertTriangle className="w-4 h-4" />
             ) : toastMessage.type === "info" ? (
               <Info className="w-4 h-4" />
@@ -1015,19 +1033,37 @@ export default function App() {
       {/* TOP NAVIGATION BAR */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
         {/* Left: SocioTrack Logo & App Name */}
-        <button
-          onClick={() => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity"
-        >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-sm">
-            <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity"
+          >
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-sm">
+              <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+            </div>
+            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+              SocioTrack
+            </span>
+          </button>
+
+          {/* Multi-Brand Workspace Selector */}
+          <div className="hidden md:block">
+            <WorkspaceSelector
+              workspaceName="Growth Ops Org"
+              activeBrandId={activeBrandId}
+              brands={workspaceBrands}
+              onSelectBrand={(id) => {
+                setActiveBrandId(id);
+                const b = workspaceBrands.find((x) => x.id === id);
+                showToast("Switched Workspace Brand", `Active brand context changed to ${b?.name || id}`);
+              }}
+              onOpenTeamModal={() => setShowTeamModal(true)}
+              onNewBrand={() => setShowOnboardingWizard(true)}
+            />
           </div>
-          <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-            SocioTrack
-          </span>
-        </button>
+        </div>
 
         {/* Right: SaaS App / Log In, Create a Free Account, and Dark Mode Toggle on extreme right */}
         <div className="flex items-center space-x-2 sm:space-x-3">
@@ -1566,6 +1602,50 @@ export default function App() {
                   <ProductAnalyticsView apiBaseUrl={API_BASE_URL} />
                 </div>
               )}
+
+              {/* NATURAL LANGUAGE QUERY EXPLORER ("ASK SOCIOTRACK") */}
+              {activeSubTab === "ask_ai" && (
+                <div className="space-y-6 animate-fade-in">
+                  <NaturalLanguageExplorer
+                    brandId={activeBrandId}
+                    apiBaseUrl={API_BASE_URL}
+                    authToken={currentUser?.token}
+                  />
+                </div>
+              )}
+
+              {/* COMPETITOR BENCHMARKING SUBTAB */}
+              {activeSubTab === "competitors" && (
+                <div className="space-y-6 animate-fade-in">
+                  <CompetitorBenchmarkCard
+                    brandId={activeBrandId}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
+
+              {/* APPROVAL QUEUE & PEER COLLABORATION SUBTAB */}
+              {activeSubTab === "approval" && (
+                <div className="space-y-6 animate-fade-in">
+                  <ApprovalQueueWidget
+                    brandId={activeBrandId}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
+
+              {/* ADVANCED EXECUTIVE REPORTING & AUDIT EXPORTS */}
+              {activeSubTab === "reports" && (
+                <div className="space-y-6 animate-fade-in">
+                  <AdvancedReportsView
+                    brandId={activeBrandId}
+                    brandName={workspaceBrands.find((b) => b.id === activeBrandId)?.name}
+                    apiBaseUrl={API_BASE_URL}
+                    authToken={currentUser?.token}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
             </div>
 
             {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE */}
@@ -1922,6 +2002,16 @@ export default function App() {
         onClose={() => setShowFeedbackModal(false)}
         brandId={activeBrandId}
         apiBaseUrl={API_BASE_URL}
+        onToast={(title, msg, type) => showToast(title, msg, type)}
+      />
+
+      {/* TEAM & RBAC PERMISSIONS MODAL */}
+      <TeamCollaborationModal
+        isOpen={showTeamModal}
+        onClose={() => setShowTeamModal(false)}
+        workspaceId="default-workspace"
+        apiBaseUrl={API_BASE_URL}
+        authToken={currentUser?.token}
         onToast={(title, msg, type) => showToast(title, msg, type)}
       />
     </div>

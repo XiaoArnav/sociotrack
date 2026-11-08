@@ -28,7 +28,11 @@ export type SubNavTab =
   | "memorybank"
   | "experiments"
   | "calendar"
-  | "telemetry";
+  | "telemetry"
+  | "competitors"
+  | "ask_ai"
+  | "approval"
+  | "reports";
 
 export interface CreatorProfile {
   handle: string;
@@ -540,6 +544,10 @@ export function InsTrackCreatorCard({
             { key: "memorybank", label: "Memory Bank" },
             { key: "experiments", label: "A/B Experiments" },
             { key: "calendar", label: "Mix Planner" },
+            { key: "ask_ai", label: "Ask SocioTrack", badge: "AI" },
+            { key: "competitors", label: "Competitor Intel" },
+            { key: "approval", label: "Approval Queue" },
+            { key: "reports", label: "Executive Reports" },
             { key: "telemetry", label: "Product Telemetry", badge: "Pilot" },
           ];
         })().map((tab) => {
