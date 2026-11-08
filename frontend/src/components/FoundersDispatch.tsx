@@ -213,28 +213,30 @@ export function FoundersDispatch() {
         })}
       </div>
 
-      {/* Interactive Philosophy Spotlight Console */}
-      <div className="relative rounded-2xl border border-indigo-500/30 bg-slate-900 text-slate-100 p-6 shadow-inner font-mono text-xs overflow-hidden">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-800 text-slate-400 text-[11px]">
+      {/* Interactive Philosophy Spotlight Console (Theme adaptive: light & dark) */}
+      <div className="relative rounded-2xl border border-slate-200 dark:border-indigo-500/30 bg-slate-50/80 dark:bg-[#0D1424] text-slate-800 dark:text-slate-100 p-6 shadow-xs dark:shadow-inner font-mono text-xs overflow-hidden transition-colors">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-[11px]">
           <div className="flex items-center space-x-2">
-            <Terminal className="w-4 h-4 text-emerald-400" />
-            <span>DISPATCH://{activeFounder.name.toLowerCase().replace(/\s+/g, "_")}.md</span>
+            <Terminal className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              DISPATCH://{activeFounder.name.toLowerCase().replace(/\s+/g, "_")}.md
+            </span>
           </div>
-          <span className="text-[10px] text-indigo-400 font-bold uppercase">
+          <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider">
             Click any founder card to view perspective
           </span>
         </div>
 
         <div className="mt-4 flex items-start space-x-3">
-          <Quote className="w-6 h-6 text-indigo-400 shrink-0 opacity-80" />
+          <Quote className="w-6 h-6 text-indigo-500 dark:text-indigo-400 shrink-0 opacity-80" />
           <div className="space-y-2">
-            <p className="text-sm font-sans font-medium text-slate-200 leading-relaxed italic">
+            <p className="text-sm font-sans font-medium text-slate-700 dark:text-slate-200 leading-relaxed italic">
               &ldquo;{activeFounder.quote}&rdquo;
             </p>
-            <div className="flex items-center space-x-2 text-[11px] text-slate-400 font-sans">
-              <span className="font-bold text-white">— {activeFounder.name}</span>
+            <div className="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 font-sans">
+              <span className="font-bold text-slate-900 dark:text-white">— {activeFounder.name}</span>
               <span>•</span>
-              <span className="text-indigo-400">{activeFounder.role}</span>
+              <span className="text-indigo-600 dark:text-indigo-400 font-semibold">{activeFounder.role}</span>
             </div>
           </div>
         </div>
