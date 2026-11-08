@@ -9,20 +9,36 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel, Field
 
-from backend.app.schemas.post_schema import (
-    BrandVoiceGuidelinesSchema,
-    EngagementMetricsSchema,
-    PostFormat,
-    PostVariationSchema,
-    SelectedPostSchema,
-    SimulatorFeedResponse,
-)
-from backend.app.core.memory import (
-    VectorMemoryManager,
-    get_memory_manager,
-    calculate_composite_score,
-)
-from backend.app.core.prompts import BRAND_VOICE_GUIDELINES
+try:
+    from app.schemas.post_schema import (
+        BrandVoiceGuidelinesSchema,
+        EngagementMetricsSchema,
+        PostFormat,
+        PostVariationSchema,
+        SelectedPostSchema,
+        SimulatorFeedResponse,
+    )
+    from app.core.memory import (
+        VectorMemoryManager,
+        get_memory_manager,
+        calculate_composite_score,
+    )
+    from app.core.prompts import BRAND_VOICE_GUIDELINES
+except ImportError:
+    from backend.app.schemas.post_schema import (
+        BrandVoiceGuidelinesSchema,
+        EngagementMetricsSchema,
+        PostFormat,
+        PostVariationSchema,
+        SelectedPostSchema,
+        SimulatorFeedResponse,
+    )
+    from backend.app.core.memory import (
+        VectorMemoryManager,
+        get_memory_manager,
+        calculate_composite_score,
+    )
+    from backend.app.core.prompts import BRAND_VOICE_GUIDELINES
 
 
 class AgentGraphState(BaseModel):
@@ -222,7 +238,7 @@ def evaluate_brand_voice_node(state: AgentGraphState) -> Dict[str, Any]:
         match_score=best_score,
         evaluation_summary=best_critique,
         dos_matched=best_dos,
-        donts_avoided=best_dos,
+        donts_avoided=best_donts,
         scheduled_time="Optimal distribution window: Mon-Thu 09:30 AM EST",
     )
     return {"selected_post": selected}

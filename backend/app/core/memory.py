@@ -3,13 +3,20 @@ Vector search, ChromaDB memory storage, and composite scoring algorithm.
 Owned by Person 1.
 """
 
+import json
+import time
 import uuid
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import chromadb
 from chromadb.api import ClientAPI
 
-from backend.app.config import settings
-from backend.app.schemas.post_schema import EngagementMetricsSchema
+try:
+    from app.config import settings
+    from app.schemas.post_schema import EngagementMetricsSchema
+except ImportError:
+    from backend.app.config import settings
+    from backend.app.schemas.post_schema import EngagementMetricsSchema
 
 
 def calculate_composite_score(
@@ -51,6 +58,9 @@ class VectorMemoryManager:
         self.brand_name = brand_name
         sanitized = "".join(c if c.isalnum() else "_" for c in brand_name.lower())
         self.memory_weights: Dict[str, float] = {}
+        persist_dir = persist_directory or settings.CHROMA_PERSIST_DIRECTORY or "./chroma_data"
+        self.weights_file = Path(persist_dir) / f"{sanitized}_weights.json"
+        self._load_weights()
 
         if client is not None:
             self.client = client
@@ -74,9 +84,59 @@ class VectorMemoryManager:
             metadata={"description": "Learned performance takeaways"}
         )
 
+    def _load_weights(self) -> None:
+        """Loads persisted memory weights from disk so adjustments survive server restarts."""
+        try:
+            if self.weights_file.exists():
+                with open(self.weights_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, dict):
+                        self.memory_weights = data
+        except Exception:
+            self.memory_weights = {}
+
+    def _persist_weights(self) -> None:
+        """Saves current memory weights to disk."""
+        try:
+            self.weights_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.weights_file, "w", encoding="utf-8") as f:
+                json.dump(self.memory_weights, f, indent=2)
+        except Exception:
+            pass
+
     def get_weight(self, key: str) -> float:
         """Retrieves dynamic weight for a topic or format (default: 1.0)."""
         return self.memory_weights.get(key, 1.0)
+
+    def insert_lesson(
+        self,
+        topic: str,
+        lesson: str,
+        score: float,
+        format_name: Optional[str] = None,
+        doc_id: Optional[str] = None,
+    ) -> str:
+        """
+        Embeds and persists a confirmed high-performing strategic lesson into vector memory.
+        Updates dynamic weights and persists them to disk.
+        """
+        did = doc_id or f"lesson_{int(time.time())}_{uuid.uuid4().hex[:6]}"
+        metadata = {
+            "topic": topic,
+            "composite_score": float(score),
+            "format": format_name or "general",
+            "type": "lesson",
+            "timestamp": time.time(),
+        }
+
+        self.lessons_col.add(
+            documents=[lesson],
+            metadatas=[metadata],
+            ids=[did],
+        )
+
+        self.adjust_memory_weights(topic=topic, score=score, format_name=format_name)
+        return did
 
     def adjust_memory_weights(
         self,
@@ -108,6 +168,8 @@ class VectorMemoryManager:
         self.memory_weights[topic] = new_topic_weight
         if format_name:
             self.memory_weights[format_name] = new_format_weight
+
+        self._persist_weights()
 
         return {
             "topic": topic,

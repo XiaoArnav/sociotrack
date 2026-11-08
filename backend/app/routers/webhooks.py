@@ -104,9 +104,20 @@ async def receive_instagram_webhook(payload: Dict[str, Any]):
 
                 # If comment indicates strong community sentiment, update sentiment memory
                 if any(w in comment_text.lower() for w in ["love", "best", "great", "saving", "bookmark", "blueprint"]):
+                    lesson_text = f"Audience responded positively to tactical breakdown: '{comment_text[:60]}'"
+                    try:
+                        mem_mgr = get_memory_manager("SocioTrack")
+                        mem_mgr.insert_lesson(
+                            topic="Community Engagement",
+                            lesson=lesson_text,
+                            score=8.0,
+                            format_name="community_response",
+                        )
+                    except Exception:
+                        pass
                     insights_learned.append({
                         "field": "comments",
-                        "lesson": f"Audience responded positively to tactical breakdown: '{comment_text[:60]}'",
+                        "lesson": lesson_text,
                         "sentiment": "highly_positive",
                     })
 
@@ -143,6 +154,7 @@ async def simulate_meta_webhook(req: SimulateWebhookRequest):
 
     reinforced = False
     lesson_text = None
+    doc_id = None
 
     if score >= settings.MIN_COMPOSITE_SCORE_THRESHOLD:
         reinforced = True
@@ -153,7 +165,7 @@ async def simulate_meta_webhook(req: SimulateWebhookRequest):
         )
         try:
             mem_mgr = get_memory_manager(req.brand_name)
-            mem_mgr.insert_lesson(
+            doc_id = mem_mgr.insert_lesson(
                 topic=req.topic,
                 lesson=lesson_text,
                 score=score,
@@ -175,4 +187,5 @@ async def simulate_meta_webhook(req: SimulateWebhookRequest):
         "threshold_met": reinforced,
         "memory_reinforced": reinforced,
         "extracted_lesson": lesson_text,
+        "memory_doc_id": doc_id,
     }
