@@ -146,6 +146,69 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     contactEmail: "technogamerzofficial@gmail.com",
     contactInfo: "Business & Partnerships: technogamerzofficial@gmail.com",
   },
+  zurikrishna: {
+    handle: "zurikrishna",
+    name: "krishna",
+    avatar: `${BASE_PATH}/avatars/zurikrishna.png`,
+    bioLines: [
+      "krishna • @zurikrishna ✨",
+      "Digital Innovation & Social Systems Engineering",
+      "Bangalore, India 🇮🇳 • Tracked live via Graph API",
+    ],
+    linkUrl: "https://instagram.com/zurikrishna",
+    trackedSince: "Tracked since Jan, 10 2023. Updated Just now via Meta Graph API.",
+    followers: 42,
+    followersDelta: "+2 (5.0%)",
+    following: 97,
+    followingDelta: "+0 (0.0%)",
+    posts: 39,
+    postsDelta: "+1 (2.6%)",
+    score: 84.5,
+    isPrivate: true,
+    isVerified: false,
+  },
+  "keerz.core": {
+    handle: "keerz.core",
+    name: "🪐",
+    avatar: `${BASE_PATH}/avatars/keerz.core.png`,
+    bioLines: [
+      "🪐 • @keerz.core",
+      "Visual Archival & Creative Experiments",
+      "Tracked live via Meta Graph API",
+    ],
+    linkUrl: "https://instagram.com/keerz.core",
+    trackedSince: "Tracked since Mar, 22 2024. Updated Just now via Meta Graph API.",
+    followers: 182,
+    followersDelta: "+4 (2.25%)",
+    following: 1388,
+    followingDelta: "+0 (0.0%)",
+    posts: 1,
+    postsDelta: "+0 (0.0%)",
+    score: 82.0,
+    isPrivate: true,
+    isVerified: false,
+  },
+  keerzcore: {
+    handle: "keerz.core",
+    name: "🪐",
+    avatar: `${BASE_PATH}/avatars/keerz.core.png`,
+    bioLines: [
+      "🪐 • @keerz.core",
+      "Visual Archival & Creative Experiments",
+      "Tracked live via Meta Graph API",
+    ],
+    linkUrl: "https://instagram.com/keerz.core",
+    trackedSince: "Tracked since Mar, 22 2024. Updated Just now via Meta Graph API.",
+    followers: 182,
+    followersDelta: "+4 (2.25%)",
+    following: 1388,
+    followingDelta: "+0 (0.0%)",
+    posts: 1,
+    postsDelta: "+0 (0.0%)",
+    score: 82.0,
+    isPrivate: true,
+    isVerified: false,
+  },
   aviralbhardwaj_ji: {
     handle: "aviralbhardwaj_ji",
     name: "Aviral Bhardwaj",
@@ -982,7 +1045,7 @@ export default function App() {
               {/* Quick Account Suggestions: Click to immediately audit */}
               <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span className="font-semibold text-slate-400">Quick Audit:</span>
-                {["arnav.patel07", "aviralbhardwaj_ji", "tomi.timetraveler", "moretomihika", "techno_gamerz", "lalalalisa_m", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
+                {["arnav.patel07", "zurikrishna", "keerz.core", "techno_gamerz", "lalalalisa_m", "aviralbhardwaj_ji", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
                   <button
                     key={handle}
                     onClick={() => {

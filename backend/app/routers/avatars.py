@@ -265,7 +265,7 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
 
                     delta_fol = max(1, int(followers * 0.005))
                     delta_fol_pct = 0.50
-                    is_private = clean_handle in {"arnav.patel07"} or "This account is private" in resp.text
+                    is_private = clean_handle in {"arnav.patel07", "zurikrishna", "keerz.core"} or "This account is private" in resp.text
                     is_verified = clean_handle in {
                         "techno_gamerz", "lalalalisa_m", "thv", "sooyaaa__",
                         "mnijungkook", "j.m", "uarmyhope", "rkive", "itsjvke",
@@ -330,6 +330,8 @@ COMPETITOR_SEEDS = [
     {"handle": "tomi.timetraveler", "group": "Creators", "id": "c11", "default_name": "Tomi", "followers": 3000000, "following": 307, "mediaCount": 579},
     {"handle": "moretomihika", "group": "Creators", "id": "c12", "default_name": "mihika sharma", "followers": 383000, "following": 425, "mediaCount": 549},
     {"handle": "aviralbhardwaj_ji", "group": "Creators", "id": "c13", "default_name": "Aviral Bhardwaj", "followers": 319, "following": 1052, "mediaCount": 143},
+    {"handle": "zurikrishna", "group": "Creators", "id": "c14", "default_name": "krishna", "followers": 42, "following": 97, "mediaCount": 39},
+    {"handle": "keerz.core", "group": "Creators", "id": "c15", "default_name": "🪐", "followers": 182, "following": 1388, "mediaCount": 1},
 ]
 
 
