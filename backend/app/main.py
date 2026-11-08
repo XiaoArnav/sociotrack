@@ -27,6 +27,7 @@ from app.routers import (
     feedback,
     pilot,
     workspaces,
+    advanced_intelligence,
 )
 
 
@@ -98,6 +99,7 @@ app.include_router(user_privacy.router)
 app.include_router(feedback.router)
 app.include_router(pilot.router)
 app.include_router(workspaces.router, prefix=settings.API_V1_STR)
+app.include_router(advanced_intelligence.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/health", tags=["System"], summary="General health check")

@@ -11,24 +11,44 @@ import unittest
 import uuid
 import chromadb
 
-from backend.app.schemas.post_schema import (
-    BrandVoiceGuidelinesSchema,
-    EngagementMetricsSchema,
-    PostFormat,
-)
-from backend.app.core.memory import (
-    VectorMemoryManager,
-    calculate_composite_score,
-)
-from backend.app.core.agent import (
-    AgentGraphState,
-    SocialEngagementAgent,
-    build_social_agent_graph,
-    run_agent_cycle,
-    ingest_analytics,
-)
-from backend.app.core.schemas import RawPost, CreatorAuditReport
-from backend.app.core.diagnostics_agent import run_creator_audit
+try:
+    from app.schemas.post_schema import (
+        BrandVoiceGuidelinesSchema,
+        EngagementMetricsSchema,
+        PostFormat,
+    )
+    from app.core.memory import (
+        VectorMemoryManager,
+        calculate_composite_score,
+    )
+    from app.core.agent import (
+        AgentGraphState,
+        SocialEngagementAgent,
+        build_social_agent_graph,
+        run_agent_cycle,
+        ingest_analytics,
+    )
+    from app.core.schemas import RawPost, CreatorAuditReport
+    from app.core.diagnostics_agent import run_creator_audit
+except ImportError:
+    from backend.app.schemas.post_schema import (
+        BrandVoiceGuidelinesSchema,
+        EngagementMetricsSchema,
+        PostFormat,
+    )
+    from backend.app.core.memory import (
+        VectorMemoryManager,
+        calculate_composite_score,
+    )
+    from backend.app.core.agent import (
+        AgentGraphState,
+        SocialEngagementAgent,
+        build_social_agent_graph,
+        run_agent_cycle,
+        ingest_analytics,
+    )
+    from backend.app.core.schemas import RawPost, CreatorAuditReport
+    from backend.app.core.diagnostics_agent import run_creator_audit
 
 
 class TestPerson1Agent(unittest.TestCase):

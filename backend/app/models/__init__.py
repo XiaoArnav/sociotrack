@@ -13,6 +13,8 @@ from app.models.workspace import (
     ApiKey,
     AuditLog,
 )
+from app.models.competitor import CompetitorTracker
+from app.models.audience_pattern import AudiencePattern
 
 __all__ = [
     "Brand",
@@ -29,4 +31,6 @@ __all__ = [
     "WorkspaceInvite",
     "ApiKey",
     "AuditLog",
+    "CompetitorTracker",
+    "AudiencePattern",
 ]
