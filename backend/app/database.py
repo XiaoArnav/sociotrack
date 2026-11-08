@@ -60,6 +60,17 @@ async def init_db() -> None:
                 if "updated_at" not in brand_cols:
                     sync_conn.execute(text("ALTER TABLE brands ADD COLUMN updated_at DATETIME"))
 
+            if "posts" in table_names:
+                post_cols = {c["name"] for c in inspector.get_columns("posts")}
+                if "idempotency_key" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN idempotency_key VARCHAR(100)"))
+                if "source_provenance" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN source_provenance VARCHAR(100) DEFAULT 'synthetic_or_agent'"))
+                if "platform_post_id" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN platform_post_id VARCHAR(100)"))
+                if "published_at" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN published_at DATETIME"))
+
             if "users" in table_names:
                 user_cols = {c["name"] for c in inspector.get_columns("users")}
                 if "telemetry_opt_in" not in user_cols:
