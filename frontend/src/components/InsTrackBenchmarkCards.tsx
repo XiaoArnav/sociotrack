@@ -139,7 +139,7 @@ export function InsTrackGradeCards() {
   return (
     <div className="space-y-4 pt-2">
       <div className="text-center max-w-2xl mx-auto space-y-1">
-        <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent pb-1.5 pt-0.5 leading-tight">
           Benchmark Performance
         </h2>
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">

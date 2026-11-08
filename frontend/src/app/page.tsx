@@ -730,8 +730,8 @@ export default function App() {
             {/* Background Ambient Shapes */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 bg-indigo-500/10 dark:bg-indigo-500/5 blur-3xl pointer-events-none" />
 
-            {/* Headline with Purple-to-Cyan Gradient Text */}
-            <h1 className="text-3xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] bg-clip-text text-transparent">
+            {/* Headline with Purple-to-Cyan Gradient Text (with pb-2.5 to prevent descender clipping on letters like y, p, g) */}
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight bg-gradient-to-r from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] bg-clip-text text-transparent pb-2.5 pt-1 leading-[1.18] sm:leading-[1.18]">
               Powerful In-Depth Analytics for Instagram
             </h1>
 
@@ -1104,7 +1104,7 @@ export default function App() {
             {/* 4. SHOWCASE SECTION 2: INSTANT PERFORMANCE INSIGHTS / COMPETITOR TRACKING */}
             <section className="space-y-6 pt-4">
               <div className="text-center max-w-2xl mx-auto space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent pb-1.5 pt-0.5 leading-tight">
                   Instant Performance Insights
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -1126,7 +1126,7 @@ export default function App() {
             {/* 5. SHOWCASE SECTION 3: REPORTING AND DATA EXPORTS */}
             <section className="space-y-6 pt-4">
               <div className="text-center max-w-2xl mx-auto space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent">
+                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent pb-1.5 pt-0.5 leading-tight">
                   Reporting and Data Exports
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
