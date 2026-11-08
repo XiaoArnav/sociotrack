@@ -93,7 +93,7 @@ async def generate_drafts(
             status="draft",
         )
         db.add(post)
-        created_posts.append((post, spec["memory_context_applied"]))
+        created_posts.append((post, spec))
 
     await db.flush()
 
@@ -109,9 +109,16 @@ async def generate_drafts(
             status=post.status,
             scheduled_for=post.scheduled_for,
             created_at=post.created_at,
-            memory_context_applied=mem_applied,
+            memory_context_applied=spec.get("memory_context_applied", []),
+            recommendation_rationale=spec.get("recommendation_rationale", spec.get("rationale")),
+            supporting_evidence=spec.get("supporting_evidence"),
+            memories_applied=spec.get("memories_applied", []),
+            confidence_score=spec.get("confidence_score", 0.88),
+            known_limitations=spec.get("known_limitations"),
+            platform_target=spec.get("platform_target", "Instagram"),
+            anti_repetition_passed=spec.get("anti_repetition_passed", True),
         )
-        for post, mem_applied in created_posts
+        for post, spec in created_posts
     ]
 
     selected_draft = response_drafts[0] if response_drafts else None
