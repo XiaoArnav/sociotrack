@@ -446,6 +446,43 @@ class VectorMemoryManager:
 
         return score, True, key_lesson, lesson_id, weight_adj
 
+    def record_recommendation_rejection_lesson(
+        self,
+        rejection_reason: str,
+        user_explanation: Optional[str] = None,
+        topic: str = "general",
+    ) -> Tuple[str, str]:
+        """
+        Dynamically records a negative guideline / don't lesson from user recommendation rejection.
+        Ensures the agent adapts and avoids repeating rejected voice or formats.
+        """
+        rejection_map = {
+            "poor_voice": "Avoid tone/vocabulary that deviates from brand archetype. User rejected recommendation: ",
+            "repetitive": "Avoid generating similar phrasing/hooks within consecutive generation batches. User rejected repetitive pattern: ",
+            "off_topic": "Avoid topics outside core domain expertise and practitioner scope: ",
+            "inappropriate_hook": "Avoid sensationalist or clickbait opening hooks that undermine authority: ",
+            "other": "User rejected candidate recommendation with guidance: "
+        }
+        prefix = rejection_map.get(rejection_reason, "Avoid pattern rejected by user: ")
+        detail = user_explanation or f"Flagged as {rejection_reason} during practitioner review."
+        negative_lesson = f"{prefix}{detail}"
+
+        lesson_id = f"dont_{uuid.uuid4().hex[:8]}"
+        doc_text = f"Topic: {topic}\nRule: {negative_lesson}\nRejection Reason: {rejection_reason}"
+        metadata = {
+            "lesson_id": lesson_id,
+            "topic": topic,
+            "key_lesson": negative_lesson,
+            "supporting_evidence": f"User Rejection ({rejection_reason}): {detail}",
+            "source_event": "recommendation_feedback",
+            "is_active": True,
+            "confidence": 0.88,
+            "brand_name": self.brand_name,
+            "rule_type": "donts_avoided",
+        }
+        self.lessons_col.add(ids=[lesson_id], documents=[doc_text], metadatas=[metadata])
+        return lesson_id, negative_lesson
+
     def get_stats(self) -> Dict[str, int]:
         return {
             "winning_posts_count": self.posts_col.count(),
