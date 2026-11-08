@@ -75,8 +75,8 @@ async def generate_drafts(
     # Combine unique memory context
     combined_memories = list(dict.fromkeys(recalled_from_hindsight + db_memories))
 
-    # 3. Trigger Agent Workflow
-    draft_specs = await trigger_agent_draft_generation(
+    # 3. Trigger Real LangGraph Agent Workflow
+    draft_specs, selected_info = await trigger_agent_draft_generation(
         brand=brand,
         topic=payload.topic,
         past_memories=combined_memories,
@@ -117,10 +117,12 @@ async def generate_drafts(
     selected_draft = response_drafts[0] if response_drafts else None
     selected_post = {
         "post_id": selected_draft.id if selected_draft else str(uuid.uuid4()),
-        "content": selected_draft.content if selected_draft else "",
-        "format": selected_draft.hook_style if selected_draft else "contrarian",
-        "match_score": 0.94,
-        "selection_rationale": "Strongest historical engagement velocity for topic",
+        "content": selected_info["content"] if selected_info else (selected_draft.content if selected_draft else ""),
+        "format": selected_info["format"] if selected_info else (selected_draft.hook_style if selected_draft else "contrarian"),
+        "match_score": selected_info["match_score"] if selected_info else 0.94,
+        "selection_rationale": selected_info["evaluation_summary"] if selected_info else "Strongest historical engagement velocity for topic",
+        "dos_matched": selected_info.get("dos_matched", []) if selected_info else [],
+        "donts_avoided": selected_info.get("donts_avoided", []) if selected_info else [],
     } if selected_draft else None
 
     return GenerateDraftsResponse(
