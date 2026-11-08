@@ -16,7 +16,11 @@ class Post(Base):
     format = Column(String(100), nullable=True)
     brand_name = Column(String(100), nullable=True)
     status = Column(String(50), nullable=False, default="draft")  # draft, pending_approval, scheduled, published
+    idempotency_key = Column(String(100), nullable=True, unique=True, index=True)
+    source_provenance = Column(String(100), nullable=True, default="synthetic_or_agent")
+    platform_post_id = Column(String(100), nullable=True)
     scheduled_for = Column(DateTime(timezone=True), nullable=True)
+    published_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True),
         nullable=False,
