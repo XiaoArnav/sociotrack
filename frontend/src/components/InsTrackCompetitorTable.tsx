@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Users, Plus, ArrowUpDown, ChevronDown, Check, Search } from "lucide-react";
 
 interface CompetitorAccount {
@@ -29,17 +29,17 @@ const COMPETITORS: CompetitorAccount[] = [
     id: "c0",
     avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     handle: "arnav.patel07",
-    name: "Arnav Patel | AI Systems Architect",
-    followers: 34820,
-    followersDelta: "+2,140 (+6.55%)",
+    name: "Arnav Patel 👾",
+    followers: 13,
+    followersDelta: "+1 (+8.33%)",
     isPositiveFollowers: true,
-    following: 418,
-    followingDelta: "+12 (+2.95%)",
+    following: 61,
+    followingDelta: "+0 (+0.0%)",
     isPositiveFollowing: true,
-    mediaCount: 84,
-    mediaDelta: "+4 (+5.0%)",
-    engagementRate: 16.99,
-    engagementDelta: "+3.20 (+23.2%)",
+    mediaCount: 0,
+    mediaDelta: "+0 (+0.0%)",
+    engagementRate: 12.50,
+    engagementDelta: "+0.00 (+0.0%)",
     isPositiveEngagement: true,
     group: "My Accounts",
   },
@@ -47,17 +47,17 @@ const COMPETITORS: CompetitorAccount[] = [
     id: "c1",
     avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     handle: "techno_gamerz",
-    name: "Ujjwal Chaurasia | Techno Gamerz",
-    followers: 13420000,
-    followersDelta: "+184,000 (+1.39%)",
+    name: "Techno Gamerz",
+    followers: 2000000,
+    followersDelta: "+14,000 (+0.70%)",
     isPositiveFollowers: true,
-    following: 246,
-    followingDelta: "+4 (+1.65%)",
+    following: 3,
+    followingDelta: "+0 (+0.0%)",
     isPositiveFollowing: true,
-    mediaCount: 492,
-    mediaDelta: "+12 (+2.50%)",
-    engagementRate: 5.82,
-    engagementDelta: "+0.45 (+8.38%)",
+    mediaCount: 33,
+    mediaDelta: "+1 (+3.12%)",
+    engagementRate: 6.45,
+    engagementDelta: "+0.35 (+5.74%)",
     isPositiveEngagement: true,
     group: "Creators",
   },
@@ -66,7 +66,7 @@ const COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     handle: "lalalalisa_m",
     name: "LISA",
-    followers: 105000000,
+    followers: 106000000,
     followersDelta: "+540,000 (+0.51%)",
     isPositiveFollowers: true,
     following: 0,
@@ -272,13 +272,33 @@ export function InsTrackCompetitorTable({
   onAddAccountClick,
   onSelectAccount,
 }: InsTrackCompetitorTableProps = {}) {
+  const [accounts, setAccounts] = useState<CompetitorAccount[]>(COMPETITORS);
   const [selectedGroup, setSelectedGroup] = useState("All");
   const [searchFilter, setSearchFilter] = useState("");
   const [sortField, setSortField] = useState<"followers" | "mediaCount" | "engagementRate">("followers");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+  // Hydrate live from Meta Graph / backend proxy whenever available
+  useEffect(() => {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    let isMounted = true;
+    fetch(`${apiBase}/api/creators/competitors`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((liveData) => {
+        if (isMounted && Array.isArray(liveData) && liveData.length > 0) {
+          setAccounts(liveData);
+        }
+      })
+      .catch(() => {
+        // Fallback to presets if backend is offline or static deploy
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const filteredAccounts = useMemo(() => {
-    return COMPETITORS.filter((acc) => {
+    return accounts.filter((acc) => {
       const matchGroup = selectedGroup === "All" || acc.group === selectedGroup;
       const matchSearch =
         acc.handle.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -289,7 +309,7 @@ export function InsTrackCompetitorTable({
       const valB = b[sortField];
       return sortOrder === "desc" ? valB - valA : valA - valB;
     });
-  }, [selectedGroup, searchFilter, sortField, sortOrder]);
+  }, [accounts, selectedGroup, searchFilter, sortField, sortOrder]);
 
   const toggleSort = (field: "followers" | "mediaCount" | "engagementRate") => {
     if (sortField === field) {
@@ -376,7 +396,9 @@ export function InsTrackCompetitorTable({
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-100 dark:border-[#243048] text-[11px] font-mono uppercase text-slate-400">
-                <th className="py-3 px-3">Account</th>
+                <th className="sticky left-0 z-20 bg-white dark:bg-[#161F30] py-3 px-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)] border-r border-slate-100 dark:border-[#243048] min-w-[220px]">
+                  Account
+                </th>
                 <th
                   onClick={() => toggleSort("followers")}
                   className="py-3 px-3 cursor-pointer hover:text-indigo-500 select-none"
@@ -416,8 +438,8 @@ export function InsTrackCompetitorTable({
                   className="hover:bg-slate-50/80 dark:hover:bg-[#1E2638]/70 transition-colors cursor-pointer group"
                   title={`Click to audit @${acc.handle}`}
                 >
-                  {/* Account Avatar + Handle */}
-                  <td className="py-3 px-3">
+                  {/* Account Avatar + Handle (Permanently Pinned on Left) */}
+                  <td className="sticky left-0 z-10 bg-white dark:bg-[#161F30] group-hover:bg-slate-50 dark:group-hover:bg-[#1E2638] py-3 px-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)] border-r border-slate-100 dark:border-[#243048] min-w-[220px] transition-colors">
                     <div className="flex items-center space-x-3">
                       <img
                         src={acc.avatar}

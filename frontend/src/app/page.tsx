@@ -60,84 +60,84 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const CREATOR_PRESETS: Record<string, CreatorProfile> = {
   "arnav.patel07": {
     handle: "arnav.patel07",
-    name: "Arnav Patel | AI Systems Architect",
+    name: "Arnav Patel 👾",
     avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     bioLines: [
+      "Arnav Patel 👾",
       "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
-      "DevRelay Fellow • Open Source Contributor • Tech Innovator",
-      "📍 Bangalore • High-throughput multi-agent architectures & live analytics",
+      "DevRelay Fellow • Open Source Contributor • Bangalore 🇮🇳",
     ],
     linkUrl: "https://github.com/XiaoArnav",
     trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
-    followers: 34820,
-    followersDelta: "+2,140 (6.55%)",
-    following: 418,
-    followingDelta: "+12 (2.95%)",
-    posts: 84,
-    postsDelta: "+4 (5.0%)",
+    followers: 13,
+    followersDelta: "+1 (8.33%)",
+    following: 61,
+    followingDelta: "+0 (0.0%)",
+    posts: 0,
+    postsDelta: "+0 (0.0%)",
     score: 88.4,
     contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
     contactInfo: "GitHub & AI Systems: XiaoArnav",
   },
   arnavpatel07: {
     handle: "arnav.patel07",
-    name: "Arnav Patel | AI Systems Architect",
+    name: "Arnav Patel 👾",
     avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     bioLines: [
+      "Arnav Patel 👾",
       "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
-      "DevRelay Fellow • Open Source Contributor • Tech Innovator",
-      "📍 Bangalore • High-throughput multi-agent architectures & live analytics",
+      "DevRelay Fellow • Open Source Contributor • Bangalore 🇮🇳",
     ],
     linkUrl: "https://github.com/XiaoArnav",
     trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
-    followers: 34820,
-    followersDelta: "+2,140 (6.55%)",
-    following: 418,
-    followingDelta: "+12 (2.95%)",
-    posts: 84,
-    postsDelta: "+4 (5.0%)",
+    followers: 13,
+    followersDelta: "+1 (8.33%)",
+    following: 61,
+    followingDelta: "+0 (0.0%)",
+    posts: 0,
+    postsDelta: "+0 (0.0%)",
     score: 88.4,
     contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
     contactInfo: "GitHub & AI Systems: XiaoArnav",
   },
   techno_gamerz: {
     handle: "techno_gamerz",
-    name: "Ujjwal Chaurasia | Techno Gamerz",
+    name: "Techno Gamerz",
     avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     bioLines: [
-      "Ujjwal Chaurasia • Gamer, Streamer & Entertainer 🎮",
-      "Red Bull Athlete • Techno Gamerz (40M+ Subscribers)",
-      "Creator of GameOn & Hitman • Delhi, India 🇮🇳",
+      "Ujjwal Chaurasia • Content Creator & Gamer 🎮",
+      "Creator of Techno Gamerz • Delhi, India 🇮🇳",
+      "Business & Inquiries: technogamerzofficial@gmail.com",
     ],
     linkUrl: "https://youtube.com/technogamerzofficial",
     trackedSince: "Tracked since Aug, 18 2019. Updated 2 minutes ago via Graph API.",
-    followers: 13420000,
-    followersDelta: "+184,000 (1.39%)",
-    following: 246,
-    followingDelta: "+4 (1.65%)",
-    posts: 492,
-    postsDelta: "+12 (2.50%)",
+    followers: 2000000,
+    followersDelta: "+14,000 (0.70%)",
+    following: 3,
+    followingDelta: "+0 (0.0%)",
+    posts: 33,
+    postsDelta: "+1 (3.12%)",
     score: 94.6,
     contactEmail: "technogamerzofficial@gmail.com",
     contactInfo: "Business & Partnerships: technogamerzofficial@gmail.com",
   },
   technogamerz: {
     handle: "techno_gamerz",
-    name: "Ujjwal Chaurasia | Techno Gamerz",
+    name: "Techno Gamerz",
     avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     bioLines: [
-      "Ujjwal Chaurasia • Gamer, Streamer & Entertainer 🎮",
-      "Red Bull Athlete • Techno Gamerz (40M+ Subscribers)",
-      "Creator of GameOn & Hitman • Delhi, India 🇮🇳",
+      "Ujjwal Chaurasia • Content Creator & Gamer 🎮",
+      "Creator of Techno Gamerz • Delhi, India 🇮🇳",
+      "Business & Inquiries: technogamerzofficial@gmail.com",
     ],
     linkUrl: "https://youtube.com/technogamerzofficial",
     trackedSince: "Tracked since Aug, 18 2019. Updated 2 minutes ago via Graph API.",
-    followers: 13420000,
-    followersDelta: "+184,000 (1.39%)",
-    following: 246,
-    followingDelta: "+4 (1.65%)",
-    posts: 492,
-    postsDelta: "+12 (2.50%)",
+    followers: 2000000,
+    followersDelta: "+14,000 (0.70%)",
+    following: 3,
+    followingDelta: "+0 (0.0%)",
+    posts: 33,
+    postsDelta: "+1 (3.12%)",
     score: 94.6,
     contactEmail: "technogamerzofficial@gmail.com",
     contactInfo: "Business & Partnerships: technogamerzofficial@gmail.com",
@@ -647,6 +647,29 @@ export default function App() {
       setActiveSubTab("audit"); // Auto-switch to Audit view
       setIsAuditingAccount(false);
       setTelemetryStep(null);
+
+      // Asynchronously fetch live Instagram stats if backend is available
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      fetch(`${apiBase}/api/creators/live/${encodeURIComponent(handle)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .then((liveStats) => {
+          if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
+            setActiveCreator((prev) => {
+              if (prev.handle.toLowerCase() === handle.toLowerCase()) {
+                return {
+                  ...prev,
+                  name: liveStats.name || prev.name,
+                  followers: liveStats.followers,
+                  followersDelta: liveStats.followersDelta || prev.followersDelta,
+                  following: liveStats.following !== undefined ? liveStats.following : prev.following,
+                  posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
+                };
+              }
+              return prev;
+            });
+          }
+        })
+        .catch(() => {});
 
       // Scroll smoothly to the creator card
       const el = document.getElementById("creator-card-section");
