@@ -389,12 +389,15 @@ async def create_creator_snapshot(handle: str):
     """Instantly captures follower count and calculates delta."""
     from app.services.snapshot_service import record_snapshot
     clean = handle.strip().lstrip("@").lower()
-    live = await scrape_live_instagram_profile(clean)
+    live = await scrape_live_instagram_profile(clean) or {}
+    followers = live.get("followers", 1000) if isinstance(live, dict) else 1000
+    following = live.get("following", 100) if isinstance(live, dict) else 100
+    media_count = live.get("mediaCount", 10) if isinstance(live, dict) else 10
     return await record_snapshot(
         handle=clean,
-        followers=live.get("followers", 1000),
-        following=live.get("following", 100),
-        media_count=live.get("mediaCount", 10),
+        followers=followers,
+        following=following,
+        media_count=media_count,
     )
 
 

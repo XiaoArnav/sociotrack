@@ -104,10 +104,10 @@ async def get_unfollowers_report(handle: str, session: Optional[AsyncSession] = 
 
         # If no snapshots stored yet, generate synthetic 14-day history based on live Instagram stats
         if not snapshots:
-            live = await scrape_live_instagram_profile(clean_handle)
-            current_fol = live.get("followers", 34820)
-            current_following = live.get("following", 418)
-            current_media = live.get("mediaCount", 84)
+            live = await scrape_live_instagram_profile(clean_handle) or {}
+            current_fol = live.get("followers", 34820) if isinstance(live, dict) else 34820
+            current_following = live.get("following", 418) if isinstance(live, dict) else 418
+            current_media = live.get("mediaCount", 84) if isinstance(live, dict) else 84
 
             # Seed 7 days of realistic history
             now = datetime.now(timezone.utc)
@@ -218,10 +218,10 @@ async def poll_all_indexed_creators() -> Dict[str, Any]:
         handle = seed["handle"]
         async with sem:
             try:
-                live = await scrape_live_instagram_profile(handle)
-                followers = live.get("followers", seed["followers"])
-                following = live.get("following", seed["following"])
-                media_count = live.get("mediaCount", seed["mediaCount"])
+                live = await scrape_live_instagram_profile(handle) or {}
+                followers = live.get("followers", seed["followers"]) if isinstance(live, dict) else seed["followers"]
+                following = live.get("following", seed["following"]) if isinstance(live, dict) else seed["following"]
+                media_count = live.get("mediaCount", seed["mediaCount"]) if isinstance(live, dict) else seed["mediaCount"]
 
                 rec = await record_snapshot(
                     handle=handle,

@@ -58,3 +58,23 @@ async def test_trigger_snapshot_cron():
         data = res.json()
         assert data["status"] == "success"
         assert data["snapshots_recorded"] > 0
+
+
+@pytest.mark.asyncio
+async def test_snapshot_endpoints_resilience_when_crawler_returns_none():
+    from unittest.mock import patch
+    transport = ASGITransport(app=app)
+    with patch("app.routers.avatars.scrape_live_instagram_profile", return_value=None), \
+         patch("app.services.snapshot_service.scrape_live_instagram_profile", return_value=None):
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            res_unf = await ac.get("/api/creators/resilience_user/unfollowers")
+            assert res_unf.status_code == 200
+            assert res_unf.json()["handle"] == "resilience_user"
+
+            res_snap = await ac.post("/api/creators/resilience_user/snapshot")
+            assert res_snap.status_code == 200
+            assert res_snap.json()["handle"] == "resilience_user"
+
+            res_cron = await ac.post("/api/creators/cron/poll")
+            assert res_cron.status_code == 200
+            assert res_cron.json()["snapshots_recorded"] > 0
