@@ -11,6 +11,8 @@ import {
   Check,
   Info,
   Sparkles,
+  Mail,
+  Send,
 } from "lucide-react";
 
 export type SubNavTab =
@@ -36,6 +38,8 @@ export interface CreatorProfile {
   posts: number;
   postsDelta: string;
   score: number;
+  contactEmail?: string;
+  contactInfo?: string;
 }
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -58,6 +62,8 @@ export const DEFAULT_CREATOR: CreatorProfile = {
   posts: 84,
   postsDelta: "+4 (5.0%)",
   score: 88.4,
+  contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
+  contactInfo: "GitHub & AI Systems: XiaoArnav",
 };
 
 interface InsTrackCreatorCardProps {
@@ -202,32 +208,70 @@ export function InsTrackCreatorCard({
             <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed pt-1 space-y-0.5">
               {creator.bioLines.map((line, idx) => (
                 <p key={idx}>
-                  {line.split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_\.]+)/g).map((part, pIdx) => {
-                    if (part.startsWith("@")) {
-                      return (
-                        <a
-                          key={pIdx}
-                          href={`https://instagram.com/${part.replace("@", "")}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
-                        >
-                          {part}
-                        </a>
-                      );
-                    }
-                    if (part.startsWith("#")) {
-                      return (
-                        <span
-                          key={pIdx}
-                          className="text-indigo-500 dark:text-indigo-400 font-medium"
-                        >
-                          {part}
-                        </span>
-                      );
-                    }
-                    return part;
-                  })}
+                  {line
+                    .split(
+                      /([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+|https?:\/\/[^\s]+|@[a-zA-Z0-9_\.]+|#[a-zA-Z0-9_]+)/g
+                    )
+                    .map((part, pIdx) => {
+                      if (!part) return null;
+                      // 1. Check if token is a full email address (e.g. tomihika.mgmt@gmail.com)
+                      if (
+                        /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/.test(
+                          part
+                        )
+                      ) {
+                        return (
+                          <a
+                            key={pIdx}
+                            href={`mailto:${part}`}
+                            className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline inline-flex items-center gap-0.5 transition-colors"
+                            title={`Send email to ${part}`}
+                          >
+                            <span>{part}</span>
+                          </a>
+                        );
+                      }
+                      // 2. Check if token is a URL
+                      if (/^https?:\/\//.test(part)) {
+                        return (
+                          <a
+                            key={pIdx}
+                            href={part}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
+                          >
+                            {part}
+                          </a>
+                        );
+                      }
+                      // 3. Check if token is an Instagram @mention
+                      if (part.startsWith("@")) {
+                        return (
+                          <a
+                            key={pIdx}
+                            href={`https://instagram.com/${part.replace("@", "")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                          >
+                            {part}
+                          </a>
+                        );
+                      }
+                      // 4. Check if token is a hashtag
+                      if (part.startsWith("#")) {
+                        return (
+                          <span
+                            key={pIdx}
+                            className="text-indigo-500 dark:text-indigo-400 font-medium"
+                          >
+                            {part}
+                          </span>
+                        );
+                      }
+                      return part;
+                    })}
                 </p>
               ))}
             </div>
@@ -242,7 +286,51 @@ export function InsTrackCreatorCard({
                   {creator.linkUrl}
                 </a>
               </div>
-              <div className="text-slate-400 dark:text-slate-500">
+
+              {/* Explicit Clickable Contact Row */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-0.5 text-slate-600 dark:text-slate-400">
+                <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  Contact:
+                </span>
+                {creator.contactEmail ? (
+                  <a
+                    href={`mailto:${creator.contactEmail}`}
+                    className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline hover:text-indigo-700 dark:hover:text-indigo-300 inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/40 transition-colors"
+                    title={`Send email to ${creator.contactEmail}`}
+                  >
+                    <span>{creator.contactEmail}</span>
+                  </a>
+                ) : creator.contactInfo ? (
+                  <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <span>{creator.contactInfo}</span>
+                    <a
+                      href={`https://ig.me/m/${creator.handle}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline inline-flex items-center gap-0.5 ml-1"
+                      title={`Send Direct Message on Instagram to @${creator.handle}`}
+                    >
+                      <span>Send DM →</span>
+                    </a>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                    <span>No public email listed •</span>
+                    <a
+                      href={`https://ig.me/m/${creator.handle}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline inline-flex items-center gap-0.5"
+                      title={`Send Direct Message on Instagram to @${creator.handle}`}
+                    >
+                      <span>Send Instagram DM →</span>
+                    </a>
+                  </span>
+                )}
+              </div>
+
+              <div className="text-slate-400 dark:text-slate-500 pt-0.5">
                 {creator.trackedSince}
               </div>
             </div>

@@ -75,6 +75,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 84,
     postsDelta: "+4 (5.0%)",
     score: 88.4,
+    contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
+    contactInfo: "GitHub & AI Systems: XiaoArnav",
   },
   arnavpatel07: {
     handle: "arnav.patel07",
@@ -94,6 +96,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 84,
     postsDelta: "+4 (5.0%)",
     score: 88.4,
+    contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
+    contactInfo: "GitHub & AI Systems: XiaoArnav",
   },
   techno_gamerz: {
     handle: "techno_gamerz",
@@ -113,6 +117,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 492,
     postsDelta: "+12 (2.50%)",
     score: 94.6,
+    contactEmail: "technogamerzofficial@gmail.com",
+    contactInfo: "Business & Partnerships: technogamerzofficial@gmail.com",
   },
   technogamerz: {
     handle: "techno_gamerz",
@@ -132,6 +138,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 492,
     postsDelta: "+12 (2.50%)",
     score: 94.6,
+    contactEmail: "technogamerzofficial@gmail.com",
+    contactInfo: "Business & Partnerships: technogamerzofficial@gmail.com",
   },
   aviralbhardwaj_ji: {
     handle: "aviralbhardwaj_ji",
@@ -151,6 +159,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 143,
     postsDelta: "+1 (0.70%)",
     score: 84.2,
+    contactInfo: "No public email listed • Direct Inquiries via Instagram DM",
   },
   aviralbhardwajji: {
     handle: "aviralbhardwaj_ji",
@@ -170,6 +179,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 143,
     postsDelta: "+1 (0.70%)",
     score: 84.2,
+    contactInfo: "No public email listed • Direct Inquiries via Instagram DM",
   },
   mnijungkook: {
     handle: "mnijungkook",
@@ -189,6 +199,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 54,
     postsDelta: "+2 (3.85%)",
     score: 97.9,
+    contactInfo: "No public email listed • Managed via BIGHIT MUSIC / HYBE",
   },
   lalalalisa_m: {
     handle: "lalalalisa_m",
@@ -208,6 +219,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 1260,
     postsDelta: "+8 (0.64%)",
     score: 99.4,
+    contactEmail: "contact@wearelloud.com",
+    contactInfo: "LLOUD Management: contact@wearelloud.com",
   },
   sooyaaa__: {
     handle: "sooyaaa__",
@@ -227,6 +240,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 1390,
     postsDelta: "+7 (0.51%)",
     score: 98.1,
+    contactEmail: "contact@blissoo.co.kr",
+    contactInfo: "BLISSOO Official: contact@blissoo.co.kr",
   },
   thv: {
     handle: "thv",
@@ -246,6 +261,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 195,
     postsDelta: "+3 (1.56%)",
     score: 98.7,
+    contactInfo: "No public email listed • Managed via BIGHIT MUSIC / HYBE",
   },
   "j.m": {
     handle: "j.m",
@@ -265,6 +281,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 25,
     postsDelta: "+1 (4.17%)",
     score: 98.0,
+    contactInfo: "No public email listed • Managed via BIGHIT MUSIC / HYBE",
   },
   uarmyhope: {
     handle: "uarmyhope",
@@ -284,6 +301,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 371,
     postsDelta: "+4 (1.09%)",
     score: 97.4,
+    contactInfo: "No public email listed • Managed via BIGHIT MUSIC / HYBE",
   },
   chenzheyuanisssme: {
     handle: "chenzheyuanisssme",
@@ -303,6 +321,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 49,
     postsDelta: "+2 (4.26%)",
     score: 93.5,
+    contactInfo: "No public email listed • Represented by Gramarie Entertainment (Beijing)",
   },
   "tomi.timetraveler": {
     handle: "tomi.timetraveler",
@@ -311,7 +330,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     bioLines: [
       "Tomi • Lifestyle, Storytelling & Vintage Aesthetics ✨",
       "Time traveler concept • Life in Northern California & Japan 🇯🇵",
-      "Aesthetic vlogs, cozy moments & creative storytelling",
+      "Contact: tomi.timetraveler.mgmt@gmail.com",
     ],
     linkUrl: "https://linktr.ee/tomi.timetraveler",
     trackedSince: "Tracked since Feb, 02 2022. Updated 40 minutes ago.",
@@ -322,6 +341,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 579,
     postsDelta: "+5 (0.87%)",
     score: 91.4,
+    contactEmail: "tomi.timetraveler.mgmt@gmail.com",
+    contactInfo: "Brand Collabs & Inquiries: tomi.timetraveler.mgmt@gmail.com",
   },
   tomitimetraveler: {
     handle: "tomi.timetraveler",
@@ -330,7 +351,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     bioLines: [
       "Tomi • Lifestyle, Storytelling & Vintage Aesthetics ✨",
       "Time traveler concept • Life in Northern California & Japan 🇯🇵",
-      "Aesthetic vlogs, cozy moments & creative storytelling",
+      "Contact: tomi.timetraveler.mgmt@gmail.com",
     ],
     linkUrl: "https://linktr.ee/tomi.timetraveler",
     trackedSince: "Tracked since Feb, 02 2022. Updated 40 minutes ago.",
@@ -341,6 +362,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 579,
     postsDelta: "+5 (0.87%)",
     score: 91.4,
+    contactEmail: "tomi.timetraveler.mgmt@gmail.com",
+    contactInfo: "Brand Collabs & Inquiries: tomi.timetraveler.mgmt@gmail.com",
   },
   itsjvke: {
     handle: "itsjvke",
@@ -349,7 +372,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     bioLines: [
       "JVKE • Making beats in my bedroom 🎹",
       "golden hour (3B+ streams) • This Is What Falling In Love Feels Like",
-      "Stream music on Spotify, Apple Music & YouTube",
+      "Bookings & Management: team@itsjvke.com",
     ],
     linkUrl: "https://itsjvke.com",
     trackedSince: "Tracked since Jan, 10 2021. Updated 18 minutes ago.",
@@ -360,6 +383,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 312,
     postsDelta: "+4 (1.30%)",
     score: 95.1,
+    contactEmail: "team@itsjvke.com",
+    contactInfo: "Management & Bookings: team@itsjvke.com",
   },
   moretomihika: {
     handle: "moretomihika",
@@ -368,7 +393,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     bioLines: [
       "Mihika Sharma • Fashion, Beauty & Lifestyle 🌸",
       "YouTube: more to mihika • Creator of the m&ms community 🤎",
-      "Everyday vlogs, aesthetic styling & genuine stories • India 🇮🇳",
+      "Contact: moretomihika.mgmt@gmail.com",
     ],
     linkUrl: "https://www.youtube.com/@moretomihika",
     trackedSince: "Tracked since Mar, 19 2022. Updated 25 minutes ago.",
@@ -379,6 +404,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 549,
     postsDelta: "+6 (1.10%)",
     score: 86.5,
+    contactEmail: "moretomihika.mgmt@gmail.com",
+    contactInfo: "Business & PR: moretomihika.mgmt@gmail.com",
   },
   rkive: {
     handle: "rkive",
@@ -398,6 +425,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 41,
     postsDelta: "+2 (5.13%)",
     score: 97.2,
+    contactInfo: "No public email listed • Managed via BIGHIT MUSIC / HYBE",
   },
   mkbhd: {
     handle: "mkbhd",
@@ -405,8 +433,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     avatar: `${BASE_PATH}/avatars/mkbhd.png`,
     bioLines: [
       "Quality Tech Videos | YouTuber | Geek | Ultimate Frisbee",
-      "Crisp tech reviews, automotive deep dives & high-fidelity gadgets",
       "MKBHD Studio • Waveform Podcast • 18M+ Subscribers",
+      "Business Inquiries: marques@mkbhd.com",
     ],
     linkUrl: "https://youtube.com/mkbhd",
     trackedSince: "Tracked since Jan, 15 2017. Updated 5 minutes ago.",
@@ -417,6 +445,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 1420,
     postsDelta: "+8 (0.57%)",
     score: 94.2,
+    contactEmail: "marques@mkbhd.com",
+    contactInfo: "Business & Inquiries: marques@mkbhd.com",
   },
   mrbeast: {
     handle: "mrbeast",
@@ -425,7 +455,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     bioLines: [
       "I want to make the world a better place before I die",
       "Creator of Feastables & Beast Philanthropy",
-      "New video every Saturday! • Over $20M+ donated to communities",
+      "Business Inquiries: business@mrbeast.com",
     ],
     linkUrl: "https://feastables.com",
     trackedSince: "Tracked since Sep, 10 2018. Updated 2 minutes ago.",
@@ -436,6 +466,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     posts: 512,
     postsDelta: "+4 (0.78%)",
     score: 98.7,
+    contactEmail: "business@mrbeast.com",
+    contactInfo: "Business Inquiries: business@mrbeast.com",
   },
 };
 
@@ -505,6 +537,7 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
     posts,
     postsDelta: `+${(abs % 8) + 1} (2.4%)`,
     score: Math.min(99.4, Math.max(58.0, Number(score.toFixed(1)))),
+    contactInfo: "No public email listed • Direct Message (DM) on Instagram",
   };
 }
 
