@@ -62,6 +62,48 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Preset accounts for instantaneous realistic audits
 const CREATOR_PRESETS: Record<string, CreatorProfile> = {
+  zyrohouse: {
+    handle: "zyrohouse",
+    name: "Zyro House",
+    avatar: `${BASE_PATH}/avatars/zyrohouse.png`,
+    bioLines: [
+      "Digital Strategy • Creative Storytelling • Community Growth",
+      "Connecting with 165,020 engaged followers ✨",
+    ],
+    linkUrl: "https://zyrohouse.bio.link",
+    trackedSince: "Tracked since Jan, 10 2022. Updated Just now via Meta Graph API.",
+    followers: 68,
+    followersDelta: "+1 (+0.50%)",
+    following: 1,
+    followingDelta: "+0 (+0.0%)",
+    posts: 1,
+    postsDelta: "+0 (+0.0%)",
+    score: 91.2,
+    contactInfo: "No public email listed • Direct Message (DM) on Instagram",
+    isPrivate: false,
+    isVerified: false,
+  },
+  zyro: {
+    handle: "zyrohouse",
+    name: "Zyro House",
+    avatar: `${BASE_PATH}/avatars/zyrohouse.png`,
+    bioLines: [
+      "Digital Strategy • Creative Storytelling • Community Growth",
+      "Connecting with 165,020 engaged followers ✨",
+    ],
+    linkUrl: "https://zyrohouse.bio.link",
+    trackedSince: "Tracked since Jan, 10 2022. Updated Just now via Meta Graph API.",
+    followers: 68,
+    followersDelta: "+1 (+0.50%)",
+    following: 1,
+    followingDelta: "+0 (+0.0%)",
+    posts: 1,
+    postsDelta: "+0 (+0.0%)",
+    score: 91.2,
+    contactInfo: "No public email listed • Direct Message (DM) on Instagram",
+    isPrivate: false,
+    isVerified: false,
+  },
   "arnav.patel07": {
     handle: "arnav.patel07",
     name: "Arnav Patel 👾",
@@ -563,6 +605,9 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
   }
 
   const normalized = clean.replace(/[\._\-]/g, "");
+  if (normalized.includes("zyro")) {
+    return CREATOR_PRESETS["zyrohouse"];
+  }
   if (normalized.includes("arnav") || normalized.includes("patel")) {
     return CREATOR_PRESETS["arnav.patel07"];
   }
@@ -1104,7 +1149,7 @@ export default function App() {
               {/* Quick Account Suggestions: Click to immediately audit */}
               <div className="flex flex-wrap items-center justify-center gap-2 pt-3 text-[11px] text-slate-500 dark:text-slate-400">
                 <span className="font-semibold text-slate-400">Quick Audit:</span>
-                {["arnav.patel07", "zurikrishna", "keerz.core", "techno_gamerz", "lalalalisa_m", "aviralbhardwaj_ji", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
+                {["zyrohouse", "arnav.patel07", "zurikrishna", "keerz.core", "techno_gamerz", "lalalalisa_m", "aviralbhardwaj_ji", "thv", "itsjvke", "chenzheyuanisssme", "rkive", "mkbhd"].map((handle) => (
                   <button
                     key={handle}
                     onClick={() => {

@@ -34,6 +34,7 @@ KNOWN_PLACEHOLDER_HASHES = {
 
 # Protected presets with authentic crops that should not be replaced by low-res/fallback cards
 PRESET_HANDLES = {
+    "zyrohouse",
     "arnav.patel07",
     "arnavpatel07",
     "techno_gamerz",
@@ -325,9 +326,10 @@ async def get_live_creator_stats(handle: str):
     }
 
 
-# Standard 14 showcase creators config with verified authentic categories
+# Standard 15 showcase creators config with verified authentic categories
 COMPETITOR_SEEDS = [
-    {"handle": "arnav.patel07", "group": "My Accounts", "id": "c0", "default_name": "Arnav Patel 👾", "followers": 13, "following": 61, "mediaCount": 0},
+    {"handle": "zyrohouse", "group": "My Accounts", "id": "c0", "default_name": "Zyro House", "followers": 68, "following": 1, "mediaCount": 1},
+    {"handle": "arnav.patel07", "group": "My Accounts", "id": "c1", "default_name": "Arnav Patel 👾", "followers": 13, "following": 61, "mediaCount": 0},
     {"handle": "techno_gamerz", "group": "Creators", "id": "c1", "default_name": "Techno Gamerz", "followers": 2000000, "following": 3, "mediaCount": 33},
     {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c2", "default_name": "LISA", "followers": 105000000, "following": 0, "mediaCount": 1260},
     {"handle": "thv", "group": "Global Icons", "id": "c3", "default_name": "V", "followers": 78000000, "following": 8, "mediaCount": 195},
