@@ -1106,6 +1106,7 @@ export default function App() {
                 <div className="space-y-6 animate-fade-in">
                   <InsTrackBenchmarkCards creator={activeCreator} />
                   <InsTrackGrowthCharts
+                    creator={activeCreator}
                     followers={activeCreator.followers}
                     following={activeCreator.following}
                   />
@@ -1198,6 +1199,7 @@ export default function App() {
                 <div className="space-y-6 animate-fade-in">
                   <InsTrackBenchmarkCards creator={activeCreator} />
                   <InsTrackGrowthCharts
+                    creator={activeCreator}
                     followers={activeCreator.followers}
                     following={activeCreator.following}
                   />
