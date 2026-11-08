@@ -316,7 +316,10 @@ export function InsTrackCompetitorTable({
 
   // Hydrate live from Meta Graph / backend proxy whenever available
   useEffect(() => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+    if (!apiBase || (isHttps && apiBase.startsWith("http://localhost"))) return;
+
     let isMounted = true;
     fetch(`${apiBase}/api/creators/competitors`)
       .then((res) => (res.ok ? res.json() : null))

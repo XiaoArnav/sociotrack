@@ -67,45 +67,50 @@ export function GenerationStudio({
     if (onAgentGeneratingStart) onAgentGeneratingStart();
 
     try {
-      const res = await fetch("http://localhost:8000/api/generate-drafts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brand_name: "DevRelay", topic }),
-      });
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.drafts && data.drafts.length > 0) {
-          const generatedFromBackend: PostDraft[] = data.drafts.map((d: any, idx: number) => ({
-            id: d.id || `draft_${Date.now()}_${idx}`,
-            platform: selectedPlatform,
-            tone: targetTone,
-            hookStyle:
-              idx === 0
-                ? "Format A: Data-First Technical (Selected Winner)"
-                : idx === 1
-                ? "Format B: Contrarian Hot Take"
-                : "Format C: Tactical Execution Checklist",
-            status: "Draft",
-            content: d.content,
-            predictedEngagement: idx === 0 ? "HIGH" : idx === 1 ? "HIGH" : "MEDIUM",
-            confidenceScore: idx === 0 ? 96 : idx === 1 ? 89 : 83,
-            aiExplanation:
-              (d.memory_context_applied && d.memory_context_applied[0]) ||
-              `Retrieved past winning memory patterns for '${topic}'. Prioritizes quantified benchmarks.`,
-            createdAt: "Just now",
-            dosMatched: [
-              "Quantified benchmark claim in opening 3 lines",
-              `Matched selected tone: ${targetTone}`,
-              `Formatted natively for ${selectedPlatform}`,
-            ],
-            dontsAvoided: ["No generic hype buzzwords", "No unverified performance claims"],
-          }));
+      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        const res = await fetch(`${apiBase}/api/generate-drafts`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ brand_name: "DevRelay", topic }),
+        });
 
-          onDraftsChange([...generatedFromBackend, ...drafts]);
-          setIsGenerating(false);
-          if (onAgentGeneratingEnd) onAgentGeneratingEnd();
-          return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.drafts && data.drafts.length > 0) {
+            const generatedFromBackend: PostDraft[] = data.drafts.map((d: any, idx: number) => ({
+              id: d.id || `draft_${Date.now()}_${idx}`,
+              platform: selectedPlatform,
+              tone: targetTone,
+              hookStyle:
+                idx === 0
+                  ? "Format A: Data-First Technical (Selected Winner)"
+                  : idx === 1
+                  ? "Format B: Contrarian Hot Take"
+                  : "Format C: Tactical Execution Checklist",
+              status: "Draft",
+              content: d.content,
+              predictedEngagement: idx === 0 ? "HIGH" : idx === 1 ? "HIGH" : "MEDIUM",
+              confidenceScore: idx === 0 ? 96 : idx === 1 ? 89 : 83,
+              aiExplanation:
+                (d.memory_context_applied && d.memory_context_applied[0]) ||
+                `Retrieved past winning memory patterns for '${topic}'. Prioritizes quantified benchmarks.`,
+              createdAt: "Just now",
+              dosMatched: [
+                "Quantified benchmark claim in opening 3 lines",
+                `Matched selected tone: ${targetTone}`,
+                `Formatted natively for ${selectedPlatform}`,
+              ],
+              dontsAvoided: ["No generic hype buzzwords", "No unverified performance claims"],
+            }));
+
+            onDraftsChange([...generatedFromBackend, ...drafts]);
+            setIsGenerating(false);
+            if (onAgentGeneratingEnd) onAgentGeneratingEnd();
+            return;
+          }
         }
       }
     } catch {

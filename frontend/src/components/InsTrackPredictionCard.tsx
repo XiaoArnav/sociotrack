@@ -371,7 +371,14 @@ export function InsTrackPredictionCard({
     setIsLoading(true);
     const target = (overrideHandle || handle).replace("@", "").trim();
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+
+      if (!apiUrl || (isHttps && apiUrl.startsWith("http://localhost"))) {
+        setReport(synthesizeFallbackReport(target));
+        setIsLoading(false);
+        return;
+      }
 
       const response = await fetch(`${apiUrl}/api/diagnostics/predict-content`, {
         method: "POST",

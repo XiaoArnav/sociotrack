@@ -70,11 +70,11 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     linkUrl: "https://github.com/XiaoArnav",
     trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
     followers: 13,
-    followersDelta: "+1 (8.33%)",
+    followersDelta: "+1 (+0.50%)",
     following: 61,
-    followingDelta: "+0 (0.0%)",
+    followingDelta: "+0 (+0.0%)",
     posts: 0,
-    postsDelta: "+0 (0.0%)",
+    postsDelta: "+0 (+0.0%)",
     score: 88.4,
     contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
     contactInfo: "GitHub & AI Systems: XiaoArnav",
@@ -93,11 +93,11 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     linkUrl: "https://github.com/XiaoArnav",
     trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
     followers: 13,
-    followersDelta: "+1 (8.33%)",
+    followersDelta: "+1 (+0.50%)",
     following: 61,
-    followingDelta: "+0 (0.0%)",
+    followingDelta: "+0 (+0.0%)",
     posts: 0,
-    postsDelta: "+0 (0.0%)",
+    postsDelta: "+0 (+0.0%)",
     score: 88.4,
     contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
     contactInfo: "GitHub & AI Systems: XiaoArnav",
@@ -649,7 +649,10 @@ export default function App() {
   // Automatically synchronize active creator with live Instagram metrics on mount and switch
   useEffect(() => {
     let isMounted = true;
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+    if (!apiBase || (isHttps && apiBase.startsWith("http://localhost"))) return;
+
     fetch(`${apiBase}/api/creators/live/${encodeURIComponent(activeCreator.handle)}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((live) => {
@@ -747,27 +750,30 @@ export default function App() {
       setTelemetryStep(null);
 
       // Asynchronously fetch live Instagram stats if backend is available
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      fetch(`${apiBase}/api/creators/live/${encodeURIComponent(handle)}`)
-        .then((res) => (res.ok ? res.json() : null))
-        .then((liveStats) => {
-          if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
-            setActiveCreator((prev) => {
-              if (prev.handle.toLowerCase() === handle.toLowerCase()) {
-                return {
-                  ...prev,
-                  name: liveStats.name || prev.name,
-                  followers: liveStats.followers,
-                  followersDelta: liveStats.followersDelta || prev.followersDelta,
-                  following: liveStats.following !== undefined ? liveStats.following : prev.following,
-                  posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
-                };
-              }
-              return prev;
-            });
-          }
-        })
-        .catch(() => {});
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        fetch(`${apiBase}/api/creators/live/${encodeURIComponent(handle)}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((liveStats) => {
+            if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
+              setActiveCreator((prev) => {
+                if (prev.handle.toLowerCase() === handle.toLowerCase()) {
+                  return {
+                    ...prev,
+                    name: liveStats.name || prev.name,
+                    followers: liveStats.followers,
+                    followersDelta: liveStats.followersDelta || prev.followersDelta,
+                    following: liveStats.following !== undefined ? liveStats.following : prev.following,
+                    posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
+                  };
+                }
+                return prev;
+              });
+            }
+          })
+          .catch(() => {});
+      }
 
       // Scroll smoothly to the creator card
       const el = document.getElementById("creator-card-section");
@@ -1184,7 +1190,6 @@ export default function App() {
                       );
                     }}
                   />
-                  <InsTrackGradeCards />
                 </div>
               )}
 

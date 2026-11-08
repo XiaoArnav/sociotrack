@@ -52,6 +52,9 @@ PRESET_HANDLES = {
     "tomi.timetraveler",
     "tomitimetraveler",
     "moretomihika",
+    "zurikrishna",
+    "keerz.core",
+    "keerzcore",
 }
 
 
