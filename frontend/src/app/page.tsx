@@ -78,6 +78,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     score: 88.4,
     contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
     contactInfo: "GitHub & AI Systems: XiaoArnav",
+    isPrivate: true,
+    isVerified: false,
   },
   arnavpatel07: {
     handle: "arnav.patel07",
@@ -99,6 +101,8 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     score: 88.4,
     contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
     contactInfo: "GitHub & AI Systems: XiaoArnav",
+    isPrivate: true,
+    isVerified: false,
   },
   techno_gamerz: {
     handle: "techno_gamerz",
@@ -222,6 +226,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     score: 99.4,
     contactEmail: "contact@wearelloud.com",
     contactInfo: "LLOUD Management: contact@wearelloud.com",
+    isVerified: true,
   },
   sooyaaa__: {
     handle: "sooyaaa__",
@@ -580,6 +585,39 @@ export default function App() {
   const [activeCreator, setActiveCreator] = useState<CreatorProfile>(DEFAULT_CREATOR);
   const [isAuditingAccount, setIsAuditingAccount] = useState(false);
   const [telemetryStep, setTelemetryStep] = useState<string | null>(null);
+
+  // Automatically synchronize active creator with live Instagram metrics on mount and switch
+  useEffect(() => {
+    let isMounted = true;
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    fetch(`${apiBase}/api/creators/live/${encodeURIComponent(activeCreator.handle)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((live) => {
+        if (!isMounted) return;
+        if (live && !live.fallback && live.followers !== undefined) {
+          setActiveCreator((prev) => {
+            if (prev.handle.toLowerCase() === live.handle?.toLowerCase()) {
+              return {
+                ...prev,
+                name: live.name || prev.name,
+                followers: live.followers,
+                followersDelta: live.followersDelta || prev.followersDelta,
+                following: live.following !== undefined ? live.following : prev.following,
+                posts: live.mediaCount !== undefined ? live.mediaCount : prev.posts,
+                isPrivate: live.is_private !== undefined ? live.is_private : prev.isPrivate,
+                isVerified: live.is_verified !== undefined ? live.is_verified : prev.isVerified,
+              };
+            }
+            return prev;
+          });
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCreator.handle]);
 
   // 4. Navigation State: Sub-navigation active tab (Default: "growth")
   const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("growth");

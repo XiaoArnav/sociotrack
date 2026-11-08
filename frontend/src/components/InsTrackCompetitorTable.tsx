@@ -66,7 +66,7 @@ const COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     handle: "lalalalisa_m",
     name: "LISA",
-    followers: 106000000,
+    followers: 105000000,
     followersDelta: "+540,000 (+0.51%)",
     isPositiveFollowers: true,
     following: 0,

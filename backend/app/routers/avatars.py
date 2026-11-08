@@ -265,6 +265,12 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
 
                     delta_fol = max(1, int(followers * 0.005))
                     delta_fol_pct = 0.50
+                    is_private = clean_handle in {"arnav.patel07"} or "This account is private" in resp.text
+                    is_verified = clean_handle in {
+                        "techno_gamerz", "lalalalisa_m", "thv", "sooyaaa__",
+                        "mnijungkook", "j.m", "uarmyhope", "rkive", "itsjvke",
+                        "chenzheyuanisssme", "mkbhd", "cristiano", "leomessi", "nike", "natgeo"
+                    }
 
                     data = {
                         "handle": clean_handle,
@@ -281,6 +287,8 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
                         "engagementDelta": "+0.35 (+5.4%)",
                         "isPositiveEngagement": True,
                         "avatar": f"/avatars/{clean_handle}.png",
+                        "is_private": is_private,
+                        "is_verified": is_verified,
                         "updatedAt": now,
                     }
                     _LIVE_STATS_CACHE[clean_handle] = (now, data)
@@ -310,7 +318,7 @@ async def get_live_creator_stats(handle: str):
 COMPETITOR_SEEDS = [
     {"handle": "arnav.patel07", "group": "My Accounts", "id": "c0", "default_name": "Arnav Patel 👾", "followers": 13, "following": 61, "mediaCount": 0},
     {"handle": "techno_gamerz", "group": "Creators", "id": "c1", "default_name": "Techno Gamerz", "followers": 2000000, "following": 3, "mediaCount": 33},
-    {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c2", "default_name": "LISA", "followers": 106000000, "following": 0, "mediaCount": 1260},
+    {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c2", "default_name": "LISA", "followers": 105000000, "following": 0, "mediaCount": 1260},
     {"handle": "thv", "group": "Global Icons", "id": "c3", "default_name": "V", "followers": 78000000, "following": 8, "mediaCount": 195},
     {"handle": "sooyaaa__", "group": "Global Icons", "id": "c4", "default_name": "JISOO🪐", "followers": 80000000, "following": 0, "mediaCount": 1390},
     {"handle": "mnijungkook", "group": "Global Icons", "id": "c5", "default_name": "JK", "followers": 27000000, "following": 8, "mediaCount": 54},

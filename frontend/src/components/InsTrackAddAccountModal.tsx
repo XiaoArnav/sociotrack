@@ -22,7 +22,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 // Real creators and accounts matching SocioTrack live intelligence
 const POPULAR_ACCOUNTS: SuggestedAccount[] = [
-  { username: "arnav.patel07", fullName: "Arnav Patel | AI Systems Architect", avatarUrl: `${BASE_PATH}/avatars/arnav.patel07.png` },
+  { username: "arnav.patel07", fullName: "Arnav Patel 👾", avatarUrl: `${BASE_PATH}/avatars/arnav.patel07.png` },
   { username: "techno_gamerz", fullName: "Ujjwal Chaurasia | Techno Gamerz", avatarUrl: `${BASE_PATH}/avatars/techno_gamerz.png` },
   { username: "aviralbhardwaj_ji", fullName: "Aviral Bhardwaj", avatarUrl: `${BASE_PATH}/avatars/aviralbhardwaj_ji.png` },
   { username: "lalalalisa_m", fullName: "LISA", avatarUrl: `${BASE_PATH}/avatars/lalalalisa_m.png` },

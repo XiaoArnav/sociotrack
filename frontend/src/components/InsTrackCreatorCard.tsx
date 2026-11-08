@@ -13,6 +13,7 @@ import {
   Sparkles,
   Mail,
   Send,
+  Lock,
 } from "lucide-react";
 
 export type SubNavTab =
@@ -40,30 +41,34 @@ export interface CreatorProfile {
   score: number;
   contactEmail?: string;
   contactInfo?: string;
+  isPrivate?: boolean;
+  isVerified?: boolean;
 }
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
 export const DEFAULT_CREATOR: CreatorProfile = {
   handle: "arnav.patel07",
-  name: "Arnav Patel | AI Systems Architect",
+  name: "Arnav Patel 👾",
   avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
   bioLines: [
+    "Arnav Patel 👾",
     "Building Autonomous AI Agent Systems & Persistent Vector Memory 🚀",
-    "DevRelay Fellow • Open Source Contributor • Tech Innovator",
-    "📍 Bangalore • Crafting high-throughput multi-agent architectures & real-time analytics",
+    "DevRelay Fellow • Open Source Contributor • Bangalore 🇮🇳",
   ],
   linkUrl: "https://github.com/XiaoArnav",
   trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
-  followers: 34820,
-  followersDelta: "+2,140 (6.55%)",
-  following: 418,
-  followingDelta: "+12 (2.95%)",
-  posts: 84,
-  postsDelta: "+4 (5.0%)",
+  followers: 13,
+  followersDelta: "+1 (+0.50%)",
+  following: 61,
+  followingDelta: "+0 (+0.0%)",
+  posts: 0,
+  postsDelta: "+0 (+0.0%)",
   score: 88.4,
   contactEmail: "322868724+XiaoArnav@users.noreply.github.com",
   contactInfo: "GitHub & AI Systems: XiaoArnav",
+  isPrivate: true,
+  isVerified: false,
 };
 
 interface InsTrackCreatorCardProps {
@@ -175,30 +180,42 @@ export function InsTrackCreatorCard({
               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {creator.handle}
               </h2>
-              {/* Official Meta Verified Scalloped Blue Checkmark Badge */}
-              <span
-                className="inline-flex items-center text-[#0095F6] cursor-help"
-                title="Verified Account (Meta Verified)"
-                aria-label="Verified Account"
-              >
-                <svg
-                  className="w-[18px] h-[18px] shrink-0"
-                  viewBox="0 0 40 40"
-                  fill="none"
-                >
-                  <path
-                    d="M19.998 3.333c-1.353 0-2.613.52-3.57 1.455l-2.09 2.046a2.667 2.667 0 0 1-1.873.776H9.539c-2.032 0-3.684 1.652-3.684 3.684v2.926c0 .707-.281 1.385-.776 1.873l-2.046 2.09a5.056 5.056 0 0 0-1.455 3.57c0 1.353.52 2.613 1.455 3.57l2.046 2.09c.495.488.776 1.166.776 1.873v2.926c0 2.032 1.652 3.684 3.684 3.684h2.926c.707 0 1.385.281 1.873.776l2.09 2.046c.957.935 2.217 1.455 3.57 1.455 1.353 0 2.613-.52 3.57-1.455l2.09-2.046c.488-.495 1.166-.776 1.873-.776h2.926c2.032 0 3.684-1.652 3.684-3.684v-2.926c0-.707.281-1.385.776-1.873l2.046-2.09c.935-.957 1.455-2.217 1.455-3.57 0-1.353-.52-2.613-1.455-3.57l-2.046-2.09a2.667 2.667 0 0 1-.776-1.873v-2.926c0-2.032-1.652-3.684-3.684-3.684h-2.926a2.667 2.667 0 0 1-1.873-.776l-2.09-2.046a5.056 5.056 0 0 0-3.57-1.455z"
-                    fill="#0095F6"
-                  />
-                  <path
-                    d="M17.447 26.667l-6.114-6.114 2.357-2.357 3.757 3.757 8.424-8.424 2.357 2.357-10.781 10.781z"
-                    fill="#FFFFFF"
-                  />
-                </svg>
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#0095F6] border border-blue-200/50 dark:border-blue-800/40">
-                Official Account
-              </span>
+              {creator.isPrivate ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  <Lock className="w-3 h-3 text-amber-500" />
+                  <span>Private Account</span>
+                </span>
+              ) : creator.isVerified !== false ? (
+                <>
+                  <span
+                    className="inline-flex items-center text-[#0095F6] cursor-help"
+                    title="Verified Account (Meta Verified)"
+                    aria-label="Verified Account"
+                  >
+                    <svg
+                      className="w-[18px] h-[18px] shrink-0"
+                      viewBox="0 0 40 40"
+                      fill="none"
+                    >
+                      <path
+                        d="M19.998 3.333c-1.353 0-2.613.52-3.57 1.455l-2.09 2.046a2.667 2.667 0 0 1-1.873.776H9.539c-2.032 0-3.684 1.652-3.684 3.684v2.926c0 .707-.281 1.385-.776 1.873l-2.046 2.09a5.056 5.056 0 0 0-1.455 3.57c0 1.353.52 2.613 1.455 3.57l2.046 2.09c.495.488.776 1.166.776 1.873v2.926c0 2.032 1.652 3.684 3.684 3.684h2.926c.707 0 1.385.281 1.873.776l2.09 2.046c.957.935 2.217 1.455 3.57 1.455 1.353 0 2.613-.52 3.57-1.455l2.09-2.046c.488-.495 1.166-.776 1.873-.776h2.926c2.032 0 3.684-1.652 3.684-3.684v-2.926c0-.707.281-1.385.776-1.873l2.046-2.09c.935-.957 1.455-2.217 1.455-3.57 0-1.353-.52-2.613-1.455-3.57l-2.046-2.09a2.667 2.667 0 0 1-.776-1.873v-2.926c0-2.032-1.652-3.684-3.684-3.684h-2.926a2.667 2.667 0 0 1-1.873-.776l-2.09-2.046a5.056 5.056 0 0 0-3.57-1.455z"
+                        fill="#0095F6"
+                      />
+                      <path
+                        d="M17.447 26.667l-6.114-6.114 2.357-2.357 3.757 3.757 8.424-8.424 2.357 2.357-10.781 10.781z"
+                        fill="#FFFFFF"
+                      />
+                    </svg>
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#0095F6] border border-blue-200/50 dark:border-blue-800/40">
+                    Official Account
+                  </span>
+                </>
+              ) : (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  Creator Profile
+                </span>
+              )}
             </div>
             <p className="text-xs font-semibold text-slate-600 dark:text-slate-300">
               {creator.name}
