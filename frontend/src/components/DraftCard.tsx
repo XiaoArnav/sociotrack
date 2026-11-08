@@ -231,47 +231,82 @@ export function DraftCard({
         </div>
       </div>
 
-      {/* Collapsible Explainability Section: "Why SocioTrack generated this" */}
+      {/* Collapsible Explainability Section: "Why SocioTrack recommended this" */}
       <div className="mt-3.5">
         <button
           onClick={() => setShowExplanation(!showExplanation)}
-          className="w-full flex items-center justify-between p-3 rounded-xl bg-[#ECE9FF]/50 border border-[#ECE9FF] hover:bg-[#ECE9FF]/80 transition-colors text-left"
+          className="w-full flex items-center justify-between p-3 rounded-xl bg-[#ECE9FF]/50 dark:bg-[#1E2638] border border-[#ECE9FF] dark:border-[#2C3B59] hover:bg-[#ECE9FF]/80 dark:hover:bg-[#25324B] transition-colors text-left"
         >
           <div className="flex items-center space-x-2">
-            <Brain className="w-4 h-4 text-[#5146D8]" />
-            <span className="text-xs font-bold text-[#5146D8]">
-              Why SocioTrack generated this
+            <Brain className="w-4 h-4 text-[#5146D8] dark:text-indigo-400" />
+            <span className="text-xs font-bold text-[#5146D8] dark:text-indigo-300">
+              Explainable AI Intelligence // Traceable Rationale
             </span>
           </div>
           {showExplanation ? (
-            <ChevronUp className="w-4 h-4 text-[#5146D8]" />
+            <ChevronUp className="w-4 h-4 text-[#5146D8] dark:text-indigo-400" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#5146D8]" />
+            <ChevronDown className="w-4 h-4 text-[#5146D8] dark:text-indigo-400" />
           )}
         </button>
 
         {showExplanation && (
-          <div className="p-3.5 bg-[#FAF9FF] border border-[#ECE9FF] border-t-0 rounded-b-xl text-xs text-[#172033] leading-relaxed space-y-2 animate-slide-up">
-            <p className="italic text-[#172033]">
-              &ldquo;{draft.aiExplanation}&rdquo;
-            </p>
+          <div className="p-4 bg-[#FAF9FF] dark:bg-[#141C2E] border border-[#ECE9FF] dark:border-[#2C3B59] border-t-0 rounded-b-xl text-xs text-[#172033] dark:text-slate-200 leading-relaxed space-y-3 animate-slide-up">
+            {/* 1. Core Rationale & Supporting Evidence */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Strategic Rationale:
+                </span>
+                {draft.confidenceScore && (
+                  <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                    Confidence: {draft.confidenceScore}%
+                  </span>
+                )}
+              </div>
+              <p className="italic text-slate-800 dark:text-slate-200 font-medium">
+                &ldquo;{draft.recommendationRationale || draft.aiExplanation}&rdquo;
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-[11px]">
-              <div className="bg-white p-2 rounded-lg border border-[#ECE9FF]">
-                <span className="font-bold text-[#16A477] block mb-1">
+            {/* 2. Empirical Evidence & Known Limitations Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-[11px]">
+              <div className="bg-white dark:bg-[#1A2338] p-2.5 rounded-lg border border-[#ECE9FF] dark:border-[#2A374F] space-y-1">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
+                  <span>📊 Historical Supporting Evidence:</span>
+                </span>
+                <p className="text-slate-600 dark:text-slate-300 leading-normal">
+                  {draft.supportingEvidence || "Correlated with top 20% past high-share technical publications."}
+                </p>
+              </div>
+
+              <div className="bg-white dark:bg-[#1A2338] p-2.5 rounded-lg border border-[#ECE9FF] dark:border-[#2A374F] space-y-1">
+                <span className="font-bold text-amber-600 dark:text-amber-400 flex items-center space-x-1">
+                  <span>⚠️ Observed Boundary Limitations:</span>
+                </span>
+                <p className="text-slate-600 dark:text-slate-300 leading-normal">
+                  {draft.knownLimitations || "Requires empirical stack metrics to prevent overpromising capabilities."}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Dos & Don'ts Breakdown */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+              <div className="bg-white dark:bg-[#1A2338] p-2.5 rounded-lg border border-[#ECE9FF] dark:border-[#2A374F]">
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 block mb-1">
                   ✓ Brand Dos Matched:
                 </span>
-                <ul className="space-y-0.5 text-[#718096]">
+                <ul className="space-y-0.5 text-slate-500 dark:text-slate-400">
                   {draft.dosMatched.map((d, i) => (
                     <li key={i} className="truncate">• {d}</li>
                   ))}
                 </ul>
               </div>
-              <div className="bg-white p-2 rounded-lg border border-[#ECE9FF]">
-                <span className="font-bold text-[#5146D8] block mb-1">
+              <div className="bg-white dark:bg-[#1A2338] p-2.5 rounded-lg border border-[#ECE9FF] dark:border-[#2A374F]">
+                <span className="font-bold text-indigo-600 dark:text-indigo-400 block mb-1">
                   🛡 Constraints Respected:
                 </span>
-                <ul className="space-y-0.5 text-[#718096]">
+                <ul className="space-y-0.5 text-slate-500 dark:text-slate-400">
                   {draft.dontsAvoided.map((d, i) => (
                     <li key={i} className="truncate">• {d}</li>
                   ))}

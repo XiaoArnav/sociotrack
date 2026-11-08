@@ -13,6 +13,10 @@ import {
   CheckCircle2,
   Zap,
   BarChart2,
+  Edit3,
+  Trash2,
+  Check,
+  X,
 } from "lucide-react";
 import { LearnedInsight } from "@/mocks/mockData";
 
@@ -28,6 +32,49 @@ export function AgentMemoryPanel({
   isRecalibrating = false,
 }: AgentMemoryPanelProps) {
   const [lastUpdated, setLastUpdated] = useState("Just now");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const [activeList, setActiveList] = useState<LearnedInsight[]>(insights);
+
+  React.useEffect(() => {
+    setActiveList(insights);
+  }, [insights]);
+
+  const handleSaveEdit = async (id: string) => {
+    if (!editText.trim()) return;
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+
+    try {
+      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        await fetch(`${apiBase}/api/memory/insights/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ insight_text: editText }),
+        });
+      }
+    } catch {}
+
+    setActiveList((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, insight: editText } : item))
+    );
+    setEditingId(null);
+  };
+
+  const handleDeactivate = async (id: string) => {
+    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+
+    try {
+      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        await fetch(`${apiBase}/api/memory/insights/${id}`, {
+          method: "DELETE",
+        });
+      }
+    } catch {}
+
+    setActiveList((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
     <div className="w-full lg:w-96 shrink-0 space-y-5">
@@ -54,52 +101,104 @@ export function AgentMemoryPanel({
 
       {/* Memory Insights Cards List */}
       <div className="space-y-3.5">
-        {insights.map((card) => {
+        {activeList.map((card) => {
+          const isEditingThis = editingId === card.id;
+
           // If this is a dynamically newly discovered insight from feedback loop
           if (card.isNew) {
             return (
               <div
                 key={card.id}
-                className="bg-white rounded-2xl border-2 border-[#5146D8] p-4 shadow-float transition-all animate-slide-up relative overflow-hidden ring-4 ring-[#ECE9FF]"
+                className="bg-white dark:bg-[#161F30] rounded-2xl border-2 border-[#5146D8] dark:border-indigo-500 p-4 shadow-float transition-all animate-slide-up relative overflow-hidden ring-4 ring-[#ECE9FF] dark:ring-indigo-950/40 space-y-2.5"
               >
-                {/* Glow pill */}
-                <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#ECE9FF]">
+                {/* Header pill */}
+                <div className="flex items-center justify-between pb-2 border-b border-[#ECE9FF] dark:border-[#243048]">
                   <div className="flex items-center space-x-2">
                     <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-[#5146D8] text-white uppercase tracking-wider animate-pulse">
                       <Sparkles className="w-3 h-3 text-yellow-300" />
                       <span>NEW</span>
                     </span>
-                    <span className="text-[11px] font-bold text-[#5146D8]">
+                    <span className="text-[11px] font-bold text-[#5146D8] dark:text-indigo-400">
                       Recently Learned
                     </span>
                   </div>
-                  <span className="text-[10px] font-medium text-[#718096]">
-                    {card.timestamp}
-                  </span>
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => {
+                        setEditingId(isEditingThis ? null : card.id);
+                        setEditText(card.insight);
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-indigo-600 transition-colors"
+                      title="Edit rule"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleDeactivate(card.id)}
+                      className="p-1 rounded text-slate-400 hover:text-rose-500 transition-colors"
+                      title="Deactivate rule"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-start justify-between">
-                    <h4 className="text-xs font-bold text-[#172033]">
+                    <h4 className="text-xs font-bold text-[#172033] dark:text-white">
                       {card.title}
                     </h4>
                     {card.metric && (
-                      <span className="text-xs font-black text-[#16A477] bg-[#E8F8F3] px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-black text-[#16A477] bg-[#E8F8F3] dark:bg-emerald-950/60 dark:text-emerald-400 px-2 py-0.5 rounded-md">
                         {card.metric}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-[#172033] leading-relaxed font-medium">
-                    &ldquo;{card.insight}&rdquo;
-                  </p>
+
+                  {isEditingThis ? (
+                    <div className="space-y-2">
+                      <textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        className="w-full text-xs p-2 rounded-lg border border-indigo-400 bg-slate-50 dark:bg-[#1E2638] text-slate-800 dark:text-slate-100 focus:outline-none"
+                        rows={3}
+                      />
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="px-2 py-1 text-[10px] rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleSaveEdit(card.id)}
+                          className="px-2.5 py-1 text-[10px] rounded bg-indigo-600 text-white font-bold"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-[#172033] dark:text-slate-200 leading-relaxed font-medium">
+                      &ldquo;{card.insight}&rdquo;
+                    </p>
+                  )}
+
+                  {card.supportingEvidence && (
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                      Evidence: {card.supportingEvidence}
+                    </p>
+                  )}
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-[#E6E9F0] flex items-center justify-between text-[10px] text-[#718096]">
-                  <span className="font-semibold text-[#16A477] flex items-center space-x-1">
+                <div className="pt-2 border-t border-[#E6E9F0] dark:border-[#243048] flex items-center justify-between text-[10px] text-[#718096] dark:text-slate-400">
+                  <span className="font-semibold text-[#16A477] dark:text-emerald-400 flex items-center space-x-1">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>{card.confidence}</span>
                   </span>
-                  <span className="font-mono text-[#5146D8]">ChromaDB Ingested</span>
+                  <span className="font-mono text-[#5146D8] dark:text-indigo-400">
+                    {card.sourceEvent || "ChromaDB Ingested"}
+                  </span>
                 </div>
               </div>
             );
