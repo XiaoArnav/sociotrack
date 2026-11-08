@@ -116,6 +116,64 @@ async def get_brand_intelligence(
     return profile
 
 
+@router.get(
+    "/{brand_id}/memory",
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve brand memory bank and learned lessons",
+)
+async def get_brand_memory_bank(
+    brand_id: str,
+    db: AsyncSession = Depends(get_db),
+):
+    """Returns active lessons, dos and donts, and top past posts for this brand."""
+    res = await db.execute(select(Brand).where(Brand.id == brand_id))
+    brand = res.scalar_one_or_none()
+    if not brand:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Brand with id '{brand_id}' not found.",
+        )
+
+    # Fetch DB memories
+    m_res = await db.execute(
+        select(AgentMemory).where(AgentMemory.brand_id == brand_id, AgentMemory.is_active.is_(True))
+    )
+    db_memories = list(m_res.scalars().all())
+
+    # Fetch vector lessons
+    from app.core.memory import get_memory_manager
+    mem_mgr = get_memory_manager(brand.name)
+    vector_lessons = mem_mgr.retrieve_lessons(topic="general", limit=10, active_only=True)
+
+    dos = []
+    donts = []
+    for m in db_memories:
+        if m.category == "donts_avoided":
+            donts.append(m.insight_text)
+        else:
+            dos.append(m.insight_text)
+
+    for vl in vector_lessons:
+        meta = vl.get("metadata", {})
+        lesson_text = vl.get("lesson", "")
+        if meta.get("rule_type") == "donts_avoided" or "dont_" in vl.get("id", ""):
+            if lesson_text not in donts:
+                donts.append(lesson_text)
+        else:
+            if lesson_text not in dos:
+                dos.append(lesson_text)
+
+    return {
+        "brand_id": brand.id,
+        "brand_name": brand.name,
+        "lessons": {
+            "dos_reinforced": dos,
+            "donts_avoided": donts,
+        },
+        "total_active_rules": len(dos) + len(donts),
+    }
+
+
 @router.post(
     "/{brand_id}/refresh-intelligence",
     response_model=RefreshIntelligenceResponse,

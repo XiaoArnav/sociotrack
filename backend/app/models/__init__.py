@@ -5,6 +5,7 @@ from app.models.memory import AgentMemory
 from app.models.user import User
 from app.models.experiment import ContentExperiment
 from app.models.product_event import ProductEvent
+from app.models.feedback import UserFeedback
 
 __all__ = [
     "Brand",
@@ -15,4 +16,5 @@ __all__ = [
     "User",
     "ContentExperiment",
     "ProductEvent",
+    "UserFeedback",
 ]

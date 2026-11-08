@@ -24,6 +24,7 @@ from app.routers import (
     product_analytics,
     system_health,
     user_privacy,
+    feedback,
 )
 
 
@@ -92,6 +93,7 @@ app.include_router(calendar.router, prefix=settings.API_V1_STR)
 app.include_router(product_analytics.router)
 app.include_router(system_health.router)
 app.include_router(user_privacy.router)
+app.include_router(feedback.router)
 
 
 @app.get("/health", tags=["System"], summary="General health check")
