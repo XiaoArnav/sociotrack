@@ -325,20 +325,10 @@ export function InsTrackSaaSDashboard({
 
       {/* 2. MAIN APP PORTAL */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* TOP BAR (Sun toggle, Pricing, User profile IO with Dropdown) */}
+        {/* TOP BAR (Workspace title, Feedback, User profile IO, and Theme toggle on extreme right) */}
         <header className="h-16 bg-[#0E1526]/90 backdrop-blur-md border-b border-[#1E2638] px-6 flex items-center justify-between shrink-0 relative z-30">
           <div className="flex items-center space-x-3">
-            <button
-              onClick={onToggleTheme}
-              className="p-2 rounded-xl border border-[#243048] hover:bg-[#161F30] text-slate-300 transition-colors"
-              title="Toggle Theme"
-            >
-              {isDarkMode ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-[#818CF8]" />
-              )}
-            </button>
+            <span className="text-xs font-semibold text-slate-400">Workspace Dashboard</span>
           </div>
 
           <div className="flex items-center space-x-4">
@@ -411,6 +401,20 @@ export function InsTrackSaaSDashboard({
                 </div>
               )}
             </div>
+
+            {/* Extreme Right: Sun / Moon Toggle */}
+            <button
+              onClick={onToggleTheme}
+              className="p-2 rounded-xl border border-[#243048] hover:bg-[#161F30] text-slate-300 transition-colors"
+              title="Toggle Theme"
+              aria-label="Toggle Theme"
+            >
+              {isDarkMode ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-[#818CF8]" />
+              )}
+            </button>
           </div>
         </header>
 

@@ -660,22 +660,7 @@ export default function App() {
 
       {/* TOP NAVIGATION BAR */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
-        {/* Left: Moon / Sun Toggle Button */}
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-2 rounded-xl border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 transition-colors"
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {isDarkMode ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-[#6366F1]" />
-            )}
-          </button>
-        </div>
-
-        {/* Center: SocioTrack Logo */}
+        {/* Left: SocioTrack Logo & App Name */}
         <button
           onClick={() => {
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -690,7 +675,7 @@ export default function App() {
           </span>
         </button>
 
-        {/* Right: Log in / SaaS App, Create a Free Account (Pricing link REMOVED as requested) */}
+        {/* Right: SaaS App / Log In, Create a Free Account, and Dark Mode Toggle on extreme right */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           {currentUser ? (
             <button
@@ -713,6 +698,20 @@ export default function App() {
             className="px-4 py-1.5 rounded-lg bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-semibold shadow-sm transition-colors"
           >
             Create a Free Account
+          </button>
+
+          {/* Extreme Right: Moon / Sun Toggle Button */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="p-2 rounded-xl border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 transition-colors ml-1"
+            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-[#6366F1]" />
+            )}
           </button>
         </div>
       </header>
