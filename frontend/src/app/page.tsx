@@ -29,6 +29,9 @@ import { InsTrackRecentPostsFeed } from "@/components/InsTrackRecentPostsFeed";
 import { FoundersDispatch } from "@/components/FoundersDispatch";
 import { InsTrackExperimentsView } from "@/components/InsTrackExperimentsView";
 import { InsTrackCalendarView } from "@/components/InsTrackCalendarView";
+import { ProductAnalyticsView } from "@/components/ProductAnalyticsView";
+import { OnboardingWizardModal } from "@/components/OnboardingWizardModal";
+import { UserFeedbackModal } from "@/components/UserFeedbackModal";
 import {
   PostDraft,
   LearnedInsight,
@@ -48,6 +51,7 @@ import {
   TrendingUp,
   Sparkles,
   RefreshCw,
+  MessageSquare,
   Flame,
   Zap,
   BrainCircuit,
@@ -676,6 +680,9 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
+  const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [activeBrandId, setActiveBrandId] = useState<string>("brd_default");
   const [viewMode, setViewMode] = useState<"public_report" | "saas_dashboard">("public_report");
 
   useEffect(() => {
@@ -1061,6 +1068,25 @@ export default function App() {
               </button>
             </div>
           )}
+
+          {/* Pilot Quick Actions */}
+          <button
+            onClick={() => setShowOnboardingWizard(true)}
+            className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition-colors shadow-xs"
+            title="Start quick 60-second brand onboarding"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+            <span>Onboard Brand</span>
+          </button>
+
+          <button
+            onClick={() => setShowFeedbackModal(true)}
+            className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 text-xs font-semibold transition-colors"
+            title="Provide feedback on recommendations or report an issue"
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+            <span className="hidden md:inline">Feedback</span>
+          </button>
 
           {/* Extreme Right: Moon / Sun Toggle Button */}
           <button
@@ -1533,6 +1559,13 @@ export default function App() {
                   />
                 </div>
               )}
+
+              {/* PRODUCT USAGE TELEMETRY & PILOT ANALYTICS SUBTAB */}
+              {activeSubTab === "telemetry" && (
+                <div className="space-y-6 animate-fade-in">
+                  <ProductAnalyticsView apiBaseUrl={API_BASE_URL} />
+                </div>
+              )}
             </div>
 
             {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE */}
@@ -1864,6 +1897,32 @@ export default function App() {
           setActiveSubTab("overview");
           handleAuditAccount(handle);
         }}
+      />
+
+      {/* PILOT ONBOARDING WIZARD MODAL */}
+      <OnboardingWizardModal
+        isOpen={showOnboardingWizard}
+        onClose={() => setShowOnboardingWizard(false)}
+        onComplete={(newBrandId, newBrandName) => {
+          setActiveBrandId(newBrandId);
+          setActiveSubTab("aistudio");
+          showToast(
+            "Brand Initialized",
+            `Switched to active workspace for ${newBrandName}`,
+            "success"
+          );
+        }}
+        apiBaseUrl={API_BASE_URL}
+        onToast={(title, msg, type) => showToast(title, msg, type)}
+      />
+
+      {/* USER FEEDBACK & PILOT RESEARCH MODAL */}
+      <UserFeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        brandId={activeBrandId}
+        apiBaseUrl={API_BASE_URL}
+        onToast={(title, msg, type) => showToast(title, msg, type)}
       />
     </div>
   );

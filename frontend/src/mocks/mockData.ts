@@ -11,6 +11,7 @@ export interface PostDraft {
   platform: PlatformType;
   tone: TargetTone;
   hookStyle: string;
+  format?: string;
   status: "Draft" | "Approved" | "Scheduled";
   scheduledTime?: string;
   content: string;
