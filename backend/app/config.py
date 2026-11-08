@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     PORT: int = 8000
     HOST: str = "0.0.0.0"
 
+    # Security & JWT Authentication
+    SECRET_KEY: str = "sociotrack_jwt_secret_key_prod_hardening_2026_super_secure"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    ALGORITHM: str = "HS256"
+
     # CORS Settings - Strict origins for secure credentialed cookies & sessions
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
