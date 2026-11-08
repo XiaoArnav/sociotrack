@@ -485,16 +485,26 @@ export function InsTrackCreatorCard({
 
       {/* InsTrack Segmented Sub-Navigation Bar (Matching Screenshot 2) */}
       <div className="flex items-center space-x-1 sm:space-x-3 pt-4 overflow-x-auto text-xs font-semibold">
-        {[
-          { key: "overview", label: "Overview" },
-          { key: "audit", label: "Audit" },
-          { key: "growth", label: "Growth" },
-          { key: "unfollowers", label: "Unfollowers", badge: "-12", isAlert: true },
-          { key: "engagement", label: "Engagement" },
-          { key: "historical", label: "History" },
-          { key: "aistudio", label: "Posts (AI Studio)" },
-          { key: "memorybank", label: "Memory Bank" },
-        ].map((tab) => {
+        {(() => {
+          const unfollowerBadge = creator.followers < 100
+            ? "-1"
+            : creator.followers < 1000
+              ? `-${Math.max(1, Math.round(creator.followers * 0.015))}`
+              : creator.followers < 1_000_000
+                ? `-${Math.max(1, Math.round(creator.followers * 0.002))}`
+                : `-${(creator.followers * 0.0001).toFixed(0)}K`;
+
+          return [
+            { key: "overview", label: "Overview" },
+            { key: "audit", label: "Audit" },
+            { key: "growth", label: "Growth" },
+            { key: "unfollowers", label: "Unfollowers", badge: unfollowerBadge, isAlert: true },
+            { key: "engagement", label: "Engagement" },
+            { key: "historical", label: "History" },
+            { key: "aistudio", label: "Posts (AI Studio)" },
+            { key: "memorybank", label: "Memory Bank" },
+          ];
+        })().map((tab) => {
           const isActive = activeTab === tab.key;
           return (
             <button

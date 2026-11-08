@@ -40,6 +40,8 @@ interface InsTrackRecentPostsFeedProps {
   onToast?: (title: string, message: string, type?: "success" | "info" | "warning") => void;
 }
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export function InsTrackRecentPostsFeed({
   creator,
   onSelectHook,
@@ -51,6 +53,15 @@ export function InsTrackRecentPostsFeed({
   const [refreshing, setRefreshing] = useState(false);
 
   const cleanHandle = creator.handle.replace(/^@/, "").toLowerCase().trim();
+
+  const resolveThumbnail = (url?: string) => {
+    if (!url) return creator.avatar;
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+      return url;
+    }
+    const cleanPath = url.startsWith("/") ? url : `/${url}`;
+    return `${BASE_PATH}${cleanPath}`;
+  };
 
   const getApiBase = () => {
     const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
@@ -286,11 +297,11 @@ export function InsTrackRecentPostsFeed({
                 {/* Media Header / Poster Area */}
                 <div className="relative h-44 bg-gradient-to-br from-indigo-900/90 via-slate-900 to-purple-950 flex items-center justify-center overflow-hidden">
                   <img
-                    src={post.thumbnail_url || creator.avatar}
+                    src={resolveThumbnail(post.thumbnail_url)}
                     alt={post.caption}
                     className="absolute inset-0 w-full h-full object-cover opacity-35 filter blur-xs"
                     onError={(e) => {
-                      (e.target as HTMLElement).style.display = "none";
+                      (e.target as HTMLImageElement).src = creator.avatar;
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
