@@ -132,9 +132,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://github.com/XiaoArnav",
     trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
-    followers: 13,
-    followersDelta: "+1 (+0.50%)",
-    following: 61,
+    followers: 9,
+    followersDelta: "+0 (+0.0%)",
+    following: 60,
     followingDelta: "+0 (+0.0%)",
     posts: 0,
     postsDelta: "+0 (+0.0%)",
@@ -155,9 +155,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://github.com/XiaoArnav",
     trackedSince: "Tracked since Jan, 12 2023. Updated Just now via Meta Graph API.",
-    followers: 13,
-    followersDelta: "+1 (+0.50%)",
-    following: 61,
+    followers: 9,
+    followersDelta: "+0 (+0.0%)",
+    following: 60,
     followingDelta: "+0 (+0.0%)",
     posts: 0,
     postsDelta: "+0 (+0.0%)",
@@ -178,7 +178,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://youtube.com/technogamerzofficial",
     trackedSince: "Tracked since Aug, 18 2019. Updated 2 minutes ago via Graph API.",
-    followers: 2000000,
+    followers: 1723631,
     followersDelta: "+14,000 (0.70%)",
     following: 3,
     followingDelta: "+0 (0.0%)",
@@ -199,7 +199,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://youtube.com/technogamerzofficial",
     trackedSince: "Tracked since Aug, 18 2019. Updated 2 minutes ago via Graph API.",
-    followers: 2000000,
+    followers: 1723631,
     followersDelta: "+14,000 (0.70%)",
     following: 3,
     followingDelta: "+0 (0.0%)",
@@ -221,9 +221,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     trackedSince: "Tracked since Jan, 10 2023. Updated Just now via Meta Graph API.",
     followers: 42,
     followersDelta: "+2 (5.0%)",
-    following: 97,
+    following: 86,
     followingDelta: "+0 (0.0%)",
-    posts: 39,
+    posts: 40,
     postsDelta: "+1 (2.6%)",
     score: 84.5,
     isPrivate: true,
@@ -239,9 +239,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://instagram.com/keerz.core",
     trackedSince: "Tracked since Mar, 22 2024. Updated Just now via Meta Graph API.",
-    followers: 182,
+    followers: 180,
     followersDelta: "+4 (2.25%)",
-    following: 1388,
+    following: 1294,
     followingDelta: "+0 (0.0%)",
     posts: 1,
     postsDelta: "+0 (0.0%)",
@@ -259,9 +259,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://instagram.com/keerz.core",
     trackedSince: "Tracked since Mar, 22 2024. Updated Just now via Meta Graph API.",
-    followers: 182,
+    followers: 180,
     followersDelta: "+4 (2.25%)",
-    following: 1388,
+    following: 1294,
     followingDelta: "+0 (0.0%)",
     posts: 1,
     postsDelta: "+0 (0.0%)",
@@ -282,9 +282,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     trackedSince: "Tracked since Nov, 08 2026. Updated Just now via Meta Graph API.",
     followers: 319,
     followersDelta: "+14 (4.59%)",
-    following: 1052,
-    followingDelta: "+3 (0.29%)",
-    posts: 143,
+    following: 938,
+    followingDelta: "+0 (0.0%)",
+    posts: 144,
     postsDelta: "+1 (0.70%)",
     score: 84.2,
     contactInfo: "No public email listed • Direct Inquiries via Instagram DM",
@@ -302,9 +302,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     trackedSince: "Tracked since Nov, 08 2026. Updated Just now via Meta Graph API.",
     followers: 319,
     followersDelta: "+14 (4.59%)",
-    following: 1052,
-    followingDelta: "+3 (0.29%)",
-    posts: 143,
+    following: 938,
+    followingDelta: "+0 (0.0%)",
+    posts: 144,
     postsDelta: "+1 (0.70%)",
     score: 84.2,
     contactInfo: "No public email listed • Direct Inquiries via Instagram DM",
@@ -340,7 +340,7 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://lisa.lnk.to/PRESSPLAY",
     trackedSince: "Tracked since Jun, 15 2018. Updated Just now via Meta Graph API.",
-    followers: 105000000,
+    followers: 105859041,
     followersDelta: "+540,000 (0.51%)",
     following: 0,
     followingDelta: "+0 (0.0%)",
@@ -505,9 +505,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://itsjvke.com",
     trackedSince: "Tracked since Jan, 10 2021. Updated 18 minutes ago.",
-    followers: 4000000,
+    followers: 3666678,
     followersDelta: "+38,000 (0.96%)",
-    following: 1364,
+    following: 1256,
     followingDelta: "+12 (0.89%)",
     posts: 312,
     postsDelta: "+4 (1.30%)",
@@ -526,9 +526,9 @@ const CREATOR_PRESETS: Record<string, CreatorProfile> = {
     ],
     linkUrl: "https://www.youtube.com/@moretomihika",
     trackedSince: "Tracked since Mar, 19 2022. Updated 25 minutes ago.",
-    followers: 383000,
+    followers: 385395,
     followersDelta: "+4,200 (1.11%)",
-    following: 425,
+    following: 382,
     followingDelta: "+3 (0.71%)",
     posts: 549,
     postsDelta: "+6 (1.10%)",
@@ -621,15 +621,9 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
     return CREATOR_PRESETS[clean];
   }
 
-  const normalized = clean.replace(/[\._\-]/g, "");
-  if (normalized.includes("zyro")) {
-    return CREATOR_PRESETS["zyrohouse"];
-  }
-  if (normalized.includes("arnav") || normalized.includes("patel")) {
-    return CREATOR_PRESETS["arnav.patel07"];
-  }
-  if (CREATOR_PRESETS[normalized]) {
-    return CREATOR_PRESETS[normalized];
+  const dotless = clean.replace(/\./g, "");
+  if (CREATOR_PRESETS[dotless]) {
+    return CREATOR_PRESETS[dotless];
   }
 
   let hash = 0;
@@ -872,7 +866,7 @@ export default function App() {
         try {
           const liveStats = await Promise.race([
             livePromise,
-            new Promise((resolve) => setTimeout(() => resolve(null), 300)),
+            new Promise((resolve) => setTimeout(() => resolve(null), 2500)),
           ]);
           if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
             profile = {
@@ -903,6 +897,7 @@ export default function App() {
                 return {
                   ...prev,
                   name: liveStats.name || prev.name,
+                  avatar: liveStats.avatar_url || liveStats.avatar || prev.avatar,
                   followers: liveStats.followers,
                   followersDelta: liveStats.followersDelta || prev.followersDelta,
                   following: liveStats.following !== undefined ? liveStats.following : prev.following,

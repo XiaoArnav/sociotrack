@@ -310,20 +310,34 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
                         except Exception:
                             pass
 
-                m = re.search(r'([\d.,KMkm]+)\s+Followers,\s+([\d.,KMkm]+)\s+Following,\s+([\d.,KMkm]+)\s+Posts', desc)
-                if m:
-                    followers = parse_compact_number(m.group(1))
-                    following = parse_compact_number(m.group(2))
-                    posts = parse_compact_number(m.group(3))
+                # 1. Exact follower & following counts from embedded Instagram JSON metadata
+                exact_fol_m = re.search(r'"follower_count":\s*(\d+)', resp.text)
+                exact_foc_m = re.search(r'"following_count":\s*(\d+)', resp.text)
+                followers = int(exact_fol_m.group(1)) if exact_fol_m else 0
+                following = int(exact_foc_m.group(1)) if exact_foc_m else 0
 
-                    # Ensure verified accounts match exact user-facing profile values
-                    if clean_handle == "lalalalisa_m" and followers in (106000000, 106):
-                        followers = 105000000
-                    else:
-                        seed_match = next((s for s in COMPETITOR_SEEDS if s["handle"] == clean_handle), None)
-                        if seed_match and seed_match["followers"] >= 10000000 and abs(followers - seed_match["followers"]) <= 2000000:
-                            followers = seed_match["followers"]
+                # 2. Fallback to OpenGraph description regex if embedded JSON fields absent
+                if not followers or not following:
+                    m = re.search(
+                        r'([\d.,KMkm]+)\s+Followers,\s+([\d.,KMkm]+)\s+Following',
+                        desc,
+                        re.IGNORECASE,
+                    )
+                    if m:
+                        if not followers:
+                            followers = parse_compact_number(m.group(1))
+                        if not following:
+                            following = parse_compact_number(m.group(2))
 
+                # 3. Extract exact post count from og:description or page text
+                posts = 0
+                post_m = re.search(r'([\d.,KMkm]+)\s+Posts', desc, re.IGNORECASE)
+                if not post_m:
+                    post_m = re.search(r'([\d.,KMkm]+)\s+Posts', resp.text, re.IGNORECASE)
+                if post_m:
+                    posts = parse_compact_number(post_m.group(1))
+
+                if followers or following or posts:
                     # Calculate realistic engagement rate based on account scale
                     if followers < 1000:
                         eng_rate = 12.50
@@ -336,12 +350,19 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
 
                     delta_fol = max(1, int(followers * 0.005))
                     delta_fol_pct = 0.50
-                    is_private = clean_handle in {"arnav.patel07", "zurikrishna", "keerz.core"} or "This account is private" in resp.text
-                    is_verified = clean_handle in {
-                        "techno_gamerz", "lalalalisa_m", "thv", "sooyaaa__",
-                        "mnijungkook", "j.m", "uarmyhope", "rkive", "itsjvke",
-                        "chenzheyuanisssme", "mkbhd", "cristiano", "leomessi", "nike", "natgeo"
-                    }
+                    is_private = (
+                        '"is_private":true' in resp.text
+                        or clean_handle in {"arnav.patel07", "zurikrishna", "keerz.core"}
+                        or "This account is private" in resp.text
+                    )
+                    is_verified = (
+                        '"is_verified":true' in resp.text
+                        or clean_handle in {
+                            "techno_gamerz", "lalalalisa_m", "thv", "sooyaaa__",
+                            "mnijungkook", "j.m", "uarmyhope", "rkive", "itsjvke",
+                            "chenzheyuanisssme", "mkbhd", "cristiano", "leomessi", "nike", "natgeo"
+                        }
+                    )
 
                     avatar_source = og_image or f"/api/creators/{clean_handle}/avatar"
 
@@ -393,22 +414,22 @@ async def get_live_creator_stats(handle: str):
 # Standard 17 showcase creators config with verified authentic categories
 COMPETITOR_SEEDS = [
     {"handle": "zyrohouse", "group": "My Accounts", "id": "c0", "default_name": "Zyro House", "followers": 68, "following": 1, "mediaCount": 1},
-    {"handle": "arnav.patel07", "group": "My Accounts", "id": "c1", "default_name": "Arnav Patel 👾", "followers": 13, "following": 61, "mediaCount": 0},
-    {"handle": "techno_gamerz", "group": "Creators", "id": "c2", "default_name": "Techno Gamerz", "followers": 2000000, "following": 3, "mediaCount": 33},
-    {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c3", "default_name": "LISA", "followers": 105000000, "following": 0, "mediaCount": 1260},
+    {"handle": "arnav.patel07", "group": "My Accounts", "id": "c1", "default_name": "Arnav Patel 👾", "followers": 9, "following": 60, "mediaCount": 0},
+    {"handle": "techno_gamerz", "group": "Creators", "id": "c2", "default_name": "Techno Gamerz", "followers": 1723631, "following": 3, "mediaCount": 33},
+    {"handle": "lalalalisa_m", "group": "Global Icons", "id": "c3", "default_name": "LISA", "followers": 105859041, "following": 0, "mediaCount": 1260},
     {"handle": "thv", "group": "Global Icons", "id": "c4", "default_name": "V", "followers": 78000000, "following": 8, "mediaCount": 195},
     {"handle": "sooyaaa__", "group": "Global Icons", "id": "c5", "default_name": "JISOO🪐", "followers": 80000000, "following": 0, "mediaCount": 1390},
     {"handle": "mnijungkook", "group": "Global Icons", "id": "c6", "default_name": "JK", "followers": 27000000, "following": 8, "mediaCount": 54},
     {"handle": "j.m", "group": "Global Icons", "id": "c7", "default_name": "JIMIN", "followers": 61000000, "following": 8, "mediaCount": 25},
     {"handle": "uarmyhope", "group": "Global Icons", "id": "c8", "default_name": "jhope", "followers": 57000000, "following": 8, "mediaCount": 371},
     {"handle": "rkive", "group": "Global Icons", "id": "c9", "default_name": "RM", "followers": 54000000, "following": 8, "mediaCount": 41},
-    {"handle": "itsjvke", "group": "Creators", "id": "c10", "default_name": "JVKE", "followers": 4000000, "following": 1364, "mediaCount": 312},
+    {"handle": "itsjvke", "group": "Creators", "id": "c10", "default_name": "JVKE", "followers": 3666678, "following": 1256, "mediaCount": 312},
     {"handle": "chenzheyuanisssme", "group": "Creators", "id": "c11", "default_name": "陈哲远", "followers": 4000000, "following": 0, "mediaCount": 49},
     {"handle": "tomi.timetraveler", "group": "Creators", "id": "c12", "default_name": "Tomi", "followers": 3000000, "following": 307, "mediaCount": 579},
-    {"handle": "moretomihika", "group": "Creators", "id": "c13", "default_name": "mihika sharma", "followers": 383000, "following": 425, "mediaCount": 549},
-    {"handle": "aviralbhardwaj_ji", "group": "Creators", "id": "c14", "default_name": "Aviral Bhardwaj", "followers": 319, "following": 1052, "mediaCount": 143},
-    {"handle": "zurikrishna", "group": "Creators", "id": "c15", "default_name": "krishna", "followers": 42, "following": 97, "mediaCount": 39},
-    {"handle": "keerz.core", "group": "Creators", "id": "c16", "default_name": "🪐", "followers": 182, "following": 1388, "mediaCount": 1},
+    {"handle": "moretomihika", "group": "Creators", "id": "c13", "default_name": "mihika sharma", "followers": 385395, "following": 382, "mediaCount": 549},
+    {"handle": "aviralbhardwaj_ji", "group": "Creators", "id": "c14", "default_name": "Aviral Bhardwaj", "followers": 319, "following": 938, "mediaCount": 144},
+    {"handle": "zurikrishna", "group": "Creators", "id": "c15", "default_name": "krishna", "followers": 42, "following": 86, "mediaCount": 40},
+    {"handle": "keerz.core", "group": "Creators", "id": "c16", "default_name": "🪐", "followers": 180, "following": 1294, "mediaCount": 1},
 ]
 
 

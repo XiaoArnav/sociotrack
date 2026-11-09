@@ -66,10 +66,10 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/arnav.patel07.png`,
     handle: "arnav.patel07",
     name: "Arnav Patel 👾",
-    followers: 13,
-    followersDelta: "+1 (+8.33%)",
+    followers: 9,
+    followersDelta: "+0 (+0.0%)",
     isPositiveFollowers: true,
-    following: 61,
+    following: 60,
     followingDelta: "+0 (+0.0%)",
     isPositiveFollowing: true,
     mediaCount: 0,
@@ -86,7 +86,7 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/techno_gamerz.png`,
     handle: "techno_gamerz",
     name: "Techno Gamerz",
-    followers: 2000000,
+    followers: 1723631,
     followersDelta: "+14,000 (+0.70%)",
     isPositiveFollowers: true,
     following: 3,
@@ -105,7 +105,7 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/lalalalisa_m.png`,
     handle: "lalalalisa_m",
     name: "LISA",
-    followers: 105000000,
+    followers: 105859041,
     followersDelta: "+540,000 (+0.51%)",
     isPositiveFollowers: true,
     following: 0,
@@ -274,10 +274,10 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/moretomihika.png`,
     handle: "moretomihika",
     name: "mihika sharma",
-    followers: 383000,
+    followers: 385395,
     followersDelta: "+2,400 (+0.63%)",
     isPositiveFollowers: true,
-    following: 425,
+    following: 382,
     mediaCount: 549,
     mediaDelta: "+2 (+0.37%)",
     engagementRate: 6.80,
@@ -293,8 +293,8 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     followers: 319,
     followersDelta: "+2 (+0.63%)",
     isPositiveFollowers: true,
-    following: 1052,
-    mediaCount: 143,
+    following: 938,
+    mediaCount: 144,
     mediaDelta: "+1 (+0.70%)",
     engagementRate: 8.90,
     engagementDelta: "+0.55 (+6.59%)",
@@ -309,8 +309,8 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     followers: 42,
     followersDelta: "+1 (+2.44%)",
     isPositiveFollowers: true,
-    following: 97,
-    mediaCount: 39,
+    following: 86,
+    mediaCount: 40,
     mediaDelta: "+0 (+0.0%)",
     engagementRate: 11.40,
     engagementDelta: "+0.50 (+4.59%)",
@@ -322,10 +322,10 @@ const DEFAULT_COMPETITORS: CompetitorAccount[] = [
     avatar: `${BASE_PATH}/avatars/keerz.core.png`,
     handle: "keerz.core",
     name: "🪐",
-    followers: 182,
+    followers: 180,
     followersDelta: "+2 (+1.11%)",
     isPositiveFollowers: true,
-    following: 1388,
+    following: 1294,
     mediaCount: 1,
     mediaDelta: "+0 (+0.0%)",
     engagementRate: 10.20,
@@ -405,20 +405,25 @@ export function InsTrackCompetitorTable({
       if (!username) return;
 
       const clean = username.replace(/^@/, "").toLowerCase().trim();
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL ||
+        (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
+
       setAccounts((prev) => {
         if (prev.some((a) => a.handle.toLowerCase() === clean)) {
           return prev;
         }
         const newAcc: CompetitorAccount = {
           id: `custom_${Date.now()}`,
-          avatar: `${BASE_PATH}/avatars/${clean}.png`,
+          avatar: `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`,
           handle: clean,
           name: fullName || `@${clean}`,
-          followers: 100,
-          followersDelta: "+5 (+5.0%)",
+          followers: 0,
+          followersDelta: "+0 (+0.0%)",
           isPositiveFollowers: true,
-          following: 50,
-          mediaCount: 1,
+          following: 0,
+          mediaCount: 0,
           engagementRate: 8.5,
           group: group || "My Accounts",
         };
@@ -428,6 +433,40 @@ export function InsTrackCompetitorTable({
         }
         return updated;
       });
+
+      // Immediately fetch exact live stats from Meta OpenGraph via backend
+      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        fetch(`${apiBase}/api/creators/live/${encodeURIComponent(clean)}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((live) => {
+            if (live && !live.fallback && live.followers !== undefined) {
+              setAccounts((current) => {
+                const updated = current.map((acc) => {
+                  if (acc.handle.toLowerCase() === clean) {
+                    return {
+                      ...acc,
+                      name: live.name || acc.name,
+                      avatar: live.avatar_url || live.avatar || acc.avatar,
+                      followers: live.followers,
+                      followersDelta: live.followersDelta || acc.followersDelta,
+                      following: live.following !== undefined ? live.following : acc.following,
+                      mediaCount: live.mediaCount !== undefined ? live.mediaCount : acc.mediaCount,
+                      engagementRate: live.engagementRate || acc.engagementRate,
+                      isVerified: live.is_verified,
+                      isPrivate: live.is_private,
+                    };
+                  }
+                  return acc;
+                });
+                if (typeof window !== "undefined") {
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                }
+                return updated;
+              });
+            }
+          })
+          .catch(() => {});
+      }
     };
 
     window.addEventListener("sociotrack:track_account", handleAccountAdded);
