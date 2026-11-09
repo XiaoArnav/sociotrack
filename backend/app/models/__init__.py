@@ -21,6 +21,12 @@ from app.models.content_operations import (
     DraftApproval,
     DraftComment,
 )
+from app.models.billing import (
+    Subscription,
+    PaymentInvoice,
+    UsageMeter,
+    BillingWebhookEvent,
+)
 
 __all__ = [
     "Brand",
@@ -43,4 +49,8 @@ __all__ = [
     "ContentTemplate",
     "DraftApproval",
     "DraftComment",
+    "Subscription",
+    "PaymentInvoice",
+    "UsageMeter",
+    "BillingWebhookEvent",
 ]
