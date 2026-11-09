@@ -1510,6 +1510,9 @@ export default function App() {
                       onDraftsChange={setDrafts}
                       onApproveDraft={handleApproveDraft}
                       initialTopic={selectedStudioHook}
+                      brandId={activeBrandId}
+                      brandName={workspaceBrands.find((b) => b.id === activeBrandId)?.name || "SocioTrack"}
+                      onToast={(title, msg, type) => showToast(title, msg, type)}
                       onSendToSimulator={() => {
                         showToast(
                           "Post Sent to Simulator",

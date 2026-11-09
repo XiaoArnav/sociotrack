@@ -9,6 +9,10 @@ class GenerateDraftsRequest(BaseModel):
     brand_id: Optional[str] = Field(None, description="UUID of the brand")
     brand_name: Optional[str] = Field(None, description="Name of the brand")
     topic: str = Field(..., description="Topic or prompt for social media drafts", min_length=2)
+    platform: Optional[str] = Field("Instagram", description="Target platform (Instagram, LinkedIn, X)")
+    target_tone: Optional[str] = Field(None, description="Desired tone (Professional, Conversational, Witty, etc.)")
+    objective: Optional[str] = Field(None, description="Content objective (Brand Awareness, Lead Gen, etc.)")
+    custom_instructions: Optional[str] = Field(None, description="Optional extra instructions from creator")
     brand_guidelines: Optional[Any] = None
 
     model_config = ConfigDict(extra="allow")
@@ -36,6 +40,19 @@ class PostDraftResponse(BaseModel):
     known_limitations: Optional[str] = None
     platform_target: Optional[str] = "Instagram"
     anti_repetition_passed: bool = True
+    # Genuine AI Provenance & Evaluation Metadata
+    is_ai_generated: bool = False
+    generation_method: str = "fallback"
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    latency_ms: Optional[float] = None
+    fallback_reason: Optional[str] = None
+    assumptions_made: List[str] = Field(default_factory=list)
+    dos_matched: List[str] = Field(default_factory=list)
+    donts_avoided: List[str] = Field(default_factory=list)
+    unsupported_claims: List[str] = Field(default_factory=list)
+    improvement_suggestions: List[str] = Field(default_factory=list)
+    match_score: Optional[float] = None
 
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
@@ -99,3 +116,16 @@ class PostQueueResponse(BaseModel):
     queue: List[PostQueueItem]
 
     model_config = ConfigDict(extra="allow")
+
+
+class EvaluateVoiceRequest(BaseModel):
+    brand_id: str
+    content: str = Field(..., min_length=10, description="Post copy to evaluate against brand voice")
+    platform: Optional[str] = "Instagram"
+    target_tone: Optional[str] = None
+
+
+class RegenerateDraftRequest(BaseModel):
+    feedback_instructions: Optional[str] = Field(None, description="Critique points to address in regeneration")
+    target_tone: Optional[str] = None
+

@@ -26,6 +26,16 @@ export interface PostDraft {
   memoriesApplied?: string[];
   knownLimitations?: string;
   platformTarget?: string;
+  isAiGenerated?: boolean;
+  generationMethod?: string;
+  provider?: string;
+  model?: string;
+  latencyMs?: number;
+  fallbackReason?: string;
+  unsupportedClaims?: string[];
+  improvementSuggestions?: string[];
+  matchScore?: number;
+  assumptionsMade?: string[];
 }
 
 export interface LearnedInsight {

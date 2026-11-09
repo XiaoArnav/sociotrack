@@ -26,6 +26,9 @@ interface GenerationStudioProps {
   onAgentGeneratingStart?: () => void;
   onAgentGeneratingEnd?: () => void;
   initialTopic?: string;
+  brandId?: string;
+  brandName?: string;
+  onToast?: (title: string, message: string, type: "info" | "success" | "warning") => void;
 }
 
 const SAMPLE_TOPICS = [
@@ -43,6 +46,9 @@ export function GenerationStudio({
   onAgentGeneratingStart,
   onAgentGeneratingEnd,
   initialTopic,
+  brandId,
+  brandName,
+  onToast,
 }: GenerationStudioProps) {
   const [topic, setTopic] = useState(initialTopic || "Deterministic State Management with LangGraph");
   const [targetTone, setTargetTone] = useState<TargetTone>("Thought Leadership");
@@ -68,6 +74,19 @@ export function GenerationStudio({
 
   const platforms: PlatformType[] = ["LinkedIn", "Instagram", "X"];
 
+  // Helper to extract session bearer token
+  const getAuthToken = (): string => {
+    if (typeof window === "undefined") return "";
+    try {
+      const raw = localStorage.getItem("sociotrack_user_session");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return parsed.token || "";
+      }
+    } catch {}
+    return "";
+  };
+
   // Generate with Agent handler (3 Distinct Formats)
   const handleGenerate = async () => {
     if (!topic.trim()) return;
@@ -75,15 +94,26 @@ export function GenerationStudio({
     setIsGenerating(true);
     if (onAgentGeneratingStart) onAgentGeneratingStart();
 
+    const token = getAuthToken();
+
     try {
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
       const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
 
       if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
         const res = await fetch(`${apiBase}/api/generate-drafts`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ brand_name: "DevRelay", topic }),
+          headers,
+          body: JSON.stringify({
+            brand_id: brandId || undefined,
+            brand_name: brandName || "SocioTrack",
+            topic,
+            platform: selectedPlatform,
+            target_tone: targetTone,
+          }),
         });
 
         if (res.ok) {
@@ -91,33 +121,58 @@ export function GenerationStudio({
           if (data.drafts && data.drafts.length > 0) {
             const generatedFromBackend: PostDraft[] = data.drafts.map((d: any, idx: number) => ({
               id: d.id || `draft_${Date.now()}_${idx}`,
-              platform: selectedPlatform,
+              platform: (d.platform_target as PlatformType) || selectedPlatform,
               tone: targetTone,
-              hookStyle:
+              hookStyle: d.hook_style || d.format || (
                 idx === 0
                   ? "Format A: Data-First Technical (Selected Winner)"
                   : idx === 1
                   ? "Format B: Contrarian Hot Take"
-                  : "Format C: Tactical Execution Checklist",
-              status: "Draft",
+                  : "Format C: Tactical Execution Checklist"
+              ),
+              format: d.format || (idx === 0 ? "Carousel" : idx === 1 ? "Discussion" : "Playbook"),
+              status: "Draft" as const,
               content: d.content,
-              predictedEngagement: idx === 0 ? "HIGH" : idx === 1 ? "HIGH" : "MEDIUM",
-              confidenceScore: idx === 0 ? 96 : idx === 1 ? 89 : 83,
+              predictedEngagement: (d.confidence_score >= 0.9 ? "HIGH" : d.confidence_score >= 0.8 ? "MEDIUM" : "LOW") as any,
+              confidenceScore: Math.round((d.confidence_score || 0.88) * 100),
               aiExplanation:
+                d.recommendation_rationale ||
                 (d.memory_context_applied && d.memory_context_applied[0]) ||
-                `Retrieved past winning memory patterns for '${topic}'. Prioritizes quantified benchmarks.`,
+                `Retrieved brand intelligence for '${topic}'. Tailored for ${brandName || "your brand"} on ${selectedPlatform}.`,
               createdAt: "Just now",
-              dosMatched: [
-                "Quantified benchmark claim in opening 3 lines",
+              dosMatched: d.dos_matched && d.dos_matched.length > 0 ? d.dos_matched : [
                 `Matched selected tone: ${targetTone}`,
                 `Formatted natively for ${selectedPlatform}`,
               ],
-              dontsAvoided: ["No generic hype buzzwords", "No unverified performance claims"],
+              dontsAvoided: d.donts_avoided && d.donts_avoided.length > 0 ? d.donts_avoided : [
+                "No generic hype buzzwords",
+                "No unverified performance claims",
+              ],
+              recommendationRationale: d.recommendation_rationale,
+              supportingEvidence: d.supporting_evidence,
+              memoriesApplied: d.memories_applied,
+              knownLimitations: d.known_limitations,
+              platformTarget: d.platform_target,
+              isAiGenerated: d.is_ai_generated,
+              generationMethod: d.generation_method,
+              provider: d.provider,
+              model: d.model,
+              latencyMs: d.latency_ms,
+              fallbackReason: d.fallback_reason,
+              unsupportedClaims: d.unsupported_claims,
+              improvementSuggestions: d.improvement_suggestions,
+              matchScore: d.match_score,
+              assumptionsMade: d.assumptions_made,
             }));
 
             onDraftsChange([...generatedFromBackend, ...drafts]);
             setIsGenerating(false);
             if (onAgentGeneratingEnd) onAgentGeneratingEnd();
+            onToast?.(
+              "Drafts Generated",
+              `Generated 3 brand-tailored variations for ${brandName || "your brand"}.`,
+              "success"
+            );
             return;
           }
         }
@@ -212,11 +267,60 @@ Save this checklist for your next architecture review. 🧵👇`,
     }, 800);
   };
 
-  // Regenerate individual card
-  const handleRegenerate = (id: string) => {
+  // Regenerate individual card via backend
+  const handleRegenerate = async (id: string) => {
     setRegeneratingId(id);
     if (onAgentGeneratingStart) onAgentGeneratingStart();
 
+    const token = getAuthToken();
+    try {
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+
+      if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const res = await fetch(`${apiBase}/api/drafts/${id}/regenerate`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            feedback_instructions: "Sharpen practitioner call to action, ensure zero buzzwords, and improve tone alignment.",
+            target_tone: targetTone,
+          }),
+        });
+
+        if (res.ok) {
+          const regeneratedData = await res.json();
+          const updated = drafts.map((d) => {
+            if (d.id !== id) return d;
+            return {
+              ...d,
+              content: regeneratedData.content,
+              aiExplanation: regeneratedData.recommendation_rationale || "Regenerated addressing evaluation critique.",
+              confidenceScore: Math.round((regeneratedData.confidence_score || 0.90) * 100),
+              isAiGenerated: regeneratedData.is_ai_generated,
+              generationMethod: regeneratedData.generation_method,
+              provider: regeneratedData.provider,
+              model: regeneratedData.model,
+              latencyMs: regeneratedData.latency_ms,
+              unsupportedClaims: regeneratedData.unsupported_claims,
+              improvementSuggestions: regeneratedData.improvement_suggestions,
+              status: "Draft" as const,
+            };
+          });
+          onDraftsChange(updated);
+          setRegeneratingId(null);
+          if (onAgentGeneratingEnd) onAgentGeneratingEnd();
+          onToast?.("Draft Regenerated", "Variation updated with refined critique feedback.", "success");
+          return;
+        }
+      }
+    } catch {
+      // offline fallback
+    }
+
+    // Fallback in-memory update
     setTimeout(() => {
       const updated = drafts.map((d) => {
         if (d.id !== id) return d;
