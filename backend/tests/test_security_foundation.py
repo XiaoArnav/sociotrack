@@ -553,3 +553,135 @@ async def test_meta_webhook_hmac_and_handle_sanitization():
 
         res_invalid_chars = await client.get("/api/creators/live/user$*()")
         assert res_invalid_chars.status_code == 400
+
+
+@pytest.mark.asyncio
+async def test_simulator_security_and_ownership():
+    """
+    Step 1 Verification:
+    - Anonymous access to /api/simulator/feed-metrics is rejected with 401.
+    - User A cannot mutate metrics or insert memories for User B's post (403/404).
+    - Legitimate owner can simulate feed metrics (200).
+    """
+    from app.models.post import Post
+
+    user_a_id = f"usr_sim_a_{uuid.uuid4().hex[:6]}"
+    user_b_id = f"usr_sim_b_{uuid.uuid4().hex[:6]}"
+    brand_b_id = f"brd_sim_b_{uuid.uuid4().hex[:6]}"
+    post_b_id = f"pst_sim_b_{uuid.uuid4().hex[:6]}"
+
+    async with async_session_maker() as session:
+        user_a = User(
+            id=user_a_id,
+            email=f"{user_a_id}@example.com",
+            name="Alice Simulator",
+            hashed_password="pw",
+            role="creator",
+            is_active=True,
+        )
+        user_b = User(
+            id=user_b_id,
+            email=f"{user_b_id}@example.com",
+            name="Bob Simulator",
+            hashed_password="pw",
+            role="creator",
+            is_active=True,
+        )
+        brand_b = Brand(
+            id=brand_b_id,
+            user_id=user_b_id,
+            name=f"Brand B {uuid.uuid4().hex[:6]}",
+        )
+        post_b = Post(
+            id=post_b_id,
+            brand_id=brand_b_id,
+            topic="Bob Private Architecture",
+            hook_style="contrarian",
+            content="Bob confidential post content",
+            status="published",
+        )
+        session.add(user_a)
+        session.add(user_b)
+        session.add(brand_b)
+        session.add(post_b)
+        await session.commit()
+
+    token_a = create_access_token({"sub": user_a_id, "email": user_a.email, "is_demo": False})
+    token_b = create_access_token({"sub": user_b_id, "email": user_b.email, "is_demo": False})
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Anonymous access rejected with 401
+        res_anon = await client.post(
+            "/api/simulator/feed-metrics",
+            json={"post_id": post_b_id, "impressions": 1000, "likes": 50},
+        )
+        assert res_anon.status_code == 401
+
+        # 2. User A cross-user access to Bob's post rejected with 403
+        res_cross = await client.post(
+            "/api/simulator/feed-metrics",
+            headers=headers_a,
+            json={"post_id": post_b_id, "impressions": 1000, "likes": 50},
+        )
+        assert res_cross.status_code in (403, 404)
+
+        # 3. Legitimate user B can simulate feed metrics
+        res_owner = await client.post(
+            "/api/simulator/feed-metrics",
+            headers=headers_b,
+            json={"post_id": post_b_id, "impressions": 5000, "likes": 250, "replies": 30, "shares": 20},
+        )
+        assert res_owner.status_code == 200
+        assert res_owner.json()["post_id"] == post_b_id
+
+
+@pytest.mark.asyncio
+async def test_diagnostics_security_and_handle_sanitization():
+    """
+    Step 1 Verification:
+    - Traversal attacks on diagnostics endpoints are rejected with 400.
+    - Snooping on private user-owned brands via /api/diagnostics/audit is rejected with 403.
+    """
+    user_owner_id = f"usr_diag_{uuid.uuid4().hex[:6]}"
+    brand_private_name = f"brand_priv_{uuid.uuid4().hex[:6]}"
+
+    async with async_session_maker() as session:
+        user_owner = User(
+            id=user_owner_id,
+            email=f"{user_owner_id}@example.com",
+            name="Diag Owner",
+            hashed_password="pw",
+            role="creator",
+            is_active=True,
+        )
+        brand_private = Brand(
+            id=f"brd_diag_{uuid.uuid4().hex[:6]}",
+            user_id=user_owner_id,
+            name=brand_private_name,
+        )
+        session.add(user_owner)
+        session.add(brand_private)
+        await session.commit()
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Path traversal in handle returns 400 or 404 (routed-level rejection)
+        res_traversal = await client.get("/api/diagnostics/instagram/..%2F..%2Fetc/predict")
+        assert res_traversal.status_code in (400, 404)
+
+        res_post_traversal = await client.post(
+            "/api/diagnostics/predict-content",
+            json={"creator_handle": "../traversal/attempt"},
+        )
+        assert res_post_traversal.status_code == 400
+
+        # 2. Cross-user access to private brand without auth returns 403
+        res_private_audit = await client.get(f"/api/diagnostics/audit?brand_name={brand_private_name}")
+        assert res_private_audit.status_code == 403
+
+        # 3. Public/demo audit succeeds
+        res_public_audit = await client.get("/api/diagnostics/audit?brand_name=DevRelay")
+        assert res_public_audit.status_code == 200

@@ -81,12 +81,13 @@ async def test_endpoint_3_posts_queue(auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_endpoint_4_feed_metrics_and_memory_feedback():
+async def test_endpoint_4_feed_metrics_and_memory_feedback(auth_headers):
     post_id = "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9012"
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.post(
             "/api/simulator/feed-metrics",
+            headers=auth_headers,
             json={
                 "post_id": post_id,
                 "impressions": 15000,
@@ -149,6 +150,7 @@ async def test_endpoint_error_handling_not_found(auth_headers):
         # Invalid post in feed-metrics
         res3 = await client.post(
             "/api/simulator/feed-metrics",
+            headers=auth_headers,
             json={
                 "post_id": "non-existent-uuid",
                 "impressions": 100,
