@@ -1604,7 +1604,7 @@ export default function App() {
               {/* PRODUCT USAGE TELEMETRY & PILOT ANALYTICS SUBTAB */}
               {activeSubTab === "telemetry" && (
                 <div className="space-y-6 animate-fade-in">
-                  <ProductAnalyticsView apiBaseUrl={API_BASE_URL} />
+                  <ProductAnalyticsView apiBaseUrl={API_BASE_URL} authToken={currentUser?.token} />
                 </div>
               )}
 

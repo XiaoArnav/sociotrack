@@ -179,6 +179,37 @@ async def get_current_user(
     )
 
 
+def is_admin_user(user: UserResponse) -> bool:
+    """Checks whether the user possesses administrative privileges."""
+    if not user or not user.role:
+        return False
+    role_norm = str(user.role).strip().lower()
+    return role_norm in ("admin", "superuser", "platform_admin", "owner")
+
+
+async def get_current_admin(
+    current_user: UserResponse = Depends(get_current_user),
+) -> UserResponse:
+    """Dependency that enforces administrative permissions."""
+    if not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrative privileges required to perform this action.",
+        )
+    return current_user
+
+
+async def get_optional_current_user(
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
+) -> Optional[UserResponse]:
+    """Returns authenticated user if Authorization header is provided, or None if omitted."""
+    if not authorization:
+        return None
+    # Strictly validate incoming header if provided
+    return await get_current_user(authorization=authorization, db=db)
+
+
 @router.post(
     "/demo-session",
     response_model=AuthTokenResponse,

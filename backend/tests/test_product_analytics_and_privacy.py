@@ -1,13 +1,13 @@
 """
 Tests for Product Usage Analytics, System Health Observability, and User Privacy Rights.
 Verifies public seams for:
-- POST /api/analytics/product/event
-- GET /api/analytics/product/dashboard
+- POST /api/analytics/product/event (impersonation guardrails)
+- GET /api/analytics/product/dashboard (authenticated access)
 - GET /api/system/health
 - GET /api/system/metrics
-- GET /api/user/export-data
-- DELETE /api/user/delete-data
-- POST /api/user/consent
+- GET /api/user/export-data (GDPR/CCPA authenticated export)
+- DELETE /api/user/delete-data (right-to-be-forgotten deletion)
+- POST /api/user/consent (privacy preferences)
 """
 import pytest
 import pytest_asyncio
@@ -17,6 +17,7 @@ from app.main import app
 from app.database import init_db, async_session_maker
 from app.models.brand import Brand
 from app.models.user import User
+from app.core.security import create_access_token
 
 
 @pytest_asyncio.fixture(autouse=True)
@@ -26,29 +27,48 @@ async def setup_db():
 
 @pytest.mark.asyncio
 async def test_product_event_ingestion_and_funnel():
+    user_id = f"usr_test_{uuid.uuid4().hex[:6]}"
+    async with async_session_maker() as session:
+        user = User(
+            id=user_id,
+            email=f"telemetry_{uuid.uuid4().hex[:6]}@example.com",
+            name="Telemetry Tester",
+            hashed_password="hashed_secret",
+            is_active=True,
+        )
+        session.add(user)
+        await session.commit()
+
+    token = create_access_token({"sub": user_id, "email": user.email, "is_demo": False})
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        # 1. Ingest onboarding events
+        # Unauthenticated access to dashboard must be rejected
+        unauth_dash = await client.get("/api/analytics/product/dashboard")
+        assert unauth_dash.status_code == 401
+
+        # 1. Ingest onboarding events with valid authentication
         events = [
-            {"event_name": "onboarding_started", "user_id": "usr_test_1", "step_name": "brand_info", "duration_seconds": 12.5},
-            {"event_name": "onboarding_step_completed", "user_id": "usr_test_1", "step_name": "brand_info", "duration_seconds": 15.0},
-            {"event_name": "onboarding_step_completed", "user_id": "usr_test_1", "step_name": "voice_archetype", "duration_seconds": 25.0},
-            {"event_name": "first_insight_generated", "user_id": "usr_test_1", "step_name": "insight", "duration_seconds": 45.0},
-            {"event_name": "onboarding_completed", "user_id": "usr_test_1", "step_name": "complete", "duration_seconds": 55.0},
-            {"event_name": "recommendation_generated", "user_id": "usr_test_1", "metadata_json": '{"format": "carousel"}'},
-            {"event_name": "recommendation_accepted", "user_id": "usr_test_1", "metadata_json": '{"format": "carousel"}'},
-            {"event_name": "recommendation_rejected", "user_id": "usr_test_1", "metadata_json": '{"reason": "repetitive"}'},
+            {"event_name": "onboarding_started", "user_id": user_id, "step_name": "brand_info", "duration_seconds": 12.5},
+            {"event_name": "onboarding_step_completed", "user_id": user_id, "step_name": "brand_info", "duration_seconds": 15.0},
+            {"event_name": "onboarding_step_completed", "user_id": user_id, "step_name": "voice_archetype", "duration_seconds": 25.0},
+            {"event_name": "first_insight_generated", "user_id": user_id, "step_name": "insight", "duration_seconds": 45.0},
+            {"event_name": "onboarding_completed", "user_id": user_id, "step_name": "complete", "duration_seconds": 55.0},
+            {"event_name": "recommendation_generated", "user_id": user_id, "metadata_json": '{"format": "carousel"}'},
+            {"event_name": "recommendation_accepted", "user_id": user_id, "metadata_json": '{"format": "carousel"}'},
+            {"event_name": "recommendation_rejected", "user_id": user_id, "metadata_json": '{"reason": "repetitive"}'},
         ]
 
         for ev in events:
-            res = await client.post("/api/analytics/product/event", json=ev)
+            res = await client.post("/api/analytics/product/event", json=ev, headers=auth_headers)
             assert res.status_code == 201
             data = res.json()
             assert data["event_name"] == ev["event_name"]
             assert "id" in data
 
-        # 2. Query product analytics dashboard
-        res_dash = await client.get("/api/analytics/product/dashboard")
+        # 2. Query product analytics dashboard with authenticated user
+        res_dash = await client.get("/api/analytics/product/dashboard", headers=auth_headers)
         assert res_dash.status_code == 200
         metrics = res_dash.json()
         assert metrics["total_events"] >= 8
@@ -92,26 +112,44 @@ async def test_user_privacy_export_and_deletion():
             email=f"privacy_{uuid.uuid4().hex[:6]}@example.com",
             name=f"Privacy User {uuid.uuid4().hex[:6]}",
             hashed_password="hashed_secret",
-            is_active=True
+            is_active=True,
         )
         brand = Brand(
             id=brand_id,
             user_id=user_id,
             name="Privacy Brand",
             voice_description="Discreet and compliant",
-            target_audience="Enterprise Social Teams"
+            target_audience="Enterprise Social Teams",
         )
         session.add(user)
         session.add(brand)
         await session.commit()
 
+    token = create_access_token({"sub": user_id, "email": user.email, "is_demo": False})
+    auth_headers = {"Authorization": f"Bearer {token}"}
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        # 1. Update privacy consent
+        # Unauthenticated access must be rejected
+        unauth_export = await client.get("/api/user/export-data", params={"user_id": user_id})
+        assert unauth_export.status_code == 401
+
+        unauth_del = await client.delete("/api/user/delete-data", params={"user_id": user_id})
+        assert unauth_del.status_code == 401
+
+        unauth_consent = await client.post(
+            "/api/user/consent",
+            params={"user_id": user_id},
+            json={"telemetry_opt_in": True, "ai_training_opt_out": True},
+        )
+        assert unauth_consent.status_code == 401
+
+        # 1. Update privacy consent with valid credentials
         res_consent = await client.post(
             "/api/user/consent",
             params={"user_id": user_id},
-            json={"telemetry_opt_in": True, "ai_training_opt_out": True}
+            json={"telemetry_opt_in": True, "ai_training_opt_out": True},
+            headers=auth_headers,
         )
         assert res_consent.status_code == 200
         assert res_consent.json()["ai_training_opt_out"] is True
@@ -119,7 +157,8 @@ async def test_user_privacy_export_and_deletion():
         # 2. Export user data
         res_export = await client.get(
             "/api/user/export-data",
-            params={"user_id": user_id}
+            params={"user_id": user_id},
+            headers=auth_headers,
         )
         assert res_export.status_code == 200
         export_payload = res_export.json()
@@ -130,7 +169,8 @@ async def test_user_privacy_export_and_deletion():
         # 3. Hard delete user data
         res_del = await client.delete(
             "/api/user/delete-data",
-            params={"user_id": user_id}
+            params={"user_id": user_id},
+            headers=auth_headers,
         )
         assert res_del.status_code == 200
         assert res_del.json()["deleted"] is True

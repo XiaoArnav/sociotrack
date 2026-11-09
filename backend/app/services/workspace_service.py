@@ -38,9 +38,9 @@ def hash_secret(secret: str) -> str:
 
 async def record_audit_log(
     db: AsyncSession,
-    workspace_id: str,
-    action: str,
-    resource_type: str,
+    workspace_id: Optional[str] = None,
+    action: str = "audit.action",
+    resource_type: str = "general",
     resource_id: Optional[str] = None,
     user_id: Optional[str] = None,
     metadata: Optional[Dict[str, Any]] = None,

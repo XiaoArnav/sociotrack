@@ -17,6 +17,7 @@ import {
 
 interface ProductAnalyticsViewProps {
   apiBaseUrl?: string;
+  authToken?: string;
 }
 
 interface ProductDashboardMetrics {
@@ -37,14 +38,27 @@ interface ProductDashboardMetrics {
   total_publishes: number;
 }
 
-export function ProductAnalyticsView({ apiBaseUrl = "" }: ProductAnalyticsViewProps) {
+export function ProductAnalyticsView({ apiBaseUrl = "", authToken }: ProductAnalyticsViewProps) {
   const [metrics, setMetrics] = useState<ProductDashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboard = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/analytics/product/dashboard`);
+      const headers: Record<string, string> = {};
+      let token = authToken;
+      if (!token && typeof window !== "undefined") {
+        const stored = localStorage.getItem("sociotrack_user_session");
+        if (stored) {
+          try {
+            token = JSON.parse(stored)?.token;
+          } catch {}
+        }
+      }
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${apiBaseUrl}/api/analytics/product/dashboard`, { headers });
       if (res.ok) {
         const data = await res.json();
         setMetrics(data);
