@@ -651,10 +651,13 @@ function generateCreatorProfile(rawHandle: string): CreatorProfile {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 
+  const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
+
   return {
     handle: clean,
     name: `${displayTitle || clean} | Content Creator`,
-    avatar: `${BASE_PATH}/avatars/${clean}.png`,
+    avatar: `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`,
     bioLines: [
       `Official Instagram account for @${clean}`,
       "Digital Strategy • Creative Storytelling • Community Growth",
@@ -770,6 +773,7 @@ export default function App() {
               return {
                 ...prev,
                 name: live.name || prev.name,
+                avatar: live.avatar_url || live.avatar || prev.avatar,
                 followers: live.followers,
                 followersDelta: live.followersDelta || prev.followersDelta,
                 following: live.following !== undefined ? live.following : prev.following,
@@ -874,6 +878,7 @@ export default function App() {
             profile = {
               ...profile,
               name: liveStats.name || profile.name,
+              avatar: liveStats.avatar_url || liveStats.avatar || profile.avatar,
               followers: liveStats.followers,
               followersDelta: liveStats.followersDelta || profile.followersDelta,
               following: liveStats.following !== undefined ? liveStats.following : profile.following,

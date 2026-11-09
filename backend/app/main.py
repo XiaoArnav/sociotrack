@@ -5,11 +5,18 @@ Owned by Person 1 & Person 2.
 """
 import asyncio
 import logging
+import os
+import secrets
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, status, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings, validate_production_configuration
+from app.config import (
+    settings,
+    validate_production_configuration,
+    INSECURE_DEFAULT_SECRET_KEYS,
+    INSECURE_DEFAULT_META_TOKENS,
+)
 from app.database import init_db
 from app.routers import (
     drafts,
@@ -39,8 +46,47 @@ from app.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Enforce strict production configuration validation gate
-    validate_production_configuration(settings)
+    # Enforce strict production configuration validation gate with cloud hosting auto-healing
+    try:
+        validate_production_configuration(settings)
+    except RuntimeError as e:
+        is_hosted = bool(
+            os.environ.get("RENDER")
+            or os.environ.get("RENDER_SERVICE_ID")
+            or os.environ.get("RENDER_INSTANCE_ID")
+            or os.environ.get("AUTO_HEAL_PROD_SECRETS") == "true"
+        )
+        if is_hosted:
+            logger = logging.getLogger("uvicorn.error")
+            err_msg = str(e)
+            if (
+                "SECRET_KEY" in err_msg
+                or not settings.SECRET_KEY
+                or len(settings.SECRET_KEY.strip()) < 32
+                or settings.SECRET_KEY.strip() in INSECURE_DEFAULT_SECRET_KEYS
+            ):
+                logger.warning(
+                    "Cloud environment (Render) detected without custom SECRET_KEY: %s. "
+                    "Auto-generating a cryptographically strong 64-character SECRET_KEY for this runtime instance. "
+                    "Tip: Set SECRET_KEY in your Render Dashboard to persist session tokens across restarts.",
+                    e,
+                )
+                settings.SECRET_KEY = secrets.token_hex(32)
+
+            if (
+                "META_VERIFY_TOKEN" in err_msg
+                or settings.META_VERIFY_TOKEN in INSECURE_DEFAULT_META_TOKENS
+            ):
+                logger.warning(
+                    "Cloud environment (Render) detected with default META_VERIFY_TOKEN. "
+                    "Auto-generating a unique META_VERIFY_TOKEN for this runtime instance."
+                )
+                settings.META_VERIFY_TOKEN = f"prod_meta_{secrets.token_hex(16)}"
+
+            # Re-run validation to enforce compliance with all other invariants (DEBUG, CORS, etc.)
+            validate_production_configuration(settings)
+        else:
+            raise
 
     # Startup: ensure tables exist
     await init_db()

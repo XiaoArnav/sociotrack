@@ -419,3 +419,32 @@ async def test_16_existing_authenticated_application_workflows_functional():
         cal_res = await client.get(f"/api/calendar/recommendations?brand_id={brand_id}", headers=headers)
         assert cal_res.status_code == 200
         assert "slots" in cal_res.json()
+
+
+@pytest.mark.asyncio
+async def test_17_render_lifespan_auto_heals_insecure_defaults(monkeypatch):
+    """Scenario 17: In hosted environment (Render), lifespan gracefully auto-heals missing/insecure SECRET_KEY."""
+    from app.main import lifespan
+    from app.config import settings
+
+    monkeypatch.setenv("RENDER", "true")
+    monkeypatch.setattr(settings, "ENVIRONMENT", "production")
+    monkeypatch.setattr(settings, "DEBUG", False)
+    monkeypatch.setattr(settings, "SECRET_KEY", "sociotrack_jwt_secret_key_prod_hardening_2026_super_secure")
+    monkeypatch.setattr(settings, "META_VERIFY_TOKEN", "sociotrack_meta_verify_token_2026")
+
+    async with lifespan(app):
+        # Successfully booted through lifespan
+        assert settings.SECRET_KEY != "sociotrack_jwt_secret_key_prod_hardening_2026_super_secure"
+        assert len(settings.SECRET_KEY) >= 32
+        assert settings.META_VERIFY_TOKEN != "sociotrack_meta_verify_token_2026"
+
+
+@pytest.mark.asyncio
+async def test_18_avatar_endpoint_returns_200_inline_svg_for_unknown_creator():
+    """Scenario 18: /api/creators/{handle}/avatar returns 200 with image, never 404 or crash."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/creators/some_unseen_creator_xyz_9999/avatar")
+        assert res.status_code == 200
+        assert "image/" in res.headers["content-type"]

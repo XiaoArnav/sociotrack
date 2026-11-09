@@ -711,10 +711,20 @@ export function InsTrackCompetitorTable({
                             key={acc.handle}
                             src={acc.avatar}
                             alt={acc.name}
+                            referrerPolicy="no-referrer"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
+                              const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+                              const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
                               const clean = acc.handle.replace(/^@/, "").toLowerCase().trim();
-                              target.src = `${BASE_PATH}/avatars/${encodeURIComponent(clean)}.png`;
+                              const proxyUrl = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
+
+                              if (target.src !== proxyUrl && !target.dataset.triedProxy) {
+                                target.dataset.triedProxy = "1";
+                                target.src = proxyUrl;
+                                return;
+                              }
+                              target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}&backgroundColor=4f46e5,06b6d4,10b981&textColor=ffffff`;
                             }}
                             className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#243048] group-hover:ring-2 group-hover:ring-indigo-500 transition-all shrink-0"
                           />

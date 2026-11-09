@@ -145,25 +145,30 @@ export function InsTrackCreatorCard({
           <div className="flex flex-col items-center shrink-0">
             <div className="w-20 h-20 rounded-full p-1 bg-[#FACC15] shadow-md">
               <img
-                key={creator.handle}
+                key={creator.handle + (creator.avatar || "")}
                 src={creator.avatar}
                 alt={creator.handle}
+                referrerPolicy="no-referrer"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
                   const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
                   const clean = creator.handle.replace(/^@/, "").toLowerCase().trim();
-                  const canUseProxy = apiBase && !(isHttps && apiBase.startsWith("http://localhost"));
+                  const proxyUrl = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
 
-                  if (!target.dataset.triedStatic) {
-                    target.dataset.triedStatic = "1";
-                    target.src = `${BASE_PATH}/avatars/${encodeURIComponent(clean)}.png`;
-                  } else if (!target.dataset.triedProxy && canUseProxy) {
+                  if (target.src !== proxyUrl && !target.dataset.triedProxy) {
                     target.dataset.triedProxy = "1";
-                    target.src = `${apiBase}/api/creators/${encodeURIComponent(clean)}/avatar`;
-                  } else if (!target.dataset.triedDicebear) {
+                    target.src = proxyUrl;
+                    return;
+                  }
+                  if (!target.dataset.triedUnavatar) {
+                    target.dataset.triedUnavatar = "1";
+                    target.src = `https://unavatar.io/x/${encodeURIComponent(clean)}?fallback=https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}`;
+                    return;
+                  }
+                  if (!target.dataset.triedDicebear) {
                     target.dataset.triedDicebear = "1";
-                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}`;
+                    target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}&backgroundColor=4f46e5,06b6d4,10b981&textColor=ffffff`;
                   }
                 }}
                 className="w-full h-full rounded-full object-cover bg-slate-900 border-2 border-white dark:border-[#161F30]"

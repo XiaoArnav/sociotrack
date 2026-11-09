@@ -299,9 +299,16 @@ export function InsTrackRecentPostsFeed({
                   <img
                     src={resolveThumbnail(post.thumbnail_url)}
                     alt={post.caption}
+                    referrerPolicy="no-referrer"
                     className="absolute inset-0 w-full h-full object-cover opacity-35 filter blur-xs"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = creator.avatar;
+                      const target = e.target as HTMLImageElement;
+                      if (!target.dataset.triedAvatar) {
+                        target.dataset.triedAvatar = "1";
+                        target.src = creator.avatar;
+                      } else {
+                        target.src = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80";
+                      }
                     }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />

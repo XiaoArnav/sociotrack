@@ -18,7 +18,8 @@ interface InsTrackAddAccountModalProps {
 }
 
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
 
 // Real creators and accounts matching SocioTrack live intelligence
 const POPULAR_ACCOUNTS: SuggestedAccount[] = [
@@ -183,6 +184,7 @@ export function InsTrackAddAccountModal({
                           <img
                             src={acc.avatarUrl}
                             alt={acc.username}
+                            referrerPolicy="no-referrer"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
                               const clean = acc.username.replace(/^@/, "").toLowerCase().trim();

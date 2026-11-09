@@ -18,9 +18,11 @@ services:
         value: "false"
       - key: ENABLE_DEMO_MODE
         value: "false"
-      # Secure secrets should be added as sync: false in Render dashboard
+      # Secure secrets: Render automatically generates strong random keys on deploy
       - key: SECRET_KEY
-        sync: false
+        generateValue: true
+      - key: META_VERIFY_TOKEN
+        generateValue: true
       - key: DATABASE_URL
         sync: false
       - key: CORS_ORIGINS

@@ -170,6 +170,38 @@ async def _download_and_save_avatar(handle: str) -> bool:
     return False
 
 
+def generate_initials_svg(seed: str) -> str:
+    """Generates a high-fidelity SVG avatar with vibrant gradient background and crisp typography."""
+    parts = [p for p in re.split(r"[\._\-\s]", seed) if p]
+    if len(parts) >= 2:
+        initials = (parts[0][0] + parts[1][0]).upper()
+    elif parts:
+        initials = parts[0][:2].upper()
+    else:
+        initials = (seed[:2] or "ST").upper()
+
+    palettes = [
+        ("#4F46E5", "#818CF8"),  # Indigo
+        ("#06B6D4", "#38BDF8"),  # Cyan
+        ("#10B981", "#34D399"),  # Emerald
+        ("#8B5CF6", "#A78BFA"),  # Purple
+        ("#F59E0B", "#FBBF24"),  # Amber
+        ("#EC4899", "#F472B6"),  # Rose
+    ]
+    color1, color2 = palettes[sum(ord(c) for c in seed) % len(palettes)]
+
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="{color1}" />
+      <stop offset="100%" stop-color="{color2}" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="320" rx="160" fill="url(#g)" />
+  <text x="50%" y="54%" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="115" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">{initials}</text>
+</svg>"""
+
+
 @router.get("/{handle}/avatar", summary="Stream creator avatar with automated SWR background cache warming")
 @router.head("/{handle}/avatar", include_in_schema=False)
 async def get_creator_avatar(handle: str, background_tasks: BackgroundTasks):
@@ -209,9 +241,15 @@ async def get_creator_avatar(handle: str, background_tasks: BackgroundTasks):
             },
         )
 
-    # Fallback to initials SVG
-    fallback_url = f"https://api.dicebear.com/7.x/initials/svg?seed={clean_handle}"
-    return RedirectResponse(url=fallback_url, status_code=307)
+    # Deterministic high-fidelity inline SVG fallback with HTTP 200 (prevents broken image icons)
+    return Response(
+        content=generate_initials_svg(clean_handle),
+        media_type="image/svg+xml",
+        headers={
+            "Cache-Control": "public, max-age=86400",
+            "X-Avatar-Cache": "FALLBACK-GENERATED",
+        },
+    )
 
 
 # In-memory stats cache: {clean_handle: (timestamp, stats_dict)}
@@ -252,9 +290,25 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
             if resp.status_code == 200:
                 desc_m = re.search(r'<meta\s+property="og:description"\s+content="([^"]+)"', resp.text)
                 title_m = re.search(r'<meta\s+property="og:title"\s+content="([^"]+)"', resp.text)
+                img_m = re.search(r'<meta\s+property="og:image"\s+content="([^"]+)"', resp.text)
                 desc = html.unescape(desc_m.group(1)) if desc_m else ""
                 title = html.unescape(title_m.group(1)) if title_m else ""
+                og_image = html.unescape(img_m.group(1)) if img_m else None
                 name = re.sub(r'\s*\(@[^\)]+\)\s*•\s*Instagram.*$', '', title, flags=re.IGNORECASE).strip() or clean_handle
+
+                # Pre-warm disk cache with scraped avatar bytes in the background
+                if og_image:
+                    target_file = AVATARS_DIR / f"{clean_handle}.png"
+                    if not target_file.exists():
+                        try:
+                            img_resp = await client.get(og_image, headers={"User-Agent": "Mozilla/5.0"})
+                            if img_resp.status_code == 200 and len(img_resp.content) > 1000:
+                                im = Image.open(io.BytesIO(img_resp.content))
+                                im_resized = im.resize((320, 320), Image.Resampling.LANCZOS)
+                                target_file.parent.mkdir(parents=True, exist_ok=True)
+                                im_resized.save(str(target_file), "PNG")
+                        except Exception:
+                            pass
 
                 m = re.search(r'([\d.,KMkm]+)\s+Followers,\s+([\d.,KMkm]+)\s+Following,\s+([\d.,KMkm]+)\s+Posts', desc)
                 if m:
@@ -289,6 +343,8 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
                         "chenzheyuanisssme", "mkbhd", "cristiano", "leomessi", "nike", "natgeo"
                     }
 
+                    avatar_source = og_image or f"/api/creators/{clean_handle}/avatar"
+
                     data = {
                         "handle": clean_handle,
                         "name": name,
@@ -303,7 +359,9 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
                         "engagementRate": eng_rate,
                         "engagementDelta": "+0.35 (+5.4%)",
                         "isPositiveEngagement": True,
-                        "avatar": f"/avatars/{clean_handle}.png",
+                        "avatar": avatar_source,
+                        "avatar_url": og_image,
+                        "avatar_proxy": f"/api/creators/{clean_handle}/avatar",
                         "is_private": is_private,
                         "is_verified": is_verified,
                         "updatedAt": now,
@@ -326,7 +384,8 @@ async def get_live_creator_stats(handle: str):
     return {
         "handle": clean,
         "name": clean,
-        "avatar": f"/avatars/{clean}.png",
+        "avatar": f"/api/creators/{clean}/avatar",
+        "avatar_proxy": f"/api/creators/{clean}/avatar",
         "fallback": True,
     }
 

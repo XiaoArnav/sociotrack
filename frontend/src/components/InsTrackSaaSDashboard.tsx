@@ -516,6 +516,12 @@ export function InsTrackSaaSDashboard({
                               <img
                                 src={acc.avatar}
                                 alt={acc.name}
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  const clean = acc.handle.replace(/^@/, "").toLowerCase().trim();
+                                  target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}&backgroundColor=4f46e5,06b6d4,10b981&textColor=ffffff`;
+                                }}
                                 className="w-8 h-8 rounded-full object-cover border border-[#243048]"
                               />
                               <div>
@@ -962,6 +968,12 @@ export function InsTrackSaaSDashboard({
                               <img
                                 src={top.avatar}
                                 alt={top.name}
+                                referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  const clean = top.handle.replace(/^@/, "").toLowerCase().trim();
+                                  target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}&backgroundColor=4f46e5,06b6d4,10b981&textColor=ffffff`;
+                                }}
                                 className="w-8 h-8 rounded-full object-cover border border-[#243048]"
                               />
                               <div>
