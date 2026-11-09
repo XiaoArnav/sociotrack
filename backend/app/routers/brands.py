@@ -43,10 +43,17 @@ router = APIRouter(prefix="/brands", tags=["Brands"])
     summary="List all brands configured for the authenticated user/workspace",
 )
 async def list_brands(
+    workspace_id: Optional[str] = None,
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    accessible_ids = await get_accessible_brand_ids(db, current_user)
+    if workspace_id:
+        from app.routers.workspaces import check_user_access
+        await check_user_access(db, workspace_id, current_user.id, min_role="viewer")
+        accessible_ids = await get_accessible_brand_ids(db, current_user, workspace_id=workspace_id)
+    else:
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+
     if accessible_ids is not None:
         stmt = select(Brand).where(Brand.id.in_(accessible_ids)).order_by(Brand.created_at.desc())
     else:
@@ -77,8 +84,13 @@ async def create_brand(
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if payload.workspace_id:
+        from app.routers.workspaces import check_user_access
+        await check_user_access(db, payload.workspace_id, current_user.id, min_role="editor")
+
     brand = Brand(
         user_id=current_user.id,
+        workspace_id=payload.workspace_id,
         name=payload.name,
         voice_description=payload.voice_description,
         target_audience=payload.target_audience,
@@ -86,6 +98,19 @@ async def create_brand(
     db.add(brand)
     await db.flush()
     await db.refresh(brand)
+
+    if payload.workspace_id:
+        from app.services.workspace_service import record_audit_log
+        await record_audit_log(
+            db,
+            workspace_id=payload.workspace_id,
+            user_id=current_user.id,
+            action="brand.created",
+            resource_type="brand",
+            resource_id=brand.id,
+            metadata={"name": brand.name},
+        )
+
     return BrandResponse.model_validate(brand)
 
 

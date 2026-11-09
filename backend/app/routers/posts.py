@@ -248,12 +248,15 @@ from sqlalchemy.orm import selectinload
 async def publish_post(
     post_id: str,
     payload: PublishRequest,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Idempotent publishing seam.
     Guarantees that network retries or repeated submissions never create duplicate platform posts.
+    Enforces editor role authorization.
     """
+    post, _ = await verify_post_access(db, post_id, current_user, min_role="editor")
     res = await db.execute(
         select(Post).where(Post.id == post_id).options(selectinload(Post.analytics))
     )
@@ -340,12 +343,14 @@ async def publish_post(
 )
 async def get_post_performance(
     post_id: str,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Returns actual engagement metrics for a published post.
     Enforces scientific attribution hygiene: never claims AI causality without controlled experimental conditions.
     """
+    post, _ = await verify_post_access(db, post_id, current_user, min_role="viewer")
     res = await db.execute(
         select(Post)
         .where(Post.id == post_id)

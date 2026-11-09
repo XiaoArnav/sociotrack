@@ -21,7 +21,7 @@ from app.schemas.calendar import (
 )
 from app.schemas.auth import UserResponse
 from app.routers.auth import get_current_user, is_admin_user
-from app.services.authorization_service import verify_brand_access, get_accessible_brand_ids
+from app.services.authorization_service import verify_brand_access, check_brand_access, get_accessible_brand_ids
 from app.services.brand_intelligence import build_brand_intelligence_profile
 
 router = APIRouter(prefix="/calendar", tags=["Calendar"])
@@ -158,6 +158,19 @@ async def approve_calendar_slot(
         elif is_admin_user(current_user) or current_user.is_demo:
             b_res = await db.execute(select(Brand).limit(1))
             brand = b_res.scalar_one_or_none()
+
+    if brand:
+        has_edit_role = await check_brand_access(db, brand, current_user, min_role="editor")
+        if not has_edit_role:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: Approving calendar slots and scheduling drafts requires editor role.",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No accessible brand found to approve calendar slot.",
+        )
 
     scheduled_time = datetime.now(timezone.utc) + timedelta(days=1)
     if payload.custom_scheduled_time:

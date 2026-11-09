@@ -46,13 +46,16 @@ async def check_brand_access(
     if is_admin_user(current_user):
         return True
 
-    if brand.user_id and brand.user_id == current_user.id:
-        return True
-
+    # If brand belongs to a workspace, workspace tenant isolation and RBAC strictly govern access
     if brand.workspace_id:
         role = await get_member_role(db, brand.workspace_id, current_user.id)
         if role and require_role(role, min_role):
             return True
+        return False
+
+    # Standalone personal brand (no workspace attached)
+    if brand.user_id and brand.user_id == current_user.id:
+        return True
 
     if not brand.user_id and not brand.workspace_id:
         # Legacy/demo unassigned record: allow demo user or claim for caller
@@ -167,16 +170,25 @@ async def verify_experiment_access(
 async def get_accessible_brand_ids(
     db: AsyncSession,
     current_user: UserResponse,
+    workspace_id: Optional[str] = None,
 ) -> Optional[List[str]]:
     """
     Returns list of brand IDs accessible to current_user.
-    Returns None if user is admin (unrestricted access).
+    Returns None if user is admin (unrestricted access) and no workspace filter is specified.
     """
+    if workspace_id:
+        role = await get_member_role(db, workspace_id, current_user.id)
+        if not role and not is_admin_user(current_user):
+            return []
+        stmt = select(Brand.id).where(Brand.workspace_id == workspace_id)
+        res = await db.execute(stmt)
+        return list(res.scalars().all())
+
     if is_admin_user(current_user):
         return None
 
     workspace_ids = await get_user_workspace_ids(db, current_user.id)
-    conditions = [Brand.user_id == current_user.id]
+    conditions = [and_(Brand.user_id == current_user.id, Brand.workspace_id.is_(None))]
     if workspace_ids:
         conditions.append(Brand.workspace_id.in_(workspace_ids))
     if current_user.is_demo:

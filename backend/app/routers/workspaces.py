@@ -9,7 +9,7 @@ from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, delete
+from sqlalchemy import select, and_, or_, delete, func
 from app.database import get_db
 from app.models.user import User
 from app.models.workspace import (
@@ -20,13 +20,14 @@ from app.models.workspace import (
     AuditLog,
 )
 from app.models.brand import Brand
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, is_admin_user
 from app.services.workspace_service import (
     get_member_role,
     require_role,
     record_audit_log,
     issue_api_key,
     verify_api_key,
+    hash_secret,
     ROLE_LEVELS,
 )
 
@@ -47,8 +48,12 @@ class WorkspaceUpdate(BaseModel):
     slug: Optional[str] = None
 
 
+class WorkspaceOwnershipTransfer(BaseModel):
+    new_owner_id: str = Field(..., description="User ID of the existing workspace member to become the new owner")
+
+
 class InviteCreate(BaseModel):
-    email: str
+    email: str = Field(..., min_length=3, max_length=255)
     role: str = Field("editor", pattern="^(admin|editor|viewer)$")
 
 
@@ -268,6 +273,140 @@ async def update_workspace(
     return {"message": "Workspace updated", "workspace": {"id": ws.id, "name": ws.name, "slug": ws.slug}}
 
 
+@router.delete("/{workspace_id}")
+async def delete_workspace(
+    workspace_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Deletes a workspace tenant. Strictly restricted to the workspace owner (or platform admin).
+    Unlinks contained brands cleanly and cascades members and invitations.
+    """
+    stmt = select(Workspace).where(Workspace.id == workspace_id)
+    res = await db.execute(stmt)
+    ws = res.scalars().first()
+    if not ws:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    if ws.owner_id != current_user.id and not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Only the workspace owner can delete the workspace.",
+        )
+
+    # 1. Safely unlink all brands (preserve brands as personal/unassigned rather than deleting them)
+    b_stmt = select(Brand).where(Brand.workspace_id == workspace_id)
+    b_res = await db.execute(b_stmt)
+    for brand in b_res.scalars().all():
+        brand.workspace_id = None
+
+    # 2. Delete all members, invites, and api keys
+    await db.execute(delete(WorkspaceMember).where(WorkspaceMember.workspace_id == workspace_id))
+    await db.execute(delete(WorkspaceInvite).where(WorkspaceInvite.workspace_id == workspace_id))
+    await db.execute(delete(ApiKey).where(ApiKey.workspace_id == workspace_id))
+
+    # 3. Record audit log before deleting workspace
+    await record_audit_log(
+        db,
+        workspace_id=workspace_id,
+        user_id=current_user.id,
+        action="workspace.deleted",
+        resource_type="workspace",
+        resource_id=workspace_id,
+        metadata={"name": ws.name},
+    )
+
+    # 4. Delete the workspace
+    await db.delete(ws)
+    await db.commit()
+
+    return {"message": "Workspace deleted successfully."}
+
+
+@router.post("/{workspace_id}/transfer-ownership")
+async def transfer_workspace_ownership(
+    workspace_id: str,
+    payload: WorkspaceOwnershipTransfer,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Transfers workspace ownership to an existing member.
+    Strictly restricted to the current workspace owner.
+    Demotes the previous owner to 'admin'.
+    """
+    stmt = select(Workspace).where(Workspace.id == workspace_id)
+    res = await db.execute(stmt)
+    ws = res.scalars().first()
+    if not ws:
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    if ws.owner_id != current_user.id and not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Only the workspace owner can transfer workspace ownership.",
+        )
+
+    if payload.new_owner_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You are already the owner of this workspace.",
+        )
+
+    # Verify target user is an existing member of this workspace
+    m_stmt = select(WorkspaceMember).where(
+        and_(
+            WorkspaceMember.workspace_id == workspace_id,
+            WorkspaceMember.user_id == payload.new_owner_id,
+        )
+    )
+    m_res = await db.execute(m_stmt)
+    new_owner_member = m_res.scalars().first()
+    if not new_owner_member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target user must be an active member of this workspace to become the owner.",
+        )
+
+    # Demote old owner to admin
+    old_owner_stmt = select(WorkspaceMember).where(
+        and_(
+            WorkspaceMember.workspace_id == workspace_id,
+            WorkspaceMember.user_id == ws.owner_id,
+        )
+    )
+    old_owner_res = await db.execute(old_owner_stmt)
+    old_owner_member = old_owner_res.scalars().first()
+    if old_owner_member:
+        old_owner_member.role = "admin"
+
+    # Promote new owner
+    new_owner_member.role = "owner"
+    ws.owner_id = payload.new_owner_id
+
+    await db.commit()
+
+    await record_audit_log(
+        db,
+        workspace_id=workspace_id,
+        user_id=current_user.id,
+        action="workspace.ownership_transferred",
+        resource_type="workspace",
+        resource_id=workspace_id,
+        metadata={
+            "previous_owner_id": current_user.id,
+            "new_owner_id": payload.new_owner_id,
+        },
+    )
+
+    return {
+        "message": "Workspace ownership transferred successfully.",
+        "workspace_id": workspace_id,
+        "new_owner_id": payload.new_owner_id,
+    }
+
+
 # ---------------------------------------------------------
 # Multi-Brand Association & Switching
 # ---------------------------------------------------------
@@ -279,8 +418,12 @@ async def link_brand_to_workspace(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Associates an existing brand to a workspace (requires editor role or above)."""
-    await check_user_access(db, workspace_id, current_user.id, min_role="editor")
+    """
+    Associates a brand to a workspace or transfers a brand across workspaces.
+    - If brand is not assigned to any workspace: requires brand ownership (or platform admin) and editor role in target workspace.
+    - If brand already belongs to another workspace (cross-workspace transfer): strictly requires admin or owner role in BOTH the source and destination workspaces.
+    """
+    dest_role = await check_user_access(db, workspace_id, current_user.id, min_role="editor")
 
     b_stmt = select(Brand).where(Brand.id == brand_id)
     b_res = await db.execute(b_stmt)
@@ -288,10 +431,42 @@ async def link_brand_to_workspace(
     if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
 
-    # Security check: User must own the brand or have admin rights to link it to a workspace
-    if brand.user_id and brand.user_id != current_user.id:
-        from app.routers.auth import is_admin_user
+    if brand.workspace_id == workspace_id:
+        return {
+            "message": f"Brand '{brand.name}' is already linked to this workspace.",
+            "brand_id": brand.id,
+            "workspace_id": workspace_id,
+        }
+
+    # Cross-workspace brand transfer scenario
+    if brand.workspace_id and brand.workspace_id != workspace_id:
+        source_ws_id = brand.workspace_id
+        source_role = await get_member_role(db, source_ws_id, current_user.id)
         if not is_admin_user(current_user):
+            if not source_role or not require_role(source_role, "admin"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Forbidden: Transferring a brand from another workspace requires admin role in the source workspace.",
+                )
+            if not require_role(dest_role, "admin"):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Forbidden: Transferring a brand between workspaces requires admin role in the destination workspace.",
+                )
+
+        # Audit log in source workspace
+        await record_audit_log(
+            db,
+            workspace_id=source_ws_id,
+            user_id=current_user.id,
+            action="brand.transferred_out",
+            resource_type="brand",
+            resource_id=brand.id,
+            metadata={"destination_workspace_id": workspace_id, "brand_name": brand.name},
+        )
+    else:
+        # Personal brand linking scenario: caller must own the brand
+        if brand.user_id and brand.user_id != current_user.id and not is_admin_user(current_user):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Forbidden: You do not have ownership rights to link this brand to a workspace.",
@@ -313,6 +488,51 @@ async def link_brand_to_workspace(
     return {"message": f"Brand '{brand.name}' linked to workspace.", "brand_id": brand.id, "workspace_id": workspace_id}
 
 
+@router.post("/{workspace_id}/brands/{brand_id}/unlink")
+@router.delete("/{workspace_id}/brands/{brand_id}")
+async def unlink_brand_from_workspace(
+    workspace_id: str,
+    brand_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Unlinks a brand from the workspace. Requires admin or owner role in the workspace.
+    """
+    await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+
+    b_stmt = select(Brand).where(Brand.id == brand_id)
+    b_res = await db.execute(b_stmt)
+    brand = b_res.scalars().first()
+    if not brand:
+        raise HTTPException(status_code=404, detail="Brand not found")
+
+    if brand.workspace_id != workspace_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Brand does not belong to this workspace.",
+        )
+
+    brand.workspace_id = None
+    await db.commit()
+
+    await record_audit_log(
+        db,
+        workspace_id=workspace_id,
+        user_id=current_user.id,
+        action="brand.unlinked",
+        resource_type="brand",
+        resource_id=brand.id,
+        metadata={"brand_name": brand.name},
+    )
+
+    return {
+        "message": f"Brand '{brand.name}' unlinked from workspace.",
+        "brand_id": brand.id,
+        "workspace_id": workspace_id,
+    }
+
+
 # ---------------------------------------------------------
 # Team Member & Invitation Workflows
 # ---------------------------------------------------------
@@ -324,17 +544,56 @@ async def invite_team_member(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Invites a user by email to join the workspace (requires admin role or above)."""
-    await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+    """
+    Invites a user by email to join the workspace (requires admin role or above).
+    - Cannot invite with role 'owner'.
+    - Only workspace owner (or platform admin) can invite an 'admin'.
+    - Rejects invite if target user is already an active member of this workspace.
+    - Stores SHA-256 hash of token at rest for credential safety.
+    """
+    caller_role = await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+
+    if payload.role == "owner":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot invite members with owner role. Use ownership transfer instead.",
+        )
+
+    if payload.role == "admin" and caller_role != "owner" and not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only workspace owners can invite new admins.",
+        )
+
+    norm_email = payload.email.lower().strip()
+
+    # Reject if user is already an active member of this workspace
+    u_stmt = select(User).where(User.email == norm_email)
+    u_res = await db.execute(u_stmt)
+    target_user = u_res.scalars().first()
+    if target_user:
+        m_stmt = select(WorkspaceMember).where(
+            and_(
+                WorkspaceMember.workspace_id == workspace_id,
+                WorkspaceMember.user_id == target_user.id,
+            )
+        )
+        m_res = await db.execute(m_stmt)
+        if m_res.scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"User '{norm_email}' is already an active member of this workspace.",
+            )
 
     token = secrets.token_urlsafe(32)
+    token_hashed = hash_secret(token)
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)
 
     invite = WorkspaceInvite(
         workspace_id=workspace_id,
-        email=payload.email.lower().strip(),
+        email=norm_email,
         role=payload.role,
-        token=token,
+        token=token_hashed,
         invited_by=current_user.id,
         expires_at=expires_at,
     )
@@ -355,10 +614,49 @@ async def invite_team_member(
     return {
         "message": f"Invitation generated for {invite.email}.",
         "invite_id": invite.id,
-        "token": invite.token,
+        "token": token,  # Plaintext token returned only once to caller
         "role": invite.role,
         "expires_at": invite.expires_at.isoformat(),
     }
+
+
+@router.delete("/{workspace_id}/invites/{invite_id}")
+async def revoke_workspace_invite(
+    workspace_id: str,
+    invite_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Revokes an active or pending workspace invitation. Requires admin or owner role.
+    """
+    await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+
+    stmt = select(WorkspaceInvite).where(
+        and_(
+            WorkspaceInvite.id == invite_id,
+            WorkspaceInvite.workspace_id == workspace_id,
+        )
+    )
+    res = await db.execute(stmt)
+    invite = res.scalars().first()
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invitation not found.")
+
+    invite.status = "revoked"
+    await db.commit()
+
+    await record_audit_log(
+        db,
+        workspace_id=workspace_id,
+        user_id=current_user.id,
+        action="member.invite_revoked",
+        resource_type="workspace_invite",
+        resource_id=invite.id,
+        metadata={"email": invite.email},
+    )
+
+    return {"message": f"Invitation for '{invite.email}' revoked successfully."}
 
 
 @router.post("/invites/{token}/accept")
@@ -368,10 +666,11 @@ async def accept_workspace_invite(
     db: AsyncSession = Depends(get_db),
 ):
     """Accepts a pending invitation token and adds the user to the workspace."""
+    token_hash = hash_secret(token)
     stmt = select(WorkspaceInvite).where(
-        and_(
+        or_(
+            WorkspaceInvite.token == token_hash,
             WorkspaceInvite.token == token,
-            WorkspaceInvite.status == "pending",
         )
     )
     res = await db.execute(stmt)
@@ -379,6 +678,12 @@ async def accept_workspace_invite(
 
     if not invite:
         raise HTTPException(status_code=404, detail="Invitation not found or already consumed.")
+
+    if invite.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invitation is no longer valid (status: {invite.status}).",
+        )
 
     exp_at = invite.expires_at
     if exp_at.tzinfo is None:
@@ -389,7 +694,7 @@ async def accept_workspace_invite(
         raise HTTPException(status_code=400, detail="Invitation has expired.")
 
     # Security check: verify that accepting user's email matches the invited email
-    if invite.email.lower() != current_user.email.lower():
+    if invite.email.lower().strip() != current_user.email.lower().strip():
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Forbidden: This invitation was issued for '{invite.email}', but you are signed in as '{current_user.email}'.",
@@ -442,8 +747,8 @@ async def remove_workspace_member(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Removes a user from the workspace (cannot remove workspace owner)."""
-    current_role = await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+    """Removes a user from the workspace (cannot remove workspace owner; only owner can remove admins)."""
+    caller_role = await check_user_access(db, workspace_id, current_user.id, min_role="admin")
 
     ws_stmt = select(Workspace).where(Workspace.id == workspace_id)
     ws_res = await db.execute(ws_stmt)
@@ -461,6 +766,12 @@ async def remove_workspace_member(
     member = m_res.scalars().first()
     if not member:
         raise HTTPException(status_code=404, detail="Member not found.")
+
+    if member.role == "admin" and caller_role != "owner" and not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Only the workspace owner can remove an administrator.",
+        )
 
     await db.delete(member)
     await db.commit()
@@ -485,8 +796,20 @@ async def update_member_role(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Updates an existing member's RBAC role (requires owner or admin)."""
-    await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+    """Updates an existing member's RBAC role (requires owner or admin; only owner can modify/promote admins)."""
+    caller_role = await check_user_access(db, workspace_id, current_user.id, min_role="admin")
+
+    if user_id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot modify your own workspace role. Self-promotion or demotion is blocked.",
+        )
+
+    if payload.role == "owner":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot set role to owner via role update. Use ownership transfer instead.",
+        )
 
     ws_stmt = select(Workspace).where(Workspace.id == workspace_id)
     ws_res = await db.execute(ws_stmt)
@@ -504,6 +827,13 @@ async def update_member_role(
     member = m_res.scalars().first()
     if not member:
         raise HTTPException(status_code=404, detail="Member not found.")
+
+    # Only owner can promote to admin or change an existing admin's role
+    if (member.role == "admin" or payload.role == "admin") and caller_role != "owner" and not is_admin_user(current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Forbidden: Only workspace owners can promote members to admin or modify an administrator.",
+        )
 
     old_role = member.role
     member.role = payload.role
