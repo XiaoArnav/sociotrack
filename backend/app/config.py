@@ -80,13 +80,19 @@ class Settings(BaseSettings):
     HINDSIGHT_API_KEY: str = ""
     HINDSIGHT_BANK_PREFIX: str = "sociotrack"
 
-    # Model Keys (Groq / OpenAI / Gemini)
+    # Model Keys & Provider Settings (Gemini / Groq / OpenAI)
+    AI_PROVIDER: str = "auto"  # 'auto', 'gemini', 'groq', 'openai'
     GROQ_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
     GOOGLE_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    DEFAULT_MODEL: str = "gemini-3-flash-preview"
+    DEFAULT_MODEL: str = "gemini-1.5-flash"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    AI_TIMEOUT_SECONDS: float = 30.0
+    AI_MAX_RETRIES: int = 2
 
     # Meta / Instagram Graph API Webhook & Crawler Settings
     META_VERIFY_TOKEN: str = "sociotrack_meta_verify_token_2026"

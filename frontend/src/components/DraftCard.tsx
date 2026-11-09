@@ -195,6 +195,22 @@ export function DraftCard({
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-[#1E2638] text-slate-600 dark:text-slate-300 font-mono font-medium">
             Style: {draft.hookStyle}
           </span>
+
+          {draft.isAiGenerated ? (
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 font-mono font-semibold"
+              title={`Generated with real foundation model (${draft.model || draft.provider}) in ${draft.latencyMs || 0}ms`}
+            >
+              AI: {draft.model || draft.provider}
+            </span>
+          ) : (
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1E2638] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-mono font-medium"
+              title={draft.fallbackReason || "Deterministic Rule Engine (No API key)"}
+            >
+              Offline Rule Engine
+            </span>
+          )}
         </div>
 
         <div className="flex items-center space-x-3">
@@ -300,6 +316,36 @@ export function DraftCard({
                 <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
                   {draft.supportingEvidence}
                 </p>
+              </div>
+            )}
+            {draft.unsupportedClaims && draft.unsupportedClaims.length > 0 && (
+              <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+                <span className="font-bold">⚠️ Unverified Claims Detected:</span>
+                <ul className="list-disc list-inside mt-0.5 space-y-0.5">
+                  {draft.unsupportedClaims.map((claim, idx) => (
+                    <li key={idx}>{claim}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {draft.improvementSuggestions && draft.improvementSuggestions.length > 0 && (
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">💡 Improvement Suggestions:</span>
+                <ul className="list-disc list-inside mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                  {draft.improvementSuggestions.map((sug, idx) => (
+                    <li key={idx}>{sug}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {draft.assumptionsMade && draft.assumptionsMade.length > 0 && (
+              <div>
+                <span className="font-bold text-slate-500">ℹ️ Model Assumptions:</span>
+                <ul className="list-disc list-inside mt-0.5 text-slate-400 space-y-0.5">
+                  {draft.assumptionsMade.map((asm, idx) => (
+                    <li key={idx}>{asm}</li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
