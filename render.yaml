@@ -12,3 +12,16 @@ services:
         value: 3.11.8
       - key: PYTHONPATH
         value: .:backend
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: ENABLE_DEMO_MODE
+        value: "false"
+      # Secure secrets should be added as sync: false in Render dashboard
+      - key: SECRET_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        value: '["https://frontend-taupe-zeta-84.vercel.app","https://sociotrack.vercel.app"]'

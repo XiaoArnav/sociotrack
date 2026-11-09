@@ -158,21 +158,19 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
     }
   };
 
-  // Handler for Forgot Password
+  // Handler for Forgot Password (Honest Limitation Messaging)
   const handleForgotPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     if (!email || !email.includes("@")) {
-      setErrorMessage("Please enter a valid email address to receive reset instructions.");
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setResetSent(true);
-    }, 800);
+    setErrorMessage(
+      "Automated email password reset is currently unavailable because transactional email delivery is not configured. Please contact your workspace administrator to reset your account password, or sign in with your credentials."
+    );
   };
 
   // Dedicated Explicit Demo Sandbox Handler

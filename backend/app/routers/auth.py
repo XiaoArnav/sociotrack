@@ -1,29 +1,41 @@
 """
 Authentication Router for SocioTrack.
-Provides real bcrypt-hashed registration, JWT session validation, and separate demo mode endpoints.
+Provides real bcrypt-hashed registration, JWT session validation, rate limiting,
+token revocation, and production-hardened guest sandbox controls.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from datetime import datetime, timezone
+from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional
 
 from app.database import get_db
 from app.models.user import User
+from app.config import settings
 from app.schemas.auth import (
     UserRegisterRequest,
     UserLoginRequest,
+    UserChangePasswordRequest,
     AuthTokenResponse,
     UserResponse,
 )
 from app.core.security import (
     hash_password,
     verify_password,
+    validate_password_strength,
     create_access_token,
     decode_access_token,
 )
+from app.core.token_blocklist import token_blocklist
+from app.core.rate_limiter import auth_rate_limiter, get_client_ip
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+
+def _is_production_environment() -> bool:
+    env_norm = (settings.ENVIRONMENT or settings.APP_ENV or "").lower().strip()
+    return env_norm in ("production", "prod")
 
 
 @router.post(
@@ -34,10 +46,24 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 )
 async def register(
     payload: UserRegisterRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """Registers a new account with bcrypt password hashing and returns a signed JWT session."""
+    """
+    Registers a new account with bcrypt password hashing and returns a signed JWT session.
+    Enforces password complexity, email normalization, and rate limiting.
+    """
+    client_ip = get_client_ip(request)
+    auth_rate_limiter.check_rate_limit(
+        key=f"register:{client_ip}",
+        max_attempts=settings.AUTH_RATE_LIMIT_REGISTER_MAX,
+        window_seconds=settings.AUTH_RATE_LIMIT_REGISTER_WINDOW_SECONDS,
+        error_message="Too many registration attempts. Please wait before creating another account.",
+    )
+
     clean_email = payload.email.lower().strip()
+    validate_password_strength(payload.password)
+
     result = await db.execute(select(User).where(User.email == clean_email))
     existing_user = result.scalar_one_or_none()
 
@@ -83,31 +109,49 @@ async def register(
 )
 async def login(
     payload: UserLoginRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
-    """Authenticates credentials against stored bcrypt hash and returns a signed JWT session."""
+    """
+    Authenticates credentials against stored bcrypt hash and returns a signed JWT session.
+    Protects against brute-force attacks via sliding window rate limiting and timing-neutral error messages.
+    """
     clean_email = payload.email.lower().strip()
+    client_ip = get_client_ip(request)
+    rate_key = f"login:{client_ip}:{clean_email}"
+
+    auth_rate_limiter.check_rate_limit(
+        key=rate_key,
+        max_attempts=settings.AUTH_RATE_LIMIT_LOGIN_MAX,
+        window_seconds=settings.AUTH_RATE_LIMIT_LOGIN_WINDOW_SECONDS,
+        error_message="Too many failed login attempts. Please wait before trying again.",
+    )
+
     result = await db.execute(select(User).where(User.email == clean_email))
     user = result.scalar_one_or_none()
 
-    # Pre-seed default sandbox account if signing in with demo credentials
-    if not user and clean_email == "alex.chen@enterprise.com" and payload.password == "DemoPass2026!":
-        user = User(
-            email=clean_email,
-            hashed_password=hash_password("DemoPass2026!"),
-            name="Alex Chen",
-            role="Principal Content Architect",
-            is_demo=False,
-        )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    # Pre-seed sandbox account only in non-production when demo mode is enabled
+    if not user and not _is_production_environment() and settings.ENABLE_DEMO_MODE:
+        if clean_email == "alex.chen@enterprise.com" and payload.password == "DemoPass2026!":
+            user = User(
+                email=clean_email,
+                hashed_password=hash_password("DemoPass2026!"),
+                name="Alex Chen",
+                role="Principal Content Architect",
+                is_demo=False,
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
 
     if not user or not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password. Please check your credentials.",
         )
+
+    # Reset rate limit on successful credentials verification
+    auth_rate_limiter.reset(rate_key)
 
     token = create_access_token(
         data={"sub": user.id, "email": user.email, "is_demo": user.is_demo}
@@ -123,6 +167,91 @@ async def login(
             is_demo=user.is_demo,
         ),
     )
+
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_200_OK,
+    summary="Invalidate active user session token",
+)
+async def logout(
+    authorization: Optional[str] = Header(None),
+    current_user: UserResponse = Depends(lambda: None),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Explicitly logs out the user and revokes the active JWT token via token blocklist.
+    """
+    if authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+        payload = decode_access_token(token, verify_revocation=False)
+        if payload:
+            jti = payload.get("jti")
+            exp_raw = payload.get("exp")
+            if jti and exp_raw:
+                exp_dt = datetime.fromtimestamp(exp_raw, tz=timezone.utc)
+                token_blocklist.revoke_token(jti, exp_dt)
+
+    return {"message": "Successfully logged out. Session invalidated."}
+
+
+@router.post(
+    "/change-password",
+    status_code=status.HTTP_200_OK,
+    summary="Change authenticated user password and invalidate existing sessions",
+)
+async def change_password(
+    payload: UserChangePasswordRequest,
+    authorization: Optional[str] = Header(None),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Changes the authenticated user's password after verifying the old password.
+    Globally invalidates all previous sessions for account security.
+    """
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required to change password.",
+        )
+
+    user = await get_current_user(authorization=authorization, db=db)
+    validate_password_strength(payload.new_password)
+
+    result = await db.execute(select(User).where(User.id == user.id))
+    db_user = result.scalar_one_or_none()
+
+    if not db_user or not verify_password(payload.old_password, db_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password verification failed.",
+        )
+
+    db_user.hashed_password = hash_password(payload.new_password)
+    await db.commit()
+
+    # Revoke current token
+    old_token = authorization.split(" ")[1]
+    old_payload = decode_access_token(old_token, verify_revocation=False)
+    if old_payload:
+        old_jti = old_payload.get("jti")
+        old_exp = old_payload.get("exp")
+        if old_jti and old_exp:
+            token_blocklist.revoke_token(old_jti, datetime.fromtimestamp(old_exp, tz=timezone.utc))
+
+    # Invalidate all prior session tokens for this user
+    token_blocklist.revoke_all_user_tokens(db_user.id)
+
+    # Issue fresh token for current session
+    new_token = create_access_token(
+        data={"sub": db_user.id, "email": db_user.email, "is_demo": db_user.is_demo}
+    )
+
+    return {
+        "message": "Password changed successfully. All previous sessions have been invalidated.",
+        "access_token": new_token,
+        "token_type": "bearer",
+    }
 
 
 @router.get(
@@ -152,6 +281,11 @@ async def get_current_user(
 
     # Check for demo sandbox token
     if payload.get("is_demo"):
+        if _is_production_environment() and not settings.ENABLE_DEMO_MODE:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Demo guest tokens are strictly rejected in production environments.",
+            )
         return UserResponse(
             id=payload["sub"],
             email=payload.get("email", "guest.demo@sociotrack.io"),
@@ -206,7 +340,6 @@ async def get_optional_current_user(
     """Returns authenticated user if Authorization header is provided, or None if omitted."""
     if not authorization:
         return None
-    # Strictly validate incoming header if provided
     return await get_current_user(authorization=authorization, db=db)
 
 
@@ -218,6 +351,12 @@ async def get_optional_current_user(
 )
 async def create_demo_session():
     """Returns an explicit ephemeral guest demo session without requiring credentials."""
+    if _is_production_environment() and not settings.ENABLE_DEMO_MODE:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Demo sandbox mode is disabled in production environments.",
+        )
+
     demo_id = "demo_guest_session"
     token = create_access_token(
         data={"sub": demo_id, "email": "demo.sandbox@sociotrack.io", "is_demo": True}
