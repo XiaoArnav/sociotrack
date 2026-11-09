@@ -14,6 +14,13 @@ from app.models.analytics import PostAnalytics
 from app.models.memory import AgentMemory
 from app.schemas.analytics import FeedMetricsRequest, FeedMetricsResponse
 from app.schemas.memory import AgentMemoryResponse
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user
+from app.services.authorization_service import (
+    verify_post_access,
+    verify_brand_access,
+    get_accessible_brand_ids,
+)
 from app.services.engagement import calculate_engagement_score, derive_memory_insight
 from app.services.hindsight_client import hindsight_client
 
@@ -29,6 +36,7 @@ router = APIRouter(prefix="/simulator", tags=["Simulator"])
 async def simulate_feed_metrics(
     payload: FeedMetricsRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_user),
 ):
     # 1. Resolve Metrics (flat or nested)
     if payload.metrics:
@@ -42,21 +50,33 @@ async def simulate_feed_metrics(
         replies = payload.replies if payload.replies is not None else 5
         shares = payload.shares if payload.shares is not None else 2
 
-    # 2. Fetch or create Post
+    # 2. Fetch or create Post with strict ownership check
     post = None
     if payload.post_id:
-        result = await db.execute(select(Post).where(Post.id == payload.post_id))
-        post = result.scalar_one_or_none()
-        if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with id '{payload.post_id}' not found.",
-            )
+        post, _ = await verify_post_access(db, payload.post_id, current_user, min_role="editor")
 
     if not post:
-        brand_res = await db.execute(select(Brand).limit(1))
-        brand = brand_res.scalar_one_or_none()
-        brand_id = brand.id if brand else str(uuid.uuid4())
+        brand_id = None
+        if payload.brand_name:
+            brand_res = await db.execute(select(Brand).where(Brand.name.ilike(payload.brand_name)))
+            found_brand = brand_res.scalar_one_or_none()
+            if found_brand:
+                await verify_brand_access(db, found_brand.id, current_user, min_role="editor")
+                brand_id = found_brand.id
+
+        if not brand_id:
+            accessible_ids = await get_accessible_brand_ids(db, current_user)
+            if accessible_ids:
+                brand_id = accessible_ids[0]
+            else:
+                brand = Brand(
+                    id=str(uuid.uuid4()),
+                    name="Default Brand",
+                    user_id=current_user.id,
+                )
+                db.add(brand)
+                await db.flush()
+                brand_id = brand.id
 
         post = Post(
             id=str(uuid.uuid4()),

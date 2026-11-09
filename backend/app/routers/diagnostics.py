@@ -11,6 +11,9 @@ from app.database import get_db
 from app.models.brand import Brand
 from app.models.post import Post
 from app.models.analytics import PostAnalytics
+from app.routers.auth import get_optional_current_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import sanitize_handle, verify_brand_access
 try:
     from app.core.schemas import RawPost, CreatorAuditReport, ContentPredictionReport
     from app.core.diagnostics_agent import run_creator_audit
@@ -43,6 +46,7 @@ async def post_creator_audit(
     creator_handle: str = "creator",
     posts: Optional[List[RawPost]] = None,
 ):
+    clean_handle = sanitize_handle(creator_handle) if creator_handle else "creator"
     if not posts:
         # Default high-signal test dataset
         posts = [
@@ -80,7 +84,7 @@ async def post_creator_audit(
                 posted_hour_utc=15,
             ),
         ]
-    return run_creator_audit(creator_handle=creator_handle, posts=posts)
+    return run_creator_audit(creator_handle=clean_handle, posts=posts)
 
 
 @router.get(
@@ -92,13 +96,26 @@ async def post_creator_audit(
 async def get_creator_audit(
     brand_name: str = "DevRelay",
     db: AsyncSession = Depends(get_db),
+    current_user: Optional[UserResponse] = Depends(get_optional_current_user),
 ):
-    result = await db.execute(
-        select(Post, PostAnalytics)
-        .join(PostAnalytics, Post.id == PostAnalytics.post_id, isouter=True)
-        .limit(10)
-    )
-    rows = result.all()
+    clean_brand = sanitize_handle(brand_name) if brand_name else "DevRelay"
+    brand_res = await db.execute(select(Brand).where(Brand.name.ilike(clean_brand)))
+    brand = brand_res.scalar_one_or_none()
+
+    if brand:
+        if brand.user_id or brand.workspace_id:
+            await verify_brand_access(db, brand.id, current_user, min_role="viewer")
+
+        result = await db.execute(
+            select(Post, PostAnalytics)
+            .join(PostAnalytics, Post.id == PostAnalytics.post_id, isouter=True)
+            .where(Post.brand_id == brand.id)
+            .limit(10)
+        )
+        rows = result.all()
+    else:
+        rows = []
+
     raw_posts = []
     for post, analytics in rows:
         impressions = analytics.impressions if analytics else 10000
@@ -119,9 +136,10 @@ async def get_creator_audit(
                 posted_hour_utc=14,
             )
         )
+    creator_display_name = brand.name if brand else clean_brand
     if not raw_posts:
-        return await post_creator_audit(creator_handle=brand_name)
-    return run_creator_audit(creator_handle=brand_name, posts=raw_posts)
+        return await post_creator_audit(creator_handle=creator_display_name)
+    return run_creator_audit(creator_handle=creator_display_name, posts=raw_posts)
 
 
 @router.post(
@@ -136,16 +154,17 @@ async def post_predict_content(body: PredictContentRequest):
     RapidAPI, public web probe, or verified posts), calculates algorithmic ratios,
     and runs Gemini 3.8/3.0 Flash to predict winning content.
     """
+    clean_handle = sanitize_handle(body.creator_handle)
     if body.posts and len(body.posts) > 0:
         return await predict_winning_content(
-            creator_handle=body.creator_handle,
+            creator_handle=clean_handle,
             posts=body.posts,
             niche=body.niche_or_topic,
             data_source="creator_verified_posts",
         )
 
     crawl_result = await fetch_creator_posts(
-        creator_handle=body.creator_handle,
+        creator_handle=clean_handle,
         max_posts=body.max_posts,
     )
     return await predict_winning_content(
@@ -168,7 +187,8 @@ async def get_instagram_predict(
     max_posts: int = 10,
 ):
     """Convenience GET endpoint to crawl any Instagram handle and predict content."""
-    crawl_result = await fetch_creator_posts(creator_handle=handle, max_posts=max_posts)
+    clean_handle = sanitize_handle(handle)
+    crawl_result = await fetch_creator_posts(creator_handle=clean_handle, max_posts=max_posts)
     return await predict_winning_content(
         creator_handle=crawl_result.handle,
         posts=crawl_result.posts,
@@ -187,5 +207,6 @@ async def get_instagram_crawled_posts(
     max_posts: int = 10,
 ):
     """Returns raw crawled Instagram profile and post data."""
-    return await fetch_creator_posts(creator_handle=handle, max_posts=max_posts)
+    clean_handle = sanitize_handle(handle)
+    return await fetch_creator_posts(creator_handle=clean_handle, max_posts=max_posts)
 

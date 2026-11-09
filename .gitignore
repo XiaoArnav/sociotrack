@@ -66,3 +66,7 @@ htmlcov/
 Thumbs.db
 .idea/
 .vscode/
+
+# Skills & Agent runtime caches
+.agents/
+skills-lock.json

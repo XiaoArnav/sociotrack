@@ -3,6 +3,7 @@ Authorization & Resource Ownership Service.
 Enforces multi-tenant data boundaries, user resource ownership, and workspace RBAC.
 Pocock-OS Deep Module: encapsulates resource access verification behind a clean public seam.
 """
+import re
 from typing import Optional, List, Tuple
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +29,7 @@ async def get_user_workspace_ids(db: AsyncSession, user_id: str) -> List[str]:
 async def check_brand_access(
     db: AsyncSession,
     brand: Brand,
-    current_user: UserResponse,
+    current_user: Optional[UserResponse],
     min_role: str = "viewer",
 ) -> bool:
     """
@@ -39,6 +40,9 @@ async def check_brand_access(
     3. Brand workspace_id is in user's memberships with at least min_role.
     4. Unassigned brand in demo mode.
     """
+    if not current_user:
+        return False
+
     if is_admin_user(current_user):
         return True
 
@@ -63,7 +67,7 @@ async def check_brand_access(
 async def verify_brand_access(
     db: AsyncSession,
     brand_id: str,
-    current_user: UserResponse,
+    current_user: Optional[UserResponse],
     min_role: str = "viewer",
 ) -> Brand:
     """
@@ -181,3 +185,20 @@ async def get_accessible_brand_ids(
     stmt = select(Brand.id).where(or_(*conditions))
     res = await db.execute(stmt)
     return list(res.scalars().all())
+
+
+def sanitize_handle(handle: str, lowercase: bool = False) -> str:
+    """Sanitizes creator handle to prevent path traversal and injection attacks."""
+    if not handle:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Creator handle cannot be empty.",
+        )
+    raw = handle.strip().lstrip("@")
+    if not raw or not re.match(r"^[a-zA-Z0-9._-]{1,50}$", raw) or ".." in raw:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid creator handle format.",
+        )
+    clean = raw.strip(".")
+    return clean.lower() if lowercase else clean
