@@ -13,12 +13,15 @@ import {
   Users2,
 } from "lucide-react";
 
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 interface Founder {
   id: string;
   name: string;
   role: string;
   specialty: string;
   avatarSeed: string;
+  image: string;
   linkedin: string;
   quote: string;
   badges: string[];
@@ -31,6 +34,7 @@ const FOUNDERS: Founder[] = [
     role: "Systems Architect & Engine Lead",
     specialty: "Fault-Tolerant Distributed Pipelines & Proxy Resilience",
     avatarSeed: "krishna",
+    image: `${BASE_PATH}/founders/krishna.jpg`,
     linkedin: "https://www.linkedin.com/in/krishna-verma-03610136a/",
     quote:
       "Building resilient agent systems means designing invariant boundaries where network timeouts and proxy blocks are treated as normal inputs, never fatal crashes.",
@@ -42,6 +46,7 @@ const FOUNDERS: Founder[] = [
     role: "Autonomous Agent & Vector Memory Lead",
     specialty: "Hindsight Persistent Memory & Algorithmic Virality",
     avatarSeed: "arnav",
+    image: `${BASE_PATH}/founders/arnav.jpg`,
     linkedin: "https://www.linkedin.com/in/arnavpatel369/",
     quote:
       "Agents should not be amnesiac chatbots. Real social intelligence requires continuous semantic recall across months of creator performance data.",
@@ -53,6 +58,7 @@ const FOUNDERS: Founder[] = [
     role: "Product Design & Intelligence Systems",
     specialty: "High-Density Analytics UX & Responsive Telemetry",
     avatarSeed: "shreya",
+    image: `${BASE_PATH}/founders/shreya.jpg`,
     linkedin: "http://linkedin.com/in/shreya-r-a88783428/",
     quote:
       "Great telemetry tools distill overwhelming firehoses of raw metrics into immediate, intuitive clarity that creators can act on in seconds.",
@@ -64,6 +70,7 @@ const FOUNDERS: Founder[] = [
     role: "Telemetry Engine & Analytics Pipelines",
     specialty: "Audience Retention Modeling & Automated Schedulers",
     avatarSeed: "keerthana",
+    image: `${BASE_PATH}/founders/keerthana.jpg`,
     linkedin: "https://www.linkedin.com/in/keerthana-m-a47537428/",
     quote:
       "True audience growth isn't simply vanity follower totals—it is measured by retention health, churn velocity, and algorithmic community loyalty.",
@@ -154,9 +161,12 @@ export function FoundersDispatch() {
                 <div className="flex items-center justify-between">
                   <div className="relative">
                     <img
-                      src={`https://api.dicebear.com/7.x/identicon/svg?seed=${founder.avatarSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9`}
+                      src={founder.image}
                       alt={founder.name}
-                      className="w-12 h-12 rounded-xl object-cover border-2 border-indigo-500/30 p-1 bg-slate-50 dark:bg-[#0E1526]"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = `https://api.dicebear.com/7.x/identicon/svg?seed=${founder.avatarSeed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+                      }}
+                      className="w-12 h-12 rounded-xl object-cover border-2 border-indigo-500/30 bg-slate-50 dark:bg-[#0E1526]"
                     />
                     {isActive && (
                       <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-[#161F30]" />
