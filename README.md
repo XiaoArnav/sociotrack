@@ -362,6 +362,8 @@ npm run build
 
 - **Krishna Verma (`stillzepta`)** — *Core Architecture, Creator Audits & SaaS Infrastructure*
 - **XiaoArnav (`XiaoArnav`)** — *Persistent Memory, Multi-Tenant Security, Genuine AI Engine & Production Hardening*
+- **Shreya R (`shreyaaa991-png`)** — *Frontend Architecture, Design System & Interactive SaaS UI*
+- **Keerthana (`keerthanakeerz077`)** — *Data Engineering, Docker Orchestration & Evaluation Datasets*
 
 ---
 
