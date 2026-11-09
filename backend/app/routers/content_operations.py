@@ -20,6 +20,8 @@ from app.models.content_operations import (
     DraftComment,
 )
 from app.routers.auth import get_current_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import verify_brand_access, verify_post_access
 from app.services.platform_integrations import PlatformSpecification, PlatformPublisher
 
 router = APIRouter(prefix="/content-ops", tags=["Advanced Content Operations"])
@@ -67,6 +69,7 @@ async def create_campaign(
     db: AsyncSession = Depends(get_db),
 ):
     """Creates a strategic marketing campaign grouping posts and targets."""
+    await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
     campaign = Campaign(
         brand_id=payload.brand_id,
         name=payload.name,
@@ -97,6 +100,7 @@ async def list_campaigns(
     db: AsyncSession = Depends(get_db),
 ):
     """Lists all active and completed campaigns for a brand."""
+    await verify_brand_access(db, brand_id, current_user, min_role="viewer")
     stmt = (
         select(Campaign)
         .where(Campaign.brand_id == brand_id)
@@ -128,6 +132,7 @@ async def create_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Stores a reusable high-performing hook, body, and CTA blueprint."""
+    await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
     tmpl = ContentTemplate(
         brand_id=payload.brand_id,
         title=payload.title,
@@ -159,6 +164,7 @@ async def list_templates(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieves reusable content blueprints for a brand."""
+    await verify_brand_access(db, brand_id, current_user, min_role="viewer")
     stmt = (
         select(ContentTemplate)
         .where(ContentTemplate.brand_id == brand_id)
@@ -198,11 +204,7 @@ async def handle_post_approval(
     - 'approve' -> approved
     - 'reject'  -> rejected
     """
-    p_stmt = select(Post).where(Post.id == post_id)
-    p_res = await db.execute(p_stmt)
-    post = p_res.scalars().first()
-    if not post:
-        raise HTTPException(status_code=404, detail="Post not found.")
+    post, _ = await verify_post_access(db, post_id, current_user, min_role="editor")
 
     a_stmt = select(DraftApproval).where(DraftApproval.post_id == post_id)
     a_res = await db.execute(a_stmt)
@@ -251,6 +253,7 @@ async def get_post_approval(
     db: AsyncSession = Depends(get_db),
 ):
     """Fetches current approval status for a post draft."""
+    await verify_post_access(db, post_id, current_user, min_role="viewer")
     stmt = select(DraftApproval).where(DraftApproval.post_id == post_id)
     res = await db.execute(stmt)
     approval = res.scalars().first()
@@ -280,6 +283,7 @@ async def add_draft_comment(
     db: AsyncSession = Depends(get_db),
 ):
     """Appends an internal review comment to a draft."""
+    await verify_post_access(db, post_id, current_user, min_role="editor")
     comment = DraftComment(
         post_id=post_id,
         user_id=current_user.id,
@@ -306,6 +310,7 @@ async def list_draft_comments(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieves asynchronous peer feedback thread for a draft."""
+    await verify_post_access(db, post_id, current_user, min_role="viewer")
     stmt = (
         select(DraftComment)
         .where(DraftComment.post_id == post_id)

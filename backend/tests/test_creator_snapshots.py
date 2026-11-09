@@ -20,10 +20,10 @@ async def test_get_creator_unfollowers_report():
 
 
 @pytest.mark.asyncio
-async def test_create_creator_snapshot():
+async def test_create_creator_snapshot(auth_headers):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        res = await ac.post("/api/creators/arnav.patel07/snapshot")
+        res = await ac.post("/api/creators/arnav.patel07/snapshot", headers=auth_headers)
         assert res.status_code == 200
         data = res.json()
         assert data["handle"] == "arnav.patel07"
@@ -50,10 +50,10 @@ async def test_get_creator_feed():
 
 
 @pytest.mark.asyncio
-async def test_trigger_snapshot_cron():
+async def test_trigger_snapshot_cron(auth_headers):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        res = await ac.post("/api/creators/cron/poll")
+        res = await ac.post("/api/creators/cron/poll", headers=auth_headers)
         assert res.status_code == 200
         data = res.json()
         assert data["status"] == "success"
@@ -61,7 +61,7 @@ async def test_trigger_snapshot_cron():
 
 
 @pytest.mark.asyncio
-async def test_snapshot_endpoints_resilience_when_crawler_returns_none():
+async def test_snapshot_endpoints_resilience_when_crawler_returns_none(auth_headers):
     from unittest.mock import patch
     transport = ASGITransport(app=app)
     with patch("app.routers.avatars.scrape_live_instagram_profile", return_value=None), \
@@ -71,10 +71,10 @@ async def test_snapshot_endpoints_resilience_when_crawler_returns_none():
             assert res_unf.status_code == 200
             assert res_unf.json()["handle"] == "resilience_user"
 
-            res_snap = await ac.post("/api/creators/resilience_user/snapshot")
+            res_snap = await ac.post("/api/creators/resilience_user/snapshot", headers=auth_headers)
             assert res_snap.status_code == 200
             assert res_snap.json()["handle"] == "resilience_user"
 
-            res_cron = await ac.post("/api/creators/cron/poll")
+            res_cron = await ac.post("/api/creators/cron/poll", headers=auth_headers)
             assert res_cron.status_code == 200
             assert res_cron.json()["snapshots_recorded"] > 0

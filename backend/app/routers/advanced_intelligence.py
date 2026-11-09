@@ -19,6 +19,8 @@ from app.models.competitor import CompetitorTracker
 from app.models.audience_pattern import AudiencePattern
 from app.models.memory import AgentMemory
 from app.routers.auth import get_current_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import verify_brand_access
 from app.services.natural_language_query import answer_brand_question
 
 router = APIRouter(prefix="/intelligence", tags=["Advanced Social Intelligence"])
@@ -71,6 +73,7 @@ async def add_or_update_competitor(
     Tracks a public competitor benchmark.
     Data is explicitly tagged as 'public_benchmark' and restricts claims to public metrics.
     """
+    await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
     clean_handle = payload.handle.lstrip("@").lower().strip()
 
     stmt = select(CompetitorTracker).where(
@@ -137,6 +140,7 @@ async def list_competitors(
     """
     Lists tracked competitors for a brand and computes competitive format frequency gaps.
     """
+    await verify_brand_access(db, brand_id, current_user, min_role="viewer")
     stmt = (
         select(CompetitorTracker)
         .where(CompetitorTracker.brand_id == brand_id)
@@ -204,6 +208,7 @@ async def record_audience_pattern(
     db: AsyncSession = Depends(get_db),
 ):
     """Stores verified audience engagement patterns derived from authorized post telemetry."""
+    await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
     pattern = AudiencePattern(
         brand_id=payload.brand_id,
         category=payload.category,
@@ -238,6 +243,7 @@ async def list_audience_patterns(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieves verified audience patterns for a brand."""
+    await verify_brand_access(db, brand_id, current_user, min_role="viewer")
     stmt = (
         select(AudiencePattern)
         .where(AudiencePattern.brand_id == brand_id)
@@ -275,6 +281,7 @@ async def explore_brand_data(
     Answers natural language queries about brand data using deterministic database queries
     and ChromaDB vector memories, explaining supporting records and uncertainty.
     """
+    await verify_brand_access(db, payload.brand_id, current_user, min_role="viewer")
     return await answer_brand_question(db, brand_id=payload.brand_id, query=payload.query)
 
 
@@ -292,9 +299,7 @@ async def get_strategic_recommendations(
     Synthesizes brand voice, historical telemetry, audience patterns, competitor gaps,
     and vector memory into actionable strategic recommendations with evidence trails.
     """
-    b_stmt = select(Brand).where(Brand.id == brand_id)
-    b_res = await db.execute(b_stmt)
-    brand = b_res.scalars().first()
+    brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
     brand_name = brand.name if brand else "Brand"
 
     # Consult vector memory

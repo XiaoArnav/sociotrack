@@ -20,6 +20,9 @@ from app.schemas.post import (
     PostQueueResponse,
     PostQueueItem,
 )
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user
+from app.services.authorization_service import verify_post_access, verify_brand_access, get_accessible_brand_ids
 
 router = APIRouter(prefix="/posts", tags=["Posts"])
 
@@ -32,17 +35,20 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 )
 async def approve_post(
     payload: ApprovePostRequest,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     post = None
+    brand = None
     if payload.post_id:
-        result = await db.execute(select(Post).where(Post.id == payload.post_id))
-        post = result.scalar_one_or_none()
-        if not post:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Post with id '{payload.post_id}' not found.",
-            )
+        post, brand = await verify_post_access(db, payload.post_id, current_user, min_role="editor")
+    elif payload.brand_id:
+        brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Either post_id or brand_id must be provided to approve a post.",
+        )
 
     approved_text = payload.approved_content or payload.post_content or "Approved post copy"
     scheduled_at = None
@@ -159,9 +165,14 @@ async def approve_post(
     include_in_schema=False,
 )
 async def list_all_posts(
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Post).order_by(Post.created_at.desc()))
+    accessible_ids = await get_accessible_brand_ids(db, current_user)
+    stmt = select(Post).order_by(Post.created_at.desc())
+    if accessible_ids is not None:
+        stmt = stmt.where(Post.brand_id.in_(accessible_ids))
+    result = await db.execute(stmt)
     posts = result.scalars().all()
 
     return [
@@ -187,13 +198,17 @@ async def list_all_posts(
     summary="Fetch all scheduled and pending posts in publishing queue",
 )
 async def get_posts_queue(
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    accessible_ids = await get_accessible_brand_ids(db, current_user)
     stmt = (
         select(Post)
         .where(or_(Post.status == "scheduled", Post.status == "pending_approval"))
-        .order_by(Post.scheduled_for.asc().nulls_last(), Post.created_at.desc())
     )
+    if accessible_ids is not None:
+        stmt = stmt.where(Post.brand_id.in_(accessible_ids))
+    stmt = stmt.order_by(Post.scheduled_for.asc().nulls_last(), Post.created_at.desc())
     result = await db.execute(stmt)
     posts = result.scalars().all()
 

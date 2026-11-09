@@ -19,6 +19,9 @@ from app.schemas.calendar import (
     CalendarMixPlanResponse,
     ApproveCalendarSlotRequest,
 )
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user, is_admin_user
+from app.services.authorization_service import verify_brand_access, get_accessible_brand_ids
 from app.services.brand_intelligence import build_brand_intelligence_profile
 
 router = APIRouter(prefix="/calendar", tags=["Calendar"])
@@ -32,18 +35,23 @@ router = APIRouter(prefix="/calendar", tags=["Calendar"])
 )
 async def get_calendar_recommendations(
     brand_id: Optional[str] = Query(None, description="UUID of the brand"),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     brand = None
     if brand_id:
-        b_res = await db.execute(select(Brand).where(Brand.id == brand_id))
-        brand = b_res.scalar_one_or_none()
+        brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
 
     if not brand:
-        b_res = await db.execute(select(Brand).limit(1))
-        brand = b_res.scalar_one_or_none()
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+        if accessible_ids:
+            b_res = await db.execute(select(Brand).where(Brand.id.in_(accessible_ids)).limit(1))
+            brand = b_res.scalar_one_or_none()
+        elif is_admin_user(current_user) or current_user.is_demo:
+            b_res = await db.execute(select(Brand).limit(1))
+            brand = b_res.scalar_one_or_none()
         if not brand:
-            brand = Brand(name="SocioTrack", voice_description="Analytical, technical")
+            brand = Brand(name="SocioTrack", user_id=current_user.id, voice_description="Analytical, technical")
             db.add(brand)
             await db.flush()
 
@@ -135,16 +143,21 @@ async def get_calendar_recommendations(
 async def approve_calendar_slot(
     payload: ApproveCalendarSlotRequest,
     brand_id: Optional[str] = Query(None),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     brand = None
     if brand_id:
-        b_res = await db.execute(select(Brand).where(Brand.id == brand_id))
-        brand = b_res.scalar_one_or_none()
+        brand = await verify_brand_access(db, brand_id, current_user, min_role="editor")
 
     if not brand:
-        b_res = await db.execute(select(Brand).limit(1))
-        brand = b_res.scalar_one_or_none()
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+        if accessible_ids:
+            b_res = await db.execute(select(Brand).where(Brand.id.in_(accessible_ids)).limit(1))
+            brand = b_res.scalar_one_or_none()
+        elif is_admin_user(current_user) or current_user.is_demo:
+            b_res = await db.execute(select(Brand).limit(1))
+            brand = b_res.scalar_one_or_none()
 
     scheduled_time = datetime.now(timezone.utc) + timedelta(days=1)
     if payload.custom_scheduled_time:

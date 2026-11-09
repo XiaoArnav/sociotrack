@@ -19,6 +19,13 @@ from app.schemas.experiment import (
     ExperimentResponse,
     RecordExperimentResultRequest,
 )
+from app.routers.auth import get_current_user, is_admin_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import (
+    verify_brand_access,
+    verify_experiment_access,
+    get_accessible_brand_ids,
+)
 
 router = APIRouter(prefix="/experiments", tags=["Experiments"])
 
@@ -31,11 +38,18 @@ router = APIRouter(prefix="/experiments", tags=["Experiments"])
 )
 async def list_experiments(
     brand_id: Optional[str] = Query(None, description="UUID of the brand"),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     query = select(ContentExperiment)
     if brand_id:
+        await verify_brand_access(db, brand_id, current_user, min_role="viewer")
         query = query.where(ContentExperiment.brand_id == brand_id)
+    elif not is_admin_user(current_user):
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+        if accessible_ids is not None:
+            query = query.where(ContentExperiment.brand_id.in_(accessible_ids))
+
     query = query.order_by(ContentExperiment.created_at.desc())
     res = await db.execute(query)
     experiments = list(res.scalars().all())
@@ -50,18 +64,18 @@ async def list_experiments(
 )
 async def create_experiment(
     payload: ExperimentCreate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     brand = None
     if payload.brand_id:
-        b_res = await db.execute(select(Brand).where(Brand.id == payload.brand_id))
-        brand = b_res.scalar_one_or_none()
+        brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
 
     if not brand:
-        b_res = await db.execute(select(Brand).limit(1))
+        b_res = await db.execute(select(Brand).where(Brand.user_id == current_user.id).limit(1))
         brand = b_res.scalar_one_or_none()
         if not brand:
-            brand = Brand(name="SocioTrack", voice_description="Analytical, technical")
+            brand = Brand(name=f"Brand-{uuid.uuid4().hex[:6]}", user_id=current_user.id, voice_description="Analytical, technical")
             db.add(brand)
             await db.flush()
 
@@ -95,15 +109,10 @@ async def create_experiment(
 async def record_experiment_result(
     experiment_id: str,
     payload: RecordExperimentResultRequest,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    res = await db.execute(select(ContentExperiment).where(ContentExperiment.id == experiment_id))
-    exp = res.scalar_one_or_none()
-    if not exp:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Experiment '{experiment_id}' not found.",
-        )
+    exp = await verify_experiment_access(db, experiment_id, current_user, min_role="editor")
 
     exp.variant_a_impressions = payload.variant_a_impressions
     exp.variant_a_engagement_rate = payload.variant_a_engagement_rate

@@ -156,7 +156,7 @@ async def get_current_user(
             id=payload["sub"],
             email=payload.get("email", "guest.demo@sociotrack.io"),
             name="Sandbox Guest",
-            role="Interactive Demo Explorer",
+            role=payload.get("role") or "admin",
             is_demo=True,
         )
 

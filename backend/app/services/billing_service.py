@@ -275,8 +275,10 @@ class BillingService:
         if not event_id or not event_type:
             raise ValueError("Missing id or type in Stripe webhook.")
 
-        # Optional real Stripe signature validation if secret key is configured
-        if settings.STRIPE_WEBHOOK_SECRET and stripe_signature:
+        # Production signature validation (fail-closed)
+        if settings.STRIPE_WEBHOOK_SECRET:
+            if not stripe_signature:
+                raise ValueError("Missing Stripe-Signature header.")
             import stripe
             try:
                 stripe.Webhook.construct_event(
@@ -284,6 +286,8 @@ class BillingService:
                 )
             except Exception as e:
                 raise ValueError(f"Invalid Stripe webhook signature: {str(e)}")
+        elif getattr(settings, "APP_ENV", "development") == "production":
+            raise ValueError("STRIPE_WEBHOOK_SECRET is not configured in production mode.")
 
         # Check idempotency ledger
         check_stmt = select(BillingWebhookEvent).where(BillingWebhookEvent.event_id == event_id)

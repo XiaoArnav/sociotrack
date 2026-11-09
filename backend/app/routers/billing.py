@@ -15,6 +15,7 @@ from app.config import settings
 from app.models.user import User
 from app.models.billing import Subscription, PaymentInvoice
 from app.routers.auth import get_current_user
+from app.routers.workspaces import check_user_access
 from app.services.billing_service import BillingService, PLAN_TIERS
 
 router = APIRouter(prefix="/billing", tags=["Commercial Billing & Subscriptions"])
@@ -63,6 +64,7 @@ async def get_workspace_subscription(
     db: AsyncSession = Depends(get_db),
 ):
     """Retrieves active subscription, renewal date, and usage meters for a workspace."""
+    await check_user_access(db, workspace_id, current_user.id, min_role="viewer")
     # Ensure baseline subscription exists
     await BillingService.get_or_create_subscription(db, workspace_id, current_user.id)
     usage_data = await BillingService.get_workspace_usage(db, workspace_id)
@@ -83,6 +85,7 @@ async def create_checkout_session(
     Initiates a secure Stripe Checkout Session for plan upgrades.
     Redirects to Stripe Hosted Checkout or Sandbox simulator in dev.
     """
+    await check_user_access(db, payload.workspace_id, current_user.id, min_role="admin")
     if payload.plan not in PLAN_TIERS:
         raise HTTPException(status_code=400, detail="Invalid subscription plan.")
 
@@ -166,6 +169,7 @@ async def create_portal_session(
     db: AsyncSession = Depends(get_db),
 ):
     """Issues self-serve Stripe customer portal URL for card updates and cancellation."""
+    await check_user_access(db, payload.workspace_id, current_user.id, min_role="admin")
     stmt = select(Subscription).where(Subscription.workspace_id == payload.workspace_id)
     res = await db.execute(stmt)
     sub = res.scalars().first()
@@ -226,6 +230,7 @@ async def list_workspace_invoices(
     db: AsyncSession = Depends(get_db),
 ):
     """Lists past payment invoices, status, amount, and receipt URLs."""
+    await check_user_access(db, workspace_id, current_user.id, min_role="viewer")
     stmt = (
         select(PaymentInvoice)
         .where(PaymentInvoice.workspace_id == workspace_id)
@@ -260,6 +265,7 @@ async def consume_credits_endpoint(
     """
     Atomic credit deduction. Returns 402 Payment Required if plan quota is exceeded.
     """
+    await check_user_access(db, payload.workspace_id, current_user.id, min_role="editor")
     granted = await BillingService.check_and_deduct_credits(
         db=db,
         workspace_id=payload.workspace_id,

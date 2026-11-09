@@ -9,13 +9,17 @@ Implements the Stale-While-Revalidate (SWR) hybrid caching pattern:
 import os
 import io
 import time
+import re
 import hashlib
 import asyncio
 import httpx
 from PIL import Image
 from pathlib import Path
-from fastapi import APIRouter, BackgroundTasks, Response
+from fastapi import APIRouter, BackgroundTasks, Response, Depends, HTTPException, status
 from fastapi.responses import FileResponse, RedirectResponse
+
+from app.routers.auth import get_current_user, get_current_admin
+from app.schemas.auth import UserResponse
 
 router = APIRouter(prefix="/creators", tags=["Avatars"])
 
@@ -57,6 +61,17 @@ PRESET_HANDLES = {
     "keerz.core",
     "keerzcore",
 }
+
+
+def sanitize_handle(handle: str) -> str:
+    """Sanitizes creator handle to prevent path traversal and injection attacks."""
+    raw = handle.strip().lstrip("@")
+    if not raw or not re.match(r"^[a-zA-Z0-9._-]{1,50}$", raw) or ".." in raw:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid creator handle format.",
+        )
+    return raw.strip(".").lower()
 
 
 def is_valid_square_avatar(data: bytes, is_preset: bool = False) -> bool:
@@ -314,7 +329,7 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
 
 @router.get("/live/{handle}", summary="Fetch live Instagram profile statistics")
 async def get_live_creator_stats(handle: str):
-    clean = handle.lower().strip().lstrip("@")
+    clean = sanitize_handle(handle)
     data = await scrape_live_instagram_profile(clean)
     if data:
         return data
@@ -391,14 +406,18 @@ async def get_competitors_list():
 async def get_creator_unfollowers(handle: str):
     """Returns detected unfollowers, churn velocity, and retention health score."""
     from app.services.snapshot_service import get_unfollowers_report
-    return await get_unfollowers_report(handle)
+    clean = sanitize_handle(handle)
+    return await get_unfollowers_report(clean)
 
 
 @router.post("/{handle}/snapshot", summary="Record manual follower telemetry snapshot")
-async def create_creator_snapshot(handle: str):
+async def create_creator_snapshot(
+    handle: str,
+    current_user: UserResponse = Depends(get_current_user),
+):
     """Instantly captures follower count and calculates delta."""
     from app.services.snapshot_service import record_snapshot
-    clean = handle.strip().lstrip("@").lower()
+    clean = sanitize_handle(handle)
     live = await scrape_live_instagram_profile(clean) or {}
     followers = live.get("followers", 1000) if isinstance(live, dict) else 1000
     following = live.get("following", 100) if isinstance(live, dict) else 100
@@ -412,7 +431,9 @@ async def create_creator_snapshot(handle: str):
 
 
 @router.post("/cron/poll", summary="Trigger 6-hour follower snapshot cron job")
-async def trigger_snapshot_cron():
+async def trigger_snapshot_cron(
+    current_user: UserResponse = Depends(get_current_user),
+):
     """Polls indexed creators and updates snapshot ledgers."""
     from app.services.snapshot_service import poll_all_indexed_creators
     return await poll_all_indexed_creators()
@@ -423,7 +444,7 @@ async def get_creator_feed(handle: str, max_posts: int = 12):
     """Fetches the last 6-12 Reels/posts, thumbnails, likes, comments, and views."""
     from app.services.instagram_crawler import fetch_creator_posts
 
-    clean = handle.strip().lstrip("@").lower()
+    clean = sanitize_handle(handle)
     crawl_result = await fetch_creator_posts(clean, max_posts=max_posts)
 
     feed_items = []

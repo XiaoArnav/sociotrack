@@ -74,7 +74,7 @@ async def test_meta_webhook_event_ingestion():
 
 
 @pytest.mark.asyncio
-async def test_meta_webhook_simulation_endpoint():
+async def test_meta_webhook_simulation_endpoint(auth_headers):
     """Test simulated Meta webhook delivery and memory reinforcement."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -87,7 +87,7 @@ async def test_meta_webhook_simulation_endpoint():
             "shares": 100,
             "impressions": 5000,
         }
-        response = await client.post("/api/webhooks/instagram/simulate", json=payload)
+        response = await client.post("/api/webhooks/instagram/simulate", headers=auth_headers, json=payload)
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "SIMULATED_META_WEBHOOK_PROCESSED"

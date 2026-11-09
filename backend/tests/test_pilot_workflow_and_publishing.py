@@ -21,7 +21,7 @@ async def setup_db():
 
 
 @pytest.mark.asyncio
-async def test_historical_content_import_with_provenance():
+async def test_historical_content_import_with_provenance(auth_headers):
     uid = uuid.uuid4().hex[:6]
     brand_id = f"brd_hist_{uid}"
     async with async_session_maker() as session:
@@ -61,7 +61,7 @@ async def test_historical_content_import_with_provenance():
                 }
             ]
         }
-        res = await client.post("/api/pilot/import-historical", json=payload)
+        res = await client.post("/api/pilot/import-historical", headers=auth_headers, json=payload)
         assert res.status_code == 201
         data = res.json()
         assert data["posts_imported"] == 2
@@ -71,9 +71,19 @@ async def test_historical_content_import_with_provenance():
 
 
 @pytest.mark.asyncio
-async def test_content_export_for_manual_publishing():
+async def test_content_export_for_manual_publishing(auth_headers):
     uid = uuid.uuid4().hex[:6]
     brand_id = f"brd_exp_{uid}"
+    async with async_session_maker() as session:
+        brand = Brand(
+            id=brand_id,
+            name=f"Export Brand {uid}",
+            voice_description="Pragmatic creator tutorials",
+            target_audience="Next-gen builders"
+        )
+        session.add(brand)
+        await session.commit()
+
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         payload = {
@@ -84,7 +94,7 @@ async def test_content_export_for_manual_publishing():
             "optimal_utc_time": "14:00 UTC",
             "target_platform": "instagram"
         }
-        res = await client.post("/api/pilot/export-content", json=payload)
+        res = await client.post("/api/pilot/export-content", headers=auth_headers, json=payload)
         assert res.status_code == 200
         data = res.json()
         assert "export_id" in data
@@ -93,7 +103,7 @@ async def test_content_export_for_manual_publishing():
 
 
 @pytest.mark.asyncio
-async def test_idempotent_publishing_and_duplicate_prevention():
+async def test_idempotent_publishing_and_duplicate_prevention(auth_headers):
     uid = uuid.uuid4().hex[:6]
     brand_id = f"brd_pub_{uid}"
     post_id = f"post_pub_{uid}"
@@ -127,14 +137,14 @@ async def test_idempotent_publishing_and_duplicate_prevention():
         }
 
         # First publish attempt
-        res1 = await client.post(f"/api/posts/{post_id}/publish", json=pub_payload)
+        res1 = await client.post(f"/api/posts/{post_id}/publish", headers=auth_headers, json=pub_payload)
         assert res1.status_code == 200
         data1 = res1.json()
         assert data1["status"] in ("published", "scheduled", "action_required")
         assert data1["idempotency_key"] == idempotency_key
 
         # Second publish attempt with IDENTICAL idempotency key must NOT duplicate publication
-        res2 = await client.post(f"/api/posts/{post_id}/publish", json=pub_payload)
+        res2 = await client.post(f"/api/posts/{post_id}/publish", headers=auth_headers, json=pub_payload)
         assert res2.status_code == 200
         data2 = res2.json()
         assert "already processed" in data2["message"].lower() or data2["idempotency_key"] == idempotency_key

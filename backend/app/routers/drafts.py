@@ -11,6 +11,9 @@ from app.models.brand import Brand
 from app.models.post import Post
 from app.models.memory import AgentMemory
 from app.schemas.post import GenerateDraftsRequest, GenerateDraftsResponse, PostDraftResponse
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user
+from app.services.authorization_service import verify_brand_access, check_brand_access, get_accessible_brand_ids
 from app.services.hindsight_client import hindsight_client
 from app.services.agent_workflow import trigger_agent_draft_generation
 
@@ -25,21 +28,29 @@ router = APIRouter(tags=["Drafts"])
 )
 async def generate_drafts(
     payload: GenerateDraftsRequest,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # 1. Fetch Brand
+    # 1. Fetch & Verify Brand Ownership
     brand = None
     if payload.brand_id:
-        result = await db.execute(select(Brand).where(Brand.id == payload.brand_id))
-        brand = result.scalar_one_or_none()
+        brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
 
     if not brand and payload.brand_name:
         result = await db.execute(select(Brand).where(Brand.name == payload.brand_name))
         brand = result.scalar_one_or_none()
-        if not brand:
-            # Auto-create Brand for test/interactive convenience
+        if brand:
+            has_access = await check_brand_access(db, brand, current_user, min_role="editor")
+            if not has_access:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Forbidden: You do not have access to brand '{payload.brand_name}'.",
+                )
+        else:
+            # Auto-create Brand assigned to caller
             brand = Brand(
                 id=str(uuid.uuid4()),
+                user_id=current_user.id,
                 name=payload.brand_name,
                 voice_description="Direct, engineering-first, and data-driven.",
                 target_audience="Developers and engineering leaders.",
@@ -48,14 +59,24 @@ async def generate_drafts(
             await db.flush()
 
     if not brand and not payload.brand_id:
-        result = await db.execute(select(Brand).limit(1))
-        brand = result.scalar_one_or_none()
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+        if accessible_ids:
+            result = await db.execute(select(Brand).where(Brand.id.in_(accessible_ids)).limit(1))
+            brand = result.scalar_one_or_none()
+        elif is_admin_user(current_user) or current_user.is_demo:
+            result = await db.execute(select(Brand).limit(1))
+            brand = result.scalar_one_or_none()
 
     if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Brand '{payload.brand_id or payload.brand_name}' not found.",
+        brand = Brand(
+            id=str(uuid.uuid4()),
+            user_id=current_user.id,
+            name="SocioTrack",
+            voice_description="Direct, engineering-first, and data-driven.",
+            target_audience="Developers and engineering leaders.",
         )
+        db.add(brand)
+        await db.flush()
 
     # 2. Recall brand memories from Hindsight & local database
     recalled_from_hindsight = await hindsight_client.recall(

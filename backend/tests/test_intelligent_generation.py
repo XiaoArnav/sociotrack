@@ -104,12 +104,13 @@ def test_brand_voice_evaluation_contract():
 
 
 @pytest.mark.asyncio
-async def test_api_generate_drafts_explainability():
+async def test_api_generate_drafts_explainability(auth_headers):
     """Verifies POST /api/generate-drafts returns full explainability metadata for every draft."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         resp = await client.post(
             "/api/generate-drafts",
+            headers=auth_headers,
             json={
                 "brand_id": "test-gen-explain-id",
                 "topic": "Deterministic Agent Architectures",

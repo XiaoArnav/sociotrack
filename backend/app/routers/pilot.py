@@ -20,6 +20,9 @@ from app.schemas.pilot import (
     ContentExportResponse,
 )
 from app.services.brand_intelligence import build_brand_intelligence_profile
+from app.routers.auth import get_current_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import verify_brand_access
 
 router = APIRouter(prefix="/api/pilot", tags=["Pilot Program & Onboarding"])
 
@@ -32,18 +35,14 @@ router = APIRouter(prefix="/api/pilot", tags=["Pilot Program & Onboarding"])
 )
 async def import_historical_content(
     payload: HistoricalImportRequest,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Imports historical content into Post and PostAnalytics models.
     Refreshes the BrandIntelligenceProfile with transparent provenance and data limitations.
     """
-    brand = await db.get(Brand, payload.brand_id)
-    if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Brand {payload.brand_id} not found."
-        )
+    brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
 
     imported_posts = []
     for item in payload.posts:
@@ -119,11 +118,13 @@ async def import_historical_content(
 )
 async def export_content_for_publishing(
     payload: ContentExportRequest,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
     Prepares a clean copy-paste and markdown payload for external publishing (Buffer, Hootsuite, Later).
     """
+    await verify_brand_access(db, payload.brand_id, current_user, min_role="viewer")
     export_id = f"exp_{uuid.uuid4().hex[:8]}"
     hashtag_str = " ".join(payload.hashtags) if payload.hashtags else ""
     formatted_content = f"{payload.caption}\n\n{hashtag_str}".strip()

@@ -316,3 +316,240 @@ async def test_telemetry_impersonation_guardrails():
         )
         assert res_bound.status_code == 201
         assert res_bound.json()["user_id"] == legit_user_id
+
+
+@pytest.mark.asyncio
+async def test_comprehensive_unauthenticated_endpoints_rejected():
+    """
+    Step 1 Verification: Confirms that every private application endpoint rejects
+    unauthenticated requests with 401 Unauthorized.
+    """
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Brands
+        assert (await client.get("/api/brands")).status_code == 401
+        assert (await client.post("/api/brands", json={"name": "Test Brand"})).status_code == 401
+        assert (await client.get("/api/brands/fake-id/intelligence")).status_code == 401
+        assert (await client.get("/api/brands/fake-id/memory")).status_code == 401
+        assert (await client.post("/api/brands/fake-id/refresh-intelligence")).status_code == 401
+
+        # Drafts & Posts
+        assert (await client.post("/api/generate-drafts", json={"brand_id": "fake", "topic": "AI"})).status_code == 401
+        assert (await client.post("/api/posts/approve", json={"post_id": "fake"})).status_code == 401
+        assert (await client.get("/api/posts/queue")).status_code == 401
+        assert (await client.get("/api/posts")).status_code == 401
+
+        # Calendar
+        assert (await client.get("/api/calendar/recommendations?brand_id=fake")).status_code == 401
+        assert (await client.post("/api/calendar/approve-slot?brand_id=fake", json={"slot_id": "s1"})).status_code == 401
+
+        # Memory
+        assert (await client.get("/api/memory/insights?brand_id=fake")).status_code == 401
+        assert (await client.post("/api/memory/insights", json={"brand_id": "fake", "insight_text": "t"})).status_code == 401
+
+        # Feedback
+        assert (await client.post("/api/recommendations/feedback", json={"brand_id": "fake", "draft_id": "d1", "decision": "accepted"})).status_code == 401
+        assert (await client.post("/api/feedback", json={"category": "ai_quality", "message": "msg"})).status_code == 401
+        assert (await client.get("/api/feedback/backlog")).status_code == 401
+
+        # Pilot & Experiments
+        assert (await client.post("/api/pilot/import-historical", json={"brand_id": "fake", "posts": []})).status_code == 401
+        assert (await client.post("/api/pilot/export-content", json={"brand_id": "fake", "caption": "c"})).status_code == 401
+        assert (await client.get("/api/experiments")).status_code == 401
+        assert (await client.post("/api/experiments", json={"title": "exp", "variant_a_label": "a", "variant_b_label": "b"})).status_code == 401
+
+        # Billing
+        assert (await client.get("/api/billing/subscription?workspace_id=fake")).status_code == 401
+        assert (await client.post("/api/billing/checkout-session", json={"workspace_id": "fake", "plan": "pro"})).status_code == 401
+        assert (await client.post("/api/billing/portal-session", json={"workspace_id": "fake"})).status_code == 401
+        assert (await client.get("/api/billing/invoices?workspace_id=fake")).status_code == 401
+        assert (await client.post("/api/billing/credits/consume", json={"workspace_id": "fake", "credits": 1})).status_code == 401
+
+        # Avatars & Webhooks Cron/Simulation
+        assert (await client.post("/api/creators/cron/poll")).status_code == 401
+        assert (await client.post("/api/creators/somehandle/snapshot")).status_code == 401
+        assert (await client.post("/api/webhooks/instagram/simulate", json={"brand_name": "b", "topic": "t"})).status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_cross_user_resource_access_rejected_with_403():
+    """
+    Step 1 Verification: Confirms that User A cannot read or mutate User B's private resources (403 Forbidden).
+    """
+    uid_a = uuid.uuid4().hex[:6]
+    uid_b = uuid.uuid4().hex[:6]
+
+    async with async_session_maker() as session:
+        user_a = User(
+            id=f"usr_{uid_a}",
+            email=f"alice_{uid_a}@brand.com",
+            name="Alice",
+            hashed_password="hash",
+            role="Editor",
+            is_active=True,
+        )
+        user_b = User(
+            id=f"usr_{uid_b}",
+            email=f"bob_{uid_b}@brand.com",
+            name="Bob",
+            hashed_password="hash",
+            role="Editor",
+            is_active=True,
+        )
+        brand_b = Brand(
+            id=f"brd_{uid_b}",
+            user_id=f"usr_{uid_b}",
+            name=f"Bob Exclusive Brand {uid_b}",
+            voice_description="Confidential",
+        )
+        session.add_all([user_a, user_b, brand_b])
+        await session.commit()
+
+    token_a = create_access_token({"sub": f"usr_{uid_a}", "email": user_a.email, "is_demo": False})
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. User A cannot view User B's brand intelligence -> 403 Forbidden
+        res_intel = await client.get(f"/api/brands/{brand_b.id}/intelligence", headers=headers_a)
+        assert res_intel.status_code == 403
+
+        # 2. User A cannot generate drafts for User B's brand -> 403 Forbidden
+        res_draft = await client.post(
+            "/api/generate-drafts",
+            headers=headers_a,
+            json={"brand_id": brand_b.id, "topic": "Infiltrating Topics"},
+        )
+        assert res_draft.status_code == 403
+
+        # 3. User A cannot approve posts for User B's brand -> 403 Forbidden
+        res_app = await client.post(
+            "/api/posts/approve",
+            headers=headers_a,
+            json={"brand_id": brand_b.id, "approved_content": "Unauthorized approve"},
+        )
+        assert res_app.status_code == 403
+
+        # 4. User A cannot trigger historical import for User B's brand -> 403 Forbidden
+        res_hist = await client.post(
+            "/api/pilot/import-historical",
+            headers=headers_a,
+            json={"brand_id": brand_b.id, "posts": []},
+        )
+        assert res_hist.status_code == 403
+
+        # 5. User A cannot export content under User B's brand -> 403 Forbidden
+        res_exp = await client.post(
+            "/api/pilot/export-content",
+            headers=headers_a,
+            json={"brand_id": brand_b.id, "caption": "Leaked Caption"},
+        )
+        assert res_exp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_workspace_security_invite_email_and_brand_linking():
+    """
+    Step 1 Verification:
+    - User cannot accept an invitation issued for a different email address (403).
+    - User cannot link another user's brand to their workspace without ownership (403).
+    """
+    uid = uuid.uuid4().hex[:6]
+    async with async_session_maker() as session:
+        owner = User(id=f"usr_ws_owner_{uid}", email=f"owner_{uid}@corp.com", name="Owner", hashed_password="h", is_active=True)
+        eve = User(id=f"usr_eve_{uid}", email=f"eve_{uid}@intruder.com", name="Eve", hashed_password="h", is_active=True)
+        victim = User(id=f"usr_vic_{uid}", email=f"victim_{uid}@other.com", name="Victim", hashed_password="h", is_active=True)
+
+        vic_brand = Brand(id=f"brd_vic_{uid}", user_id=victim.id, name=f"Victim Brand {uid}")
+        session.add_all([owner, eve, victim, vic_brand])
+        await session.commit()
+
+    token_owner = create_access_token({"sub": owner.id, "email": owner.email, "is_demo": False})
+    token_eve = create_access_token({"sub": eve.id, "email": eve.email, "is_demo": False})
+    headers_owner = {"Authorization": f"Bearer {token_owner}"}
+    headers_eve = {"Authorization": f"Bearer {token_eve}"}
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # Create workspace
+        ws_res = await client.post("/api/workspaces", headers=headers_owner, json={"name": f"Corp WS {uid}"})
+        assert ws_res.status_code == 201
+        ws_id = ws_res.json()["id"]
+
+        # Owner invites alice@corp.com
+        inv_res = await client.post(
+            f"/api/workspaces/{ws_id}/invites",
+            headers=headers_owner,
+            json={"email": f"alice_{uid}@corp.com", "role": "editor"},
+        )
+        assert inv_res.status_code == 200
+        inv_token = inv_res.json()["token"]
+
+        # Eve attempts to accept invitation issued to Alice -> 403 Forbidden
+        accept_res = await client.post(f"/api/workspaces/invites/{inv_token}/accept", headers=headers_eve)
+        assert accept_res.status_code == 403
+        assert "Forbidden" in accept_res.json()["detail"]
+
+        # Owner attempts to link Victim's private brand to Corp WS without ownership -> 403 Forbidden
+        link_res = await client.post(
+            f"/api/workspaces/{ws_id}/brands/{vic_brand.id}/link",
+            headers=headers_owner,
+        )
+        assert link_res.status_code == 403
+        assert "Forbidden" in link_res.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_meta_webhook_hmac_and_handle_sanitization():
+    """
+    Step 1 Verification:
+    - Meta webhook verifies X-Hub-Signature-256 HMAC and rejects forged signatures (403).
+    - Creator handles are sanitized against path traversal or injection (400).
+    """
+    import hmac
+    import hashlib
+    from app.config import settings
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        # 1. Test Meta webhook signature verification with configured secret
+        orig_secret = settings.META_APP_SECRET
+        settings.META_APP_SECRET = "test_meta_app_secret_abc123"
+        try:
+            payload = json.dumps({"object": "instagram", "entry": []}).encode("utf-8")
+            valid_sig = "sha256=" + hmac.new(b"test_meta_app_secret_abc123", msg=payload, digestmod=hashlib.sha256).hexdigest()
+            invalid_sig = "sha256=invalid_forged_signature_00000000000000000000000000000000"
+
+            # Valid signature -> accepted (200)
+            res_valid = await client.post(
+                "/api/webhooks/instagram",
+                content=payload,
+                headers={"X-Hub-Signature-256": valid_sig, "Content-Type": "application/json"},
+            )
+            assert res_valid.status_code == 200
+
+            # Forged signature -> rejected (403)
+            res_invalid = await client.post(
+                "/api/webhooks/instagram",
+                content=payload,
+                headers={"X-Hub-Signature-256": invalid_sig, "Content-Type": "application/json"},
+            )
+            assert res_invalid.status_code == 403
+
+            # Missing signature -> rejected (403)
+            res_missing = await client.post(
+                "/api/webhooks/instagram",
+                content=payload,
+                headers={"Content-Type": "application/json"},
+            )
+            assert res_missing.status_code == 403
+        finally:
+            settings.META_APP_SECRET = orig_secret
+
+        # 2. Public creator handle sanitization
+        # Malicious handle with path traversal
+        res_traversal = await client.get("/api/creators/live/..%2F..%2Fetc%2Fpasswd")
+        assert res_traversal.status_code in (400, 404)
+
+        res_invalid_chars = await client.get("/api/creators/live/user$*()")
+        assert res_invalid_chars.status_code == 400
