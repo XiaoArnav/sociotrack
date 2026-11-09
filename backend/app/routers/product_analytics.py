@@ -1,15 +1,17 @@
 """
 Router for internal Product Usage Analytics.
 Measures onboarding funnels, time-to-first-insight, recommendation adoption, and abandonment points.
-Zero PII collected.
+Zero PII collected. Enforces authentication and impersonation guardrails.
 """
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Any, List
-from fastapi import APIRouter, Depends, status
+from typing import Dict, Any, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, distinct
 from app.database import get_db
 from app.models.product_event import ProductEvent
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user, get_optional_current_user, is_admin_user
 from app.schemas.product_analytics import (
     ProductEventCreate,
     ProductEventResponse,
@@ -22,12 +24,34 @@ router = APIRouter(prefix="/api/analytics/product", tags=["Product Analytics"])
 @router.post("/event", response_model=ProductEventResponse, status_code=status.HTTP_201_CREATED)
 async def record_product_event(
     payload: ProductEventCreate,
+    optional_user: Optional[UserResponse] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Ingests a privacy-conscious product usage event."""
+    """
+    Ingests a privacy-conscious product usage event.
+    Guards against user impersonation:
+    - If payload specifies a user_id, caller must be authenticated as that user (or have admin privileges).
+    - If unauthenticated, caller cannot attribute events to arbitrary user IDs (anonymous events allow user_id=None).
+    - If authenticated and payload.user_id is omitted, event is attributed to verified current_user.id.
+    """
+    if payload.user_id:
+        if not optional_user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required to record telemetry events attributed to a specific user ID.",
+            )
+        if payload.user_id != optional_user.id and not is_admin_user(optional_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: Cannot record telemetry events under another user's ID.",
+            )
+        effective_user_id = payload.user_id
+    else:
+        effective_user_id = optional_user.id if optional_user else None
+
     ev = ProductEvent(
         event_name=payload.event_name,
-        user_id=payload.user_id,
+        user_id=effective_user_id,
         session_id=payload.session_id,
         brand_id=payload.brand_id,
         step_name=payload.step_name,
@@ -42,9 +66,13 @@ async def record_product_event(
 
 @router.get("/dashboard", response_model=ProductMetricsSummary)
 async def get_product_analytics_dashboard(
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Aggregates product usage metrics, funnel completion, and adoption statistics."""
+    """
+    Aggregates product usage metrics, funnel completion, and adoption statistics.
+    Protected endpoint: strictly requires authenticated session.
+    """
     # 1. Total events count
     total_events_res = await db.execute(select(func.count(ProductEvent.id)))
     total_events = total_events_res.scalar() or 0

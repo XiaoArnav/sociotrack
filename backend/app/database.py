@@ -95,4 +95,27 @@ async def init_db() -> None:
                 if "updated_at" not in mem_cols:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN updated_at DATETIME"))
 
+            if "audit_logs" in table_names:
+                cols = {c["name"]: c for c in inspector.get_columns("audit_logs")}
+                if cols.get("workspace_id", {}).get("nullable") is False:
+                    sync_conn.execute(text("""
+                        CREATE TABLE IF NOT EXISTS audit_logs_new (
+                            id VARCHAR(36) NOT NULL PRIMARY KEY,
+                            workspace_id VARCHAR(36),
+                            user_id VARCHAR(36),
+                            action VARCHAR(100) NOT NULL,
+                            resource_type VARCHAR(50) NOT NULL,
+                            resource_id VARCHAR(36),
+                            metadata_json TEXT,
+                            ip_address VARCHAR(45),
+                            created_at DATETIME NOT NULL,
+                            FOREIGN KEY(workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE
+                        )
+                    """))
+                    sync_conn.execute(text("INSERT OR IGNORE INTO audit_logs_new SELECT id, workspace_id, user_id, action, resource_type, resource_id, metadata_json, ip_address, created_at FROM audit_logs"))
+                    sync_conn.execute(text("DROP TABLE audit_logs"))
+                    sync_conn.execute(text("ALTER TABLE audit_logs_new RENAME TO audit_logs"))
+                    sync_conn.execute(text("CREATE INDEX IF NOT EXISTS ix_audit_logs_workspace_id ON audit_logs (workspace_id)"))
+                    sync_conn.execute(text("CREATE INDEX IF NOT EXISTS ix_audit_logs_user_id ON audit_logs (user_id)"))
+
         await conn.run_sync(_migrate_columns)
