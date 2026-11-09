@@ -28,31 +28,31 @@ By transforming empirical post engagement metrics (impressions, shares, replies,
 ```mermaid
 flowchart TD
     subgraph ClientLayer["Frontend & Client Layer (Next.js 14)"]
-        UI[SocioTrack Dashboard]
-        GenStudio[Generation Studio & Live Editor]
-        MemPanel[Persistent Agent Memory Panel]
-        EngLab[Live Engagement Lab & Feedback]
+        UI["SocioTrack Dashboard"]
+        GenStudio["Generation Studio & Live Editor"]
+        MemPanel["Persistent Agent Memory Panel"]
+        EngLab["Live Engagement Lab & Feedback"]
     end
 
     subgraph SecurityGate["Security & Workspace Authorization Layer"]
-        AuthMiddleware[JWT Auth & Token Blacklist]
-        RBAC[RBAC Enforcer: Owner / Admin / Editor / Viewer]
-        TenantGuard[Multi-Tenant Workspace & Brand Isolation Guard]
+        AuthMiddleware["JWT Auth & Token Blacklist"]
+        RBAC["RBAC Enforcer (Owner / Admin / Editor / Viewer)"]
+        TenantGuard["Multi-Tenant Workspace & Brand Isolation Guard"]
     end
 
     subgraph DeepServices["SocioTrack Core Deep Services"]
-        AgentWorkflow[Agent Workflow Orchestrator]
-        ContextEngine[Brand Context Engine]
-        ContentGen[Brand Content Generator: Data / Contrarian / Tactical]
-        VoiceEval[Brand Voice & Compliance Evaluator 0-10]
-        MemService[Persistent Memory Service: SQL + Chroma Dual-Write]
-        LearningPipeline[Trustworthy Learning Pipeline: Anti-Hallucination & Deduplication]
+        AgentWorkflow["Agent Workflow Orchestrator"]
+        ContextEngine["Brand Context Engine"]
+        ContentGen["Brand Content Generator (Data / Contrarian / Tactical)"]
+        VoiceEval["Brand Voice & Compliance Evaluator (0-10)"]
+        MemService["Persistent Memory Service (SQL + Chroma Dual-Write)"]
+        LearningPipeline["Trustworthy Learning Pipeline (Anti-Hallucination)"]
     end
 
     subgraph StorageEngines["Persistent Multi-Tenant Storage Layer"]
-        SQLDB[(Relational DB: SQLite / PostgreSQL<br/>Workspaces, Brands, Posts, Agent Memories)]
-        ChromaStore[(Persistent ChromaDB SQLite Store<br/>w_ws_b_brand_posts / sentiment / lessons)]
-        DiskWeights[(On-Disk Dynamic Weights Ledger<br/>{tenant_key}_weights.json)]
+        SQLDB[("Relational DB: SQLite / PostgreSQL")]
+        ChromaStore[("Persistent ChromaDB On-Disk Collections")]
+        DiskWeights[("On-Disk Dynamic Weights Ledger")]
     end
 
     UI --> AuthMiddleware
