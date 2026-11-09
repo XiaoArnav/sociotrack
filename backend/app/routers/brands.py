@@ -1,8 +1,11 @@
 """
 Brands Router: Handles brand configuration and listing.
 Endpoints:
-- GET  /api/brands
-- POST /api/brands
+- GET  /api/brands (authenticated, tenant-isolated)
+- POST /api/brands (authenticated, assigns creator ownership)
+- GET  /api/brands/{id}/intelligence (authorized access check)
+- GET  /api/brands/{id}/memory (authorized access check)
+- POST /api/brands/{id}/refresh-intelligence (editor/owner check)
 """
 from typing import List, Optional
 import json
@@ -13,6 +16,12 @@ from app.database import get_db
 from app.models.brand import Brand
 from app.models.post import Post
 from app.models.memory import AgentMemory
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user
+from app.services.authorization_service import (
+    verify_brand_access,
+    get_accessible_brand_ids,
+)
 from app.schemas.brand import (
     BrandCreate,
     BrandResponse,
@@ -31,12 +40,19 @@ router = APIRouter(prefix="/brands", tags=["Brands"])
     "",
     response_model=List[BrandResponse],
     status_code=status.HTTP_200_OK,
-    summary="List all brands configured in the system",
+    summary="List all brands configured for the authenticated user/workspace",
 )
 async def list_brands(
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Brand).order_by(Brand.created_at.desc()))
+    accessible_ids = await get_accessible_brand_ids(db, current_user)
+    if accessible_ids is not None:
+        stmt = select(Brand).where(Brand.id.in_(accessible_ids)).order_by(Brand.created_at.desc())
+    else:
+        stmt = select(Brand).order_by(Brand.created_at.desc())
+
+    result = await db.execute(stmt)
     brands = result.scalars().all()
     out = []
     for b in brands:
@@ -58,9 +74,11 @@ async def list_brands(
 )
 async def create_brand(
     payload: BrandCreate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     brand = Brand(
+        user_id=current_user.id,
         name=payload.name,
         voice_description=payload.voice_description,
         target_audience=payload.target_audience,
@@ -79,15 +97,10 @@ async def create_brand(
 )
 async def get_brand_intelligence(
     brand_id: str,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    res = await db.execute(select(Brand).where(Brand.id == brand_id))
-    brand = res.scalar_one_or_none()
-    if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Brand with id '{brand_id}' not found.",
-        )
+    brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
 
     if brand.intelligence_profile:
         try:
@@ -99,14 +112,14 @@ async def get_brand_intelligence(
     # Compute freshly if not cached
     p_res = await db.execute(
         select(Post)
-        .where(Post.brand_id == brand_id)
+        .where(Post.brand_id == brand.id)
         .options(selectinload(Post.analytics))
         .order_by(Post.created_at.desc())
     )
     posts = list(p_res.scalars().all())
 
     m_res = await db.execute(
-        select(AgentMemory).where(AgentMemory.brand_id == brand_id, AgentMemory.is_active.is_(True))
+        select(AgentMemory).where(AgentMemory.brand_id == brand.id, AgentMemory.is_active.is_(True))
     )
     db_memories = list(m_res.scalars().all())
 
@@ -123,20 +136,15 @@ async def get_brand_intelligence(
 )
 async def get_brand_memory_bank(
     brand_id: str,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Returns active lessons, dos and donts, and top past posts for this brand."""
-    res = await db.execute(select(Brand).where(Brand.id == brand_id))
-    brand = res.scalar_one_or_none()
-    if not brand:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Brand with id '{brand_id}' not found.",
-        )
+    brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
 
     # Fetch DB memories
     m_res = await db.execute(
-        select(AgentMemory).where(AgentMemory.brand_id == brand_id, AgentMemory.is_active.is_(True))
+        select(AgentMemory).where(AgentMemory.brand_id == brand.id, AgentMemory.is_active.is_(True))
     )
     db_memories = list(m_res.scalars().all())
 
@@ -182,8 +190,10 @@ async def get_brand_memory_bank(
 )
 async def refresh_intelligence(
     brand_id: str,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    await verify_brand_access(db, brand_id, current_user, min_role="editor")
     try:
         profile = await refresh_brand_intelligence_async(brand_id, db)
         return RefreshIntelligenceResponse(

@@ -21,6 +21,9 @@ from app.schemas.feedback import (
     FeedbackBacklogSummary,
 )
 from app.core.memory import get_memory_manager
+from app.routers.auth import get_current_user, is_admin_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import verify_brand_access, get_accessible_brand_ids
 
 router = APIRouter(prefix="/api", tags=["Recommendation Quality & Feedback"])
 
@@ -33,6 +36,7 @@ router = APIRouter(prefix="/api", tags=["Recommendation Quality & Feedback"])
 )
 async def record_recommendation_feedback(
     payload: RecommendationFeedbackCreate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -41,13 +45,14 @@ async def record_recommendation_feedback(
     - If accepted with 4-5 stars: records positive validation.
     - Logs a telemetry ProductEvent.
     """
-    # 1. Fetch brand
-    brand = await db.get(Brand, payload.brand_id)
+    # 1. Fetch & authorize brand
+    brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
     brand_name = brand.name if brand else "default_brand"
 
     # 2. Store in UserFeedback table
     feedback_record = UserFeedback(
         brand_id=payload.brand_id,
+        user_id=current_user.id,
         draft_id=payload.draft_id,
         category="ai_quality",
         rating=payload.usefulness_rating,
@@ -123,15 +128,19 @@ async def record_recommendation_feedback(
 )
 async def submit_user_feedback(
     payload: UserFeedbackCreate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Stores in-app feedback or bug reports into the research backlog."""
+    if payload.brand_id:
+        await verify_brand_access(db, payload.brand_id, current_user, min_role="viewer")
+
     feedback = UserFeedback(
         category=payload.category,
         message=payload.message,
         rating=payload.rating,
         brand_id=payload.brand_id,
-        user_id=payload.user_id,
+        user_id=current_user.id,
         draft_id=payload.draft_id,
         triage_status="new",
     )
@@ -140,7 +149,7 @@ async def submit_user_feedback(
     # Telemetry
     ev = ProductEvent(
         event_name="feedback_submitted",
-        user_id=payload.user_id,
+        user_id=current_user.id,
         brand_id=payload.brand_id,
         metadata_json=f'{{"category": "{payload.category}", "rating": {payload.rating or 0}}}',
     )
@@ -158,10 +167,20 @@ async def submit_user_feedback(
 async def get_feedback_backlog(
     category: Optional[str] = Query(None, description="Filter by category"),
     status_filter: Optional[str] = Query(None, description="Filter by triage status"),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Aggregates user research feedback, ratings, and recurring friction points."""
     query = select(UserFeedback).order_by(desc(UserFeedback.created_at))
+
+    # Multi-tenant boundary: non-admins only see their own submissions or feedback on their accessible brands
+    if not is_admin_user(current_user):
+        accessible_brand_ids = await get_accessible_brand_ids(db, current_user)
+        access_conditions = [UserFeedback.user_id == current_user.id]
+        if accessible_brand_ids:
+            access_conditions.append(UserFeedback.brand_id.in_(accessible_brand_ids))
+        query = query.where(or_(*access_conditions))
+
     if category:
         query = query.where(UserFeedback.category == category)
     if status_filter:
@@ -199,6 +218,7 @@ async def get_feedback_backlog(
 async def update_feedback_triage(
     feedback_id: str,
     payload: FeedbackTriageUpdate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     """Updates triage status for a feedback or bug report item."""
@@ -208,6 +228,16 @@ async def update_feedback_triage(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Feedback item {feedback_id} not found."
         )
+
+    # Authorization check
+    if not is_admin_user(current_user):
+        if feedback.brand_id:
+            await verify_brand_access(db, feedback.brand_id, current_user, min_role="editor")
+        elif feedback.user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: Cannot triage feedback belonging to another user.",
+            )
 
     feedback.triage_status = payload.triage_status
     await db.commit()

@@ -20,6 +20,14 @@ from app.schemas.memory import (
     PastWinningPostSchema,
     LearnedLessonSchema,
 )
+from app.schemas.auth import UserResponse
+from app.routers.auth import get_current_user, is_admin_user
+from app.services.authorization_service import (
+    verify_brand_access,
+    verify_memory_access,
+    check_brand_access,
+    get_accessible_brand_ids,
+)
 
 router = APIRouter(prefix="/memory", tags=["Memory"])
 
@@ -35,20 +43,32 @@ async def get_memory_insights(
     brand_name: Optional[str] = Query(None, description="Brand name if querying by identifier"),
     topic: Optional[str] = Query(None, description="Context topic"),
     include_inactive: bool = Query(False, description="Whether to include deactivated lessons"),
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     brand = None
     if brand_id:
-        brand_res = await db.execute(select(Brand).where(Brand.id == brand_id))
-        brand = brand_res.scalar_one_or_none()
+        brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
 
     if not brand and brand_name:
         brand_res = await db.execute(select(Brand).where(Brand.name == brand_name))
         brand = brand_res.scalar_one_or_none()
+        if brand:
+            has_access = await check_brand_access(db, brand, current_user, min_role="viewer")
+            if not has_access:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail=f"Forbidden: You do not have access to brand '{brand_name}'.",
+                )
 
     if not brand and not brand_id:
-        brand_res = await db.execute(select(Brand).limit(1))
-        brand = brand_res.scalar_one_or_none()
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+        if accessible_ids:
+            brand_res = await db.execute(select(Brand).where(Brand.id.in_(accessible_ids)).limit(1))
+            brand = brand_res.scalar_one_or_none()
+        elif is_admin_user(current_user) or current_user.is_demo:
+            brand_res = await db.execute(select(Brand).limit(1))
+            brand = brand_res.scalar_one_or_none()
 
     active_brand_id = brand.id if brand else (brand_id or "mock_brand_id")
     active_brand_name = brand.name if brand else (brand_name or "SocioTrack")
@@ -210,18 +230,23 @@ async def get_memory_insights(
 )
 async def create_memory_insight(
     payload: AgentMemoryCreate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     brand = None
     if payload.brand_id:
-        b_res = await db.execute(select(Brand).where(Brand.id == payload.brand_id))
-        brand = b_res.scalar_one_or_none()
+        brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="editor")
 
     if not brand:
-        b_res = await db.execute(select(Brand).limit(1))
-        brand = b_res.scalar_one_or_none()
+        accessible_ids = await get_accessible_brand_ids(db, current_user)
+        if accessible_ids:
+            b_res = await db.execute(select(Brand).where(Brand.id.in_(accessible_ids)).limit(1))
+            brand = b_res.scalar_one_or_none()
+        elif is_admin_user(current_user) or current_user.is_demo:
+            b_res = await db.execute(select(Brand).limit(1))
+            brand = b_res.scalar_one_or_none()
         if not brand:
-            brand = Brand(name="SocioTrack", voice_description="Analytical, technical")
+            brand = Brand(name="SocioTrack", user_id=current_user.id, voice_description="Analytical, technical")
             db.add(brand)
             await db.flush()
 
@@ -263,15 +288,10 @@ async def create_memory_insight(
 async def update_memory_insight(
     insight_id: str,
     payload: AgentMemoryUpdate,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    res = await db.execute(select(AgentMemory).where(AgentMemory.id == insight_id))
-    memory = res.scalar_one_or_none()
-    if not memory:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Memory insight with id '{insight_id}' not found.",
-        )
+    memory, brand = await verify_memory_access(db, insight_id, current_user, min_role="editor")
 
     if payload.insight_text is not None:
         memory.insight_text = payload.insight_text
@@ -289,8 +309,6 @@ async def update_memory_insight(
     await db.refresh(memory)
 
     # Sync to vector collection
-    b_res = await db.execute(select(Brand).where(Brand.id == memory.brand_id))
-    brand = b_res.scalar_one_or_none()
     brand_name = brand.name if brand else "SocioTrack"
 
     from app.core.memory import get_memory_manager
@@ -315,22 +333,15 @@ async def update_memory_insight(
 )
 async def deactivate_memory_insight(
     insight_id: str,
+    current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    res = await db.execute(select(AgentMemory).where(AgentMemory.id == insight_id))
-    memory = res.scalar_one_or_none()
-    if not memory:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Memory insight with id '{insight_id}' not found.",
-        )
+    memory, brand = await verify_memory_access(db, insight_id, current_user, min_role="editor")
 
     memory.is_active = False
     memory.updated_at = datetime.now(timezone.utc)
     await db.flush()
 
-    b_res = await db.execute(select(Brand).where(Brand.id == memory.brand_id))
-    brand = b_res.scalar_one_or_none()
     brand_name = brand.name if brand else "SocioTrack"
 
     from app.core.memory import get_memory_manager

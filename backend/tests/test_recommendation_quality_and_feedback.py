@@ -23,7 +23,7 @@ async def setup_db():
 
 
 @pytest.mark.asyncio
-async def test_recommendation_rejection_triggers_negative_memory_lesson():
+async def test_recommendation_rejection_triggers_negative_memory_lesson(auth_headers):
     uid = uuid.uuid4().hex[:6]
     brand_id = f"brd_fb_{uid}"
     async with async_session_maker() as session:
@@ -47,7 +47,7 @@ async def test_recommendation_rejection_triggers_negative_memory_lesson():
             "user_explanation": "Too salesy and uses generic emojis that violate our technical voice.",
             "usefulness_rating": 2,
         }
-        res = await client.post("/api/recommendations/feedback", json=rej_payload)
+        res = await client.post("/api/recommendations/feedback", headers=auth_headers, json=rej_payload)
         assert res.status_code == 200
         data = res.json()
         assert data["status"] == "recorded"
@@ -55,7 +55,7 @@ async def test_recommendation_rejection_triggers_negative_memory_lesson():
         assert data["lesson_id"] is not None
 
         # Verify a new donts_avoided lesson exists for this brand
-        res_mem = await client.get(f"/api/brands/{brand_id}/memory")
+        res_mem = await client.get(f"/api/brands/{brand_id}/memory", headers=auth_headers)
         assert res_mem.status_code == 200
         mem_data = res_mem.json()
         donts = mem_data["lessons"]["donts_avoided"]
@@ -63,7 +63,7 @@ async def test_recommendation_rejection_triggers_negative_memory_lesson():
 
 
 @pytest.mark.asyncio
-async def test_recommendation_approval_and_rating():
+async def test_recommendation_approval_and_rating(auth_headers):
     uid = uuid.uuid4().hex[:6]
     brand_id = f"brd_app_{uid}"
     async with async_session_maker() as session:
@@ -85,7 +85,7 @@ async def test_recommendation_approval_and_rating():
             "usefulness_rating": 5,
             "user_explanation": "Spot-on hook and flawless technical carousel breakdown."
         }
-        res = await client.post("/api/recommendations/feedback", json=app_payload)
+        res = await client.post("/api/recommendations/feedback", headers=auth_headers, json=app_payload)
         assert res.status_code == 200
         data = res.json()
         assert data["status"] == "recorded"
@@ -93,7 +93,7 @@ async def test_recommendation_approval_and_rating():
 
 
 @pytest.mark.asyncio
-async def test_user_feedback_submission_and_backlog():
+async def test_user_feedback_submission_and_backlog(auth_headers):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Submit general feedback items
@@ -105,14 +105,14 @@ async def test_user_feedback_submission_and_backlog():
 
         created_ids = []
         for it in items:
-            res = await client.post("/api/feedback", json=it)
+            res = await client.post("/api/feedback", headers=auth_headers, json=it)
             assert res.status_code == 201
             data = res.json()
             assert data["category"] == it["category"]
             created_ids.append(data["id"])
 
         # Fetch backlog
-        res_backlog = await client.get("/api/feedback/backlog")
+        res_backlog = await client.get("/api/feedback/backlog", headers=auth_headers)
         assert res_backlog.status_code == 200
         backlog = res_backlog.json()
         assert backlog["total_feedback_items"] >= 3
@@ -121,6 +121,6 @@ async def test_user_feedback_submission_and_backlog():
 
         # Triage an item
         target_id = created_ids[0]
-        res_triage = await client.put(f"/api/feedback/{target_id}/triage", json={"triage_status": "triaged"})
+        res_triage = await client.put(f"/api/feedback/{target_id}/triage", headers=auth_headers, json={"triage_status": "triaged"})
         assert res_triage.status_code == 200
         assert res_triage.json()["triage_status"] == "triaged"

@@ -100,13 +100,14 @@ async def test_brand_intelligence_profile_derivation():
 
 
 @pytest.mark.asyncio
-async def test_memory_insight_crud_and_deactivation():
+async def test_memory_insight_crud_and_deactivation(auth_headers):
     """Verifies inspecting, updating, and deactivating learned insights."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 1. Create a learned insight
         create_resp = await client.post(
             "/api/memory/insights",
+            headers=auth_headers,
             json={
                 "brand_id": "test-brand-intelligence-id",
                 "insight_text": "Avoid introductory pleasantries; technical leads bounce within 2 seconds.",
@@ -125,6 +126,7 @@ async def test_memory_insight_crud_and_deactivation():
         # 2. Update the insight
         update_resp = await client.put(
             f"/api/memory/insights/{insight_id}",
+            headers=auth_headers,
             json={
                 "insight_text": "Avoid all conversational filler; open directly with architecture diagrams.",
                 "confidence_score": 0.95,
@@ -136,24 +138,25 @@ async def test_memory_insight_crud_and_deactivation():
         assert updated_data["confidence_score"] == 0.95
 
         # 3. Deactivate the insight
-        del_resp = await client.delete(f"/api/memory/insights/{insight_id}")
+        del_resp = await client.delete(f"/api/memory/insights/{insight_id}", headers=auth_headers)
         assert del_resp.status_code == 200
         assert del_resp.json()["status"] == "success"
 
         # 4. Verify it is excluded from default active list
-        list_resp = await client.get("/api/memory/insights?brand_id=test-brand-intelligence-id")
+        list_resp = await client.get("/api/memory/insights?brand_id=test-brand-intelligence-id", headers=auth_headers)
         assert list_resp.status_code == 200
         active_insights = list_resp.json()["insights"]
         assert not any(i["id"] == insight_id for i in active_insights)
 
 
 @pytest.mark.asyncio
-async def test_post_approval_user_edit_feedback_loop():
+async def test_post_approval_user_edit_feedback_loop(auth_headers):
     """Verifies that user edits on /api/posts/approve automatically record high-confidence preference insights."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         approve_resp = await client.post(
             "/api/posts/approve",
+            headers=auth_headers,
             json={
                 "brand_id": "test-brand-intelligence-id",
                 "post_content": "AI Draft: The top 5 ways to speed up your vector database query times.",
@@ -167,7 +170,7 @@ async def test_post_approval_user_edit_feedback_loop():
         assert approve_resp.json()["status"] == "approved"
 
         # Check that user edit was persisted to memory insights
-        mem_resp = await client.get("/api/memory/insights?brand_id=test-brand-intelligence-id")
+        mem_resp = await client.get("/api/memory/insights?brand_id=test-brand-intelligence-id", headers=auth_headers)
         assert mem_resp.status_code == 200
         insights = mem_resp.json()["insights"]
         user_edits = [i for i in insights if i.get("source_event") == "user_edit"]
@@ -176,12 +179,12 @@ async def test_post_approval_user_edit_feedback_loop():
 
 
 @pytest.mark.asyncio
-async def test_brand_intelligence_endpoints():
+async def test_brand_intelligence_endpoints(auth_headers):
     """Verifies GET /api/brands/{id}/intelligence and POST /api/brands/{id}/refresh-intelligence."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # GET intelligence
-        get_resp = await client.get("/api/brands/test-brand-intelligence-id/intelligence")
+        get_resp = await client.get("/api/brands/test-brand-intelligence-id/intelligence", headers=auth_headers)
         assert get_resp.status_code == 200
         profile = get_resp.json()
         assert profile["brand_id"] == "test-brand-intelligence-id"
@@ -189,7 +192,7 @@ async def test_brand_intelligence_endpoints():
         assert "topics" in profile
 
         # Refresh intelligence
-        refresh_resp = await client.post("/api/brands/test-brand-intelligence-id/refresh-intelligence")
+        refresh_resp = await client.post("/api/brands/test-brand-intelligence-id/refresh-intelligence", headers=auth_headers)
         assert refresh_resp.status_code == 200
         refresh_data = refresh_resp.json()
         assert refresh_data["status"] == "success"

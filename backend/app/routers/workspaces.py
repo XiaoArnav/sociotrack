@@ -288,6 +288,15 @@ async def link_brand_to_workspace(
     if not brand:
         raise HTTPException(status_code=404, detail="Brand not found")
 
+    # Security check: User must own the brand or have admin rights to link it to a workspace
+    if brand.user_id and brand.user_id != current_user.id:
+        from app.routers.auth import is_admin_user
+        if not is_admin_user(current_user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Forbidden: You do not have ownership rights to link this brand to a workspace.",
+            )
+
     brand.workspace_id = workspace_id
     await db.commit()
 
@@ -378,6 +387,13 @@ async def accept_workspace_invite(
         invite.status = "expired"
         await db.commit()
         raise HTTPException(status_code=400, detail="Invitation has expired.")
+
+    # Security check: verify that accepting user's email matches the invited email
+    if invite.email.lower() != current_user.email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Forbidden: This invitation was issued for '{invite.email}', but you are signed in as '{current_user.email}'.",
+        )
 
     # Check if already a member
     existing_stmt = select(WorkspaceMember).where(

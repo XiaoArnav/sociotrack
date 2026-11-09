@@ -30,13 +30,14 @@ async def setup_test_db():
 
 
 @pytest.mark.asyncio
-async def test_experiment_insufficient_data_guardrail():
+async def test_experiment_insufficient_data_guardrail(auth_headers):
     """Verifies that experiments do NOT declare a winner when sample size threshold is unmet."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 1. Create Experiment with min_sample_size = 1000
         create_resp = await client.post(
             "/api/experiments",
+            headers=auth_headers,
             json={
                 "brand_id": "test-exp-calendar-id",
                 "title": "Quantitative Benchmark vs Contrarian Opener",
@@ -55,6 +56,7 @@ async def test_experiment_insufficient_data_guardrail():
         # 2. Record low sample results (only 150 impressions total < 1000)
         res_resp = await client.post(
             f"/api/experiments/{exp_id}/record-result",
+            headers=auth_headers,
             json={
                 "variant_a_impressions": 80,
                 "variant_a_engagement_rate": 14.5,
@@ -72,12 +74,13 @@ async def test_experiment_insufficient_data_guardrail():
 
 
 @pytest.mark.asyncio
-async def test_experiment_statistically_sound_winner():
+async def test_experiment_statistically_sound_winner(auth_headers):
     """Verifies that a winner is declared only after meeting min_sample_size with clear delta."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         create_resp = await client.post(
             "/api/experiments",
+            headers=auth_headers,
             json={
                 "brand_id": "test-exp-calendar-id",
                 "title": "Carousel vs Single Observation Format",
@@ -94,6 +97,7 @@ async def test_experiment_statistically_sound_winner():
         # Record statistically valid sample (650 impressions > 500 threshold)
         res_resp = await client.post(
             f"/api/experiments/{exp_id}/record-result",
+            headers=auth_headers,
             json={
                 "variant_a_impressions": 350,
                 "variant_a_engagement_rate": 12.8,
@@ -111,12 +115,12 @@ async def test_experiment_statistically_sound_winner():
 
 
 @pytest.mark.asyncio
-async def test_calendar_recommendations_and_human_approval():
+async def test_calendar_recommendations_and_human_approval(auth_headers):
     """Verifies intelligent 7-day mix planner and explicit human approval flow."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # 1. Fetch calendar recommendations
-        cal_resp = await client.get("/api/calendar/recommendations?brand_id=test-exp-calendar-id")
+        cal_resp = await client.get("/api/calendar/recommendations?brand_id=test-exp-calendar-id", headers=auth_headers)
         assert cal_resp.status_code == 200
         plan = cal_resp.json()
 
@@ -133,6 +137,7 @@ async def test_calendar_recommendations_and_human_approval():
         slot_to_approve = plan["slots"][0]
         app_resp = await client.post(
             f"/api/calendar/approve-slot?brand_id=test-exp-calendar-id",
+            headers=auth_headers,
             json={
                 "slot_id": slot_to_approve["id"],
                 "approved_topic": slot_to_approve["suggested_topic"],

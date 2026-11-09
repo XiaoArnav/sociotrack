@@ -22,6 +22,8 @@ from app.models.product_event import ProductEvent
 from app.models.content_operations import Campaign
 from app.models.competitor import CompetitorTracker
 from app.routers.auth import get_current_user
+from app.schemas.auth import UserResponse
+from app.services.authorization_service import verify_brand_access
 
 router = APIRouter(prefix="/reports", tags=["Advanced Reporting"])
 
@@ -41,12 +43,8 @@ async def get_advanced_report(
     - Recommendation adoption rates
     - Grounded AI executive summary
     """
-    # Verify brand
-    b_stmt = select(Brand).where(Brand.id == brand_id)
-    b_res = await db.execute(b_stmt)
-    brand = b_res.scalars().first()
-    if not brand:
-        raise HTTPException(status_code=404, detail="Brand not found.")
+    # Verify brand & authorization
+    brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
 
     since_date = datetime.now(timezone.utc) - timedelta(days=timeframe_days)
 

@@ -11,13 +11,18 @@ Implements the official Meta Developer Dashboard webhook integration:
    Simulates Meta Webhook event delivery for live telemetry simulation and automated CI/CD.
 """
 
+import hmac
+import hashlib
+import json
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, HTTPException, Query, Request, Response, Header, Depends, status
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
 from app.config import settings
 from app.core.memory import get_memory_manager, calculate_composite_score
+from app.routers.auth import get_current_user
+from app.schemas.auth import UserResponse
 
 router = APIRouter(prefix="/webhooks", tags=["Meta Instagram Webhooks"])
 
@@ -74,13 +79,46 @@ async def verify_instagram_webhook(
     summary="Meta Webhook Event Ingestion",
     description="Receives real-time Instagram events from Meta Graph API and updates vector memory.",
 )
-async def receive_instagram_webhook(payload: Dict[str, Any]):
+async def receive_instagram_webhook(
+    request: Request,
+    x_hub_signature_256: Optional[str] = Header(None, alias="X-Hub-Signature-256"),
+):
     """
     Ingests real-time events from Instagram Graph API:
+    - Cryptographically verifies X-Hub-Signature-256 against META_APP_SECRET
     - Comments, mentions, likes, and impressions
     - Evaluates engagement velocity
     - Extracts strategic lessons for high-performing content into ChromaDB vector memory.
     """
+    payload_bytes = await request.body()
+
+    # Meta HMAC SHA-256 Signature Verification
+    if settings.META_APP_SECRET:
+        if not x_hub_signature_256 or not x_hub_signature_256.startswith("sha256="):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Missing or malformed X-Hub-Signature-256 header.",
+            )
+        expected_sig = hmac.new(
+            settings.META_APP_SECRET.encode("utf-8"),
+            msg=payload_bytes,
+            digestmod=hashlib.sha256,
+        ).hexdigest()
+        provided_sig = x_hub_signature_256.split("sha256=", 1)[1]
+        if not hmac.compare_digest(expected_sig, provided_sig):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid Meta webhook signature verification failed.",
+            )
+
+    try:
+        payload = json.loads(payload_bytes.decode("utf-8")) if payload_bytes else {}
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Malformed JSON in webhook body.",
+        )
+
     obj_type = payload.get("object")
     if obj_type not in ["instagram", "page"]:
         # Meta sends 404 or ignoring if not subscribed object
@@ -139,9 +177,13 @@ async def receive_instagram_webhook(payload: Dict[str, Any]):
     summary="Simulate Meta Webhook Delivery",
     description="Simulates an incoming Meta webhook event to verify the closed-loop memory feedback cycle.",
 )
-async def simulate_meta_webhook(req: SimulateWebhookRequest):
+async def simulate_meta_webhook(
+    req: SimulateWebhookRequest,
+    current_user: UserResponse = Depends(get_current_user),
+):
     """
     Fires a simulated Meta Webhook event through the system.
+    Requires authenticated user.
     Calculates composite score = (Shares*3 + Replies*2 + Likes*1) / Impressions * 100
     Reinforces vector memory if score exceeds threshold.
     """
