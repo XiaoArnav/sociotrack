@@ -38,6 +38,10 @@ import { NaturalLanguageExplorer } from "@/components/NaturalLanguageExplorer";
 import { CompetitorBenchmarkCard } from "@/components/CompetitorBenchmarkCard";
 import { ApprovalQueueWidget } from "@/components/ApprovalQueueWidget";
 import { AdvancedReportsView } from "@/components/AdvancedReportsView";
+import { PricingMatrixView } from "@/components/PricingMatrixView";
+import { CustomerBillingPortal } from "@/components/CustomerBillingPortal";
+import { BusinessMetricsDashboard } from "@/components/BusinessMetricsDashboard";
+import { TermsAndPrivacyModal } from "@/components/TermsAndPrivacyModal";
 import {
   PostDraft,
   LearnedInsight,
@@ -689,6 +693,7 @@ export default function App() {
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showTeamModal, setShowTeamModal] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState(false);
   const [workspaceBrands, setWorkspaceBrands] = useState<{ id: string; name: string }[]>([
     { id: "brd_default", name: "Apex Content Studio" },
     { id: "brd_saas", name: "SaaS Growth Lab" },
@@ -1646,6 +1651,53 @@ export default function App() {
                   />
                 </div>
               )}
+
+              {/* TRANSPARENT PLANS & PRICING MATRIX */}
+              {activeSubTab === "pricing" && (
+                <div className="space-y-6 animate-fade-in">
+                  <PricingMatrixView
+                    currentPlan="pro"
+                    onSelectPlan={(plan, cycle) => {
+                      showToast(
+                        "Connecting to Stripe",
+                        `Initiating secure checkout for ${plan.toUpperCase()} (${cycle}).`,
+                        "info"
+                      );
+                      setTimeout(() => {
+                        showToast(
+                          "Subscription Upgraded",
+                          `Welcome to SocioTrack ${plan.toUpperCase()}! Entitlements unlocked.`,
+                          "success"
+                        );
+                        setActiveSubTab("billing");
+                      }, 1800);
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* CUSTOMER ACCOUNT & BILLING PORTAL */}
+              {activeSubTab === "billing" && (
+                <div className="space-y-6 animate-fade-in">
+                  <CustomerBillingPortal
+                    workspaceId="default-workspace"
+                    apiBaseUrl={API_BASE_URL}
+                    authToken={currentUser?.token}
+                    onOpenPricing={() => setActiveSubTab("pricing")}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
+
+              {/* SAAS EXECUTIVE BUSINESS & UNIT ECONOMICS METRICS */}
+              {activeSubTab === "saas_metrics" && (
+                <div className="space-y-6 animate-fade-in">
+                  <BusinessMetricsDashboard
+                    apiBaseUrl={API_BASE_URL}
+                    authToken={currentUser?.token}
+                  />
+                </div>
+              )}
             </div>
 
             {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE */}
@@ -1844,12 +1896,18 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => {
-                    setActiveSubTab("aistudio");
+                    setActiveSubTab("pricing");
                     document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
                   }}
-                  className="hover:text-indigo-500"
+                  className="hover:text-indigo-500 font-bold text-emerald-600 dark:text-emerald-400"
                 >
-                  AI Studio
+                  Plans &amp; Pricing
+                </button>
+                <button
+                  onClick={() => setShowLegalModal(true)}
+                  className="hover:text-indigo-500 font-medium text-slate-500 dark:text-slate-400"
+                >
+                  Terms &amp; Compliance
                 </button>
               </div>
               <div className="text-[11px] font-mono">
@@ -2013,6 +2071,12 @@ export default function App() {
         apiBaseUrl={API_BASE_URL}
         authToken={currentUser?.token}
         onToast={(title, msg, type) => showToast(title, msg, type)}
+      />
+
+      {/* PRE-COMMERCIAL LEGAL & COMPLIANCE MODAL */}
+      <TermsAndPrivacyModal
+        isOpen={showLegalModal}
+        onClose={() => setShowLegalModal(false)}
       />
     </div>
   );

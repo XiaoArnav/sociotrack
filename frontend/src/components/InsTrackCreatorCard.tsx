@@ -32,7 +32,10 @@ export type SubNavTab =
   | "competitors"
   | "ask_ai"
   | "approval"
-  | "reports";
+  | "reports"
+  | "pricing"
+  | "billing"
+  | "saas_metrics";
 
 export interface CreatorProfile {
   handle: string;
@@ -548,6 +551,9 @@ export function InsTrackCreatorCard({
             { key: "competitors", label: "Competitor Intel" },
             { key: "approval", label: "Approval Queue" },
             { key: "reports", label: "Executive Reports" },
+            { key: "pricing", label: "Plans & Pricing", badge: "Upgrade" },
+            { key: "billing", label: "Account Billing" },
+            { key: "saas_metrics", label: "SaaS Business Metrics", badge: "Live" },
             { key: "telemetry", label: "Product Telemetry", badge: "Pilot" },
           ];
         })().map((tab) => {
