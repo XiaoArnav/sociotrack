@@ -26,6 +26,11 @@ class UserResponse(BaseModel):
     is_demo: bool = False
 
 
+class UserChangePasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=1, description="Current password")
+    new_password: str = Field(..., min_length=8, description="New password (minimum 8 characters)")
+
+
 class AuthTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"

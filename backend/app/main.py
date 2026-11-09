@@ -4,10 +4,12 @@ AI Social Media Engagement Agent Backend & Memory Layer.
 Owned by Person 1 & Person 2.
 """
 import asyncio
+import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings
+from app.config import settings, validate_production_configuration
 from app.database import init_db
 from app.routers import (
     drafts,
@@ -37,6 +39,9 @@ from app.routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Enforce strict production configuration validation gate
+    validate_production_configuration(settings)
+
     # Startup: ensure tables exist
     await init_db()
     # Initialize sync sqlite session if present for legacy routes

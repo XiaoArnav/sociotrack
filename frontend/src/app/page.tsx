@@ -706,7 +706,42 @@ export default function App() {
     try {
       const saved = localStorage.getItem("sociotrack_user_session");
       if (saved) {
-        setCurrentUser(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.token) {
+          const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+          const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
+          fetch(`${apiBase}/api/auth/me`, {
+            headers: { Authorization: `Bearer ${parsed.token}` },
+          })
+            .then((res) => {
+              if (res.status === 401) {
+                // Token has expired or been revoked
+                localStorage.removeItem("sociotrack_user_session");
+                setCurrentUser(null);
+                return null;
+              }
+              return res.ok ? res.json() : null;
+            })
+            .then((meData) => {
+              if (meData) {
+                setCurrentUser({
+                  name: meData.name,
+                  email: meData.email,
+                  role: meData.role,
+                  isDemo: meData.is_demo,
+                  token: parsed.token,
+                });
+              } else if (parsed.isDemo) {
+                setCurrentUser(parsed);
+              }
+            })
+            .catch(() => {
+              // Network fallback: keep current session offline
+              setCurrentUser(parsed);
+            });
+        } else {
+          setCurrentUser(parsed);
+        }
       }
     } catch {
       // ignore
@@ -1082,10 +1117,18 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
+                  if (currentUser?.token) {
+                    const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+                    const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
+                    fetch(`${apiBase}/api/auth/logout`, {
+                      method: "POST",
+                      headers: { Authorization: `Bearer ${currentUser.token}` },
+                    }).catch(() => {});
+                  }
                   localStorage.removeItem("sociotrack_user_session");
                   setCurrentUser(null);
                   setViewMode("public_report");
-                  showToast("Signed Out", "Your session has been securely ended.");
+                  showToast("Signed Out", "Your session has been securely ended and invalidated.");
                 }}
                 className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                 title="Sign out of current workspace"
