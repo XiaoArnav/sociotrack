@@ -76,6 +76,18 @@ class Settings(BaseSettings):
     WEIGHT_REPLIES: float = 2.0
     WEIGHT_LIKES: float = 1.0
 
+    # Stripe Commercial Billing & Entitlements
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    FRONTEND_URL: str = "https://frontend-taupe-zeta-84.vercel.app"
+    STRIPE_PRICE_PRO_MONTHLY: str = "price_pro_monthly"
+    STRIPE_PRICE_PRO_YEARLY: str = "price_pro_yearly"
+    STRIPE_PRICE_TEAM_MONTHLY: str = "price_team_monthly"
+    STRIPE_PRICE_TEAM_YEARLY: str = "price_team_yearly"
+    STRIPE_PRICE_AGENCY_MONTHLY: str = "price_agency_monthly"
+    STRIPE_PRICE_AGENCY_YEARLY: str = "price_agency_yearly"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
