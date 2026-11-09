@@ -51,6 +51,8 @@ export interface LearnedInsight {
   supportingEvidence?: string;
   sourceEvent?: string;
   isActive?: boolean;
+  isExplicit?: boolean;
+  memoryType?: string;
 }
 
 export const INITIAL_DRAFTS: PostDraft[] = [

@@ -84,6 +84,8 @@ async def init_db() -> None:
 
             if "agent_memories" in table_names:
                 mem_cols = {c["name"] for c in inspector.get_columns("agent_memories")}
+                if "workspace_id" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN workspace_id VARCHAR(36)"))
                 if "supporting_evidence" not in mem_cols:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN supporting_evidence TEXT"))
                 if "source_post_id" not in mem_cols:
@@ -92,6 +94,14 @@ async def init_db() -> None:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN source_event VARCHAR(50) DEFAULT 'telemetry_ingest'"))
                 if "is_active" not in mem_cols:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN is_active BOOLEAN DEFAULT 1"))
+                if "is_explicit" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN is_explicit BOOLEAN DEFAULT 0"))
+                if "evidence_count" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN evidence_count INTEGER DEFAULT 1"))
+                if "memory_type" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN memory_type VARCHAR(50) DEFAULT 'inferred_preference'"))
+                if "conflict_status" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN conflict_status VARCHAR(50) DEFAULT 'active'"))
                 if "updated_at" not in mem_cols:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN updated_at DATETIME"))
 

@@ -21,6 +21,7 @@ from app.schemas.feedback import (
     FeedbackBacklogSummary,
 )
 from app.core.memory import get_memory_manager
+from app.services.persistent_memory_service import PersistentMemoryService
 from app.routers.auth import get_current_user, is_admin_user
 from app.schemas.auth import UserResponse
 from app.services.authorization_service import verify_brand_access, get_accessible_brand_ids
@@ -66,36 +67,22 @@ async def record_recommendation_feedback(
     memory_lesson_created = False
     lesson_id = None
     confidence_impact = 0.0
+    rejection_count = 0
 
-    # 3. Memory Learning Feedback Loop
+    # 3. Trustworthy Memory Learning Feedback Loop
+    # Invariant: A single rejection does NOT create an unsupported permanent negative rule.
+    # Only recurring rejections (>= 2 times) OR explicit rule requests trigger memory creation.
     if payload.decision == "rejected" and payload.rejection_reason:
-        # A. Vector memory injection
-        mem_mgr = get_memory_manager(brand_name)
-        lesson_id, negative_lesson = mem_mgr.record_recommendation_rejection_lesson(
+        created, lesson_id, rejection_count = await PersistentMemoryService.record_feedback_learning(
+            db=db,
+            brand=brand,
+            decision=payload.decision,
             rejection_reason=payload.rejection_reason,
             user_explanation=payload.user_explanation,
-            topic="general",
+            is_explicit_rule=getattr(payload, "is_explicit_rule", False),
         )
-
-        # B. Relational database injection
-        db_memory = AgentMemory(
-            id=lesson_id,
-            brand_id=payload.brand_id,
-            category="donts_avoided",
-            insight_text=negative_lesson,
-            confidence_score=0.88,
-            supporting_evidence=f"User Rejection [{payload.rejection_reason}]: {payload.user_explanation or 'Observed friction'}",
-            source_event="recommendation_feedback",
-            is_active=True,
-        )
-        db.add(db_memory)
-
-        # C. Invalidate cached brand intelligence profile so next fetch refreshes
-        if brand:
-            brand.intelligence_profile = None
-
-        memory_lesson_created = True
-        confidence_impact = -0.15
+        memory_lesson_created = created
+        confidence_impact = -0.15 if created else -0.05
 
     elif payload.decision == "accepted":
         confidence_impact = 0.10 if (payload.usefulness_rating or 5) >= 4 else 0.05
@@ -117,6 +104,7 @@ async def record_recommendation_feedback(
         memory_lesson_created=memory_lesson_created,
         lesson_id=lesson_id,
         confidence_impact=confidence_impact,
+        rejection_count=rejection_count,
     )
 
 

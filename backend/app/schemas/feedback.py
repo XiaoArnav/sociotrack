@@ -14,6 +14,7 @@ class RecommendationFeedbackCreate(BaseModel):
     user_explanation: Optional[str] = None
     usefulness_rating: Optional[int] = Field(None, ge=1, le=5)
     edited_caption: Optional[str] = None
+    is_explicit_rule: Optional[bool] = Field(None, description="Whether user explicitly requests creating a permanent negative brand rule")
 
 
 class RecommendationFeedbackResponse(BaseModel):
@@ -22,6 +23,7 @@ class RecommendationFeedbackResponse(BaseModel):
     memory_lesson_created: Optional[bool] = False
     lesson_id: Optional[str] = None
     confidence_impact: Optional[float] = None
+    rejection_count: Optional[int] = None
 
 
 class UserFeedbackCreate(BaseModel):

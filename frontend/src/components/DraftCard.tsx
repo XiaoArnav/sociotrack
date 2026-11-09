@@ -104,13 +104,22 @@ export function DraftCard({
       });
 
       if (res.ok) {
+        const data = await res.json();
         setIsRejected(true);
         setShowRejectModal(false);
-        onToast?.(
-          "Recommendation Rejected",
-          "Saved as a negative rule in memory. Future recommendations will avoid this pattern.",
-          "info"
-        );
+        if (data.memory_lesson_created) {
+          onToast?.(
+            "Recommendation Rejected",
+            "Recurring pattern detected: negative guideline recorded in brand memory bank.",
+            "info"
+          );
+        } else {
+          onToast?.(
+            "Feedback Recorded",
+            `Signal noted (${data.rejection_count || 1}x). Permanent rules require recurring patterns before adapting brand boundaries.`,
+            "info"
+          );
+        }
       }
     } catch {
       setIsRejected(true);

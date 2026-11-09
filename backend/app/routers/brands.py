@@ -173,9 +173,13 @@ async def get_brand_memory_bank(
     )
     db_memories = list(m_res.scalars().all())
 
-    # Fetch vector lessons
+    # Fetch vector lessons with workspace & brand isolation
     from app.core.memory import get_memory_manager
-    mem_mgr = get_memory_manager(brand.name)
+    mem_mgr = get_memory_manager(
+        brand_name=brand.name,
+        workspace_id=brand.workspace_id,
+        brand_id=brand.id,
+    )
     vector_lessons = mem_mgr.retrieve_lessons(topic="general", limit=10, active_only=True)
 
     dos = []

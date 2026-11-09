@@ -92,46 +92,19 @@ async def approve_post(
             post.hook_style = payload.format or payload.hook_style
 
     # Real Feedback Loop: If user edited the AI draft, capture stylistic preference insight
-    if is_user_edited:
-        from app.models.memory import AgentMemory
-        from app.core.memory import get_memory_manager
-
-        pref_lesson = (
-            f"User editorial preference ({post.hook_style or 'general'}): "
-            f"Prefers custom voice phrasing over raw generation."
-        )
-        user_memory = AgentMemory(
-            brand_id=post.brand_id,
-            insight_text=pref_lesson,
-            category="user_preference",
-            confidence_score=0.92,
-            supporting_evidence=(
-                f"User edited draft prior to approval. Original length: {len(original_draft)}, "
-                f"Approved length: {len(approved_text)}"
-            ),
-            source_post_id=post.id,
-            source_event="user_edit",
-            is_active=True,
-        )
-        db.add(user_memory)
-
-        # Ingest into vector store
-        try:
-            b_res = await db.execute(select(Brand).where(Brand.id == post.brand_id))
-            b_obj = b_res.scalar_one_or_none()
-            brand_name = b_obj.name if b_obj else "SocioTrack"
-            mem_mgr = get_memory_manager(brand_name)
-            mem_mgr.insert_lesson(
-                topic="user_preference",
-                lesson=pref_lesson,
-                score=9.2,
-                format_name=post.hook_style,
-                supporting_evidence=user_memory.supporting_evidence,
-                source_event="user_edit",
-                confidence=0.92,
+    if is_user_edited and post.brand_id:
+        from app.services.persistent_memory_service import PersistentMemoryService
+        b_res = await db.execute(select(Brand).where(Brand.id == post.brand_id))
+        b_obj = b_res.scalar_one_or_none()
+        if b_obj:
+            await PersistentMemoryService.record_user_edit_learning(
+                db=db,
+                brand=b_obj,
+                post_id=post.id,
+                original_draft=original_draft or "",
+                approved_text=approved_text or "",
+                hook_style=post.hook_style or "general",
             )
-        except Exception:
-            pass
 
     await db.flush()
     await db.refresh(post)

@@ -35,6 +35,7 @@ export function AgentMemoryPanel({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [activeList, setActiveList] = useState<LearnedInsight[]>(insights);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   React.useEffect(() => {
     setActiveList(insights);
@@ -44,12 +45,15 @@ export function AgentMemoryPanel({
     if (!editText.trim()) return;
     const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
     const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+    const token = typeof window !== "undefined" ? localStorage.getItem("sociotrack_token") : null;
 
     try {
       if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
         await fetch(`${apiBase}/api/memory/insights/${id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ insight_text: editText }),
         });
       }
@@ -64,11 +68,15 @@ export function AgentMemoryPanel({
   const handleDeactivate = async (id: string) => {
     const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
     const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "" : "http://localhost:8000");
+    const token = typeof window !== "undefined" ? localStorage.getItem("sociotrack_token") : null;
 
     try {
       if (apiBase && !(isHttps && apiBase.startsWith("http://localhost"))) {
+        const headers: Record<string, string> = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
         await fetch(`${apiBase}/api/memory/insights/${id}`, {
           method: "DELETE",
+          headers,
         });
       }
     } catch {}
@@ -95,13 +103,43 @@ export function AgentMemoryPanel({
         </div>
         <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#E8F8F3] text-[#16A477] border border-[#16A477]/30">
           <span className="w-1.5 h-1.5 rounded-full bg-[#16A477] animate-pulse" />
-          <span>Vector Active</span>
+          <span>ChromaDB Persistent</span>
         </span>
+      </div>
+
+      {/* Category Filter Pills */}
+      <div className="flex items-center space-x-1 overflow-x-auto pb-1 text-[11px] font-semibold text-[#718096]">
+        {[
+          { id: "all", label: "All Memories" },
+          { id: "directives", label: "Directives" },
+          { id: "performance", label: "Performance" },
+          { id: "avoided", label: "Avoided Patterns" },
+        ].map((cat) => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={`px-2.5 py-1 rounded-full transition-all shrink-0 ${
+              selectedCategory === cat.id
+                ? "bg-[#172033] text-white dark:bg-white dark:text-[#172033]"
+                : "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
       </div>
 
       {/* Memory Insights Cards List */}
       <div className="space-y-3.5">
-        {activeList.map((card) => {
+        {activeList
+          .filter((item) => {
+            if (selectedCategory === "all") return true;
+            if (selectedCategory === "directives") return item.isExplicit || item.type === "preference";
+            if (selectedCategory === "avoided") return item.type === "discovered" || item.insight.toLowerCase().includes("avoid");
+            if (selectedCategory === "performance") return item.type === "performance";
+            return true;
+          })
+          .map((card) => {
           const isEditingThis = editingId === card.id;
 
           // If this is a dynamically newly discovered insight from feedback loop

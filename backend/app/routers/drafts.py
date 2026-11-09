@@ -93,23 +93,15 @@ async def generate_drafts(
         db.add(brand)
         await db.flush()
 
-    # 2. Recall brand memories from Hindsight & local database
-    recalled_from_hindsight = await hindsight_client.recall(
-        brand_id=brand.id,
-        query=f"high performing hook rules and audience pain points for {payload.topic}",
-        limit=3,
+    # 2. Recall persistent brand memories with strict tenant isolation and ranking
+    from app.services.persistent_memory_service import PersistentMemoryService
+    mem_context = await PersistentMemoryService.retrieve_context_for_generation(
+        db=db,
+        brand=brand,
+        topic=payload.topic,
+        limit=7,
     )
-
-    db_memories_res = await db.execute(
-        select(AgentMemory.insight_text)
-        .where(AgentMemory.brand_id == brand.id)
-        .order_by(AgentMemory.confidence_score.desc(), AgentMemory.created_at.desc())
-        .limit(3)
-    )
-    db_memories = [row[0] for row in db_memories_res.fetchall() if row[0]]
-
-    # Combine unique memory context
-    combined_memories = list(dict.fromkeys(recalled_from_hindsight + db_memories))
+    combined_memories = mem_context.get("memories_applied_summaries", [])
 
     # 3. Trigger Brand-Specific Generation with Provenance & Evaluation
     target_platform = payload.platform or "Instagram"

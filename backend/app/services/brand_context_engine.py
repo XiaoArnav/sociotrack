@@ -157,24 +157,40 @@ async def extract_brand_context(
     brand_id: str,
     current_user: UserResponse,
     min_role: str = "viewer",
+    topic: Optional[str] = None,
 ) -> BrandContextSummary:
     """
     Retrieves authorized Brand context for the current user.
     Enforces multi-tenant workspace isolation: raises HTTP 403/404 if unauthorized.
+    Retrieves prioritized persistent memories and integrates them with top-level precedence.
     """
     brand = await verify_brand_access(db, brand_id, current_user, min_role=min_role)
 
-    # Fetch recent active memories for this brand
-    mem_stmt = (
-        select(AgentMemory.insight_text)
-        .where(AgentMemory.brand_id == brand.id)
-        .order_by(desc(AgentMemory.confidence_score), desc(AgentMemory.created_at))
-        .limit(5)
+    # Use PersistentMemoryService to retrieve context with strict workspace isolation and priority ranking
+    from app.services.persistent_memory_service import PersistentMemoryService
+    mem_context = await PersistentMemoryService.retrieve_context_for_generation(
+        db=db,
+        brand=brand,
+        topic=topic or "general",
+        limit=7,
     )
-    res = await db.execute(mem_stmt)
-    memories = [row[0] for row in res.fetchall() if row[0]]
 
-    return build_brand_context_from_brand(brand, db_memories=memories)
+    base_summary = build_brand_context_from_brand(
+        brand,
+        db_memories=mem_context.get("memories_applied_summaries", []),
+    )
+
+    # Inject explicit directives at the top of content_dos and content_donts
+    if mem_context.get("explicit_dos"):
+        base_summary.content_dos = mem_context["explicit_dos"] + [
+            d for d in base_summary.content_dos if d not in mem_context["explicit_dos"]
+        ]
+    if mem_context.get("explicit_donts"):
+        base_summary.content_donts = mem_context["explicit_donts"] + [
+            d for d in base_summary.content_donts if d not in mem_context["explicit_donts"]
+        ]
+
+    return base_summary
 
 
 def format_brand_generation_prompt(

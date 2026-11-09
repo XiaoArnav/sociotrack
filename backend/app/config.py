@@ -71,9 +71,13 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = ""
     SUPABASE_SERVICE_ROLE_KEY: str = ""
 
-    # Vector store & Memory settings
-    VECTOR_STORE_PROVIDER: str = "chroma"
+    # Vector store & Memory settings (ChromaDB & Persistent Memory Engine)
+    VECTOR_STORE_PROVIDER: str = "chroma"  # 'chroma', 'chroma_persistent', 'memory'
     CHROMA_PERSIST_DIRECTORY: str = "./chroma_data"
+    MEMORY_MAX_RECALL_LIMIT: int = 7
+    MEMORY_MIN_REJECTIONS_FOR_PATTERN: int = 2
+    MEMORY_MIN_VERIFIED_POSTS_FOR_INSIGHT: int = 3
+    MEMORY_SIMILARITY_THRESHOLD: float = 0.85
 
     # Hindsight Memory System Settings (Vectorize.io)
     HINDSIGHT_API_URL: str = "http://localhost:8888"

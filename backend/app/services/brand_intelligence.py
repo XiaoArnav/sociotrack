@@ -195,7 +195,11 @@ def build_brand_intelligence_profile(
     )
 
     # 3. Voice Archetype derived from Brand preferences and Vector Memory lessons
-    mem_mgr = get_memory_manager(brand.name)
+    mem_mgr = get_memory_manager(
+        brand_name=brand.name,
+        workspace_id=getattr(brand, "workspace_id", None),
+        brand_id=getattr(brand, "id", None),
+    )
     vector_lessons = mem_mgr.retrieve_lessons(topic="voice", limit=10, active_only=True)
 
     dos = [

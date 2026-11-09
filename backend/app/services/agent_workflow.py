@@ -52,8 +52,12 @@ async def trigger_agent_draft_generation(
     """
     brand_name = getattr(brand, "name", "SocioTrack")
 
-    # Fetch recent hooks from vector memory for anti-repetition check
-    mem_mgr = get_memory_manager(brand_name)
+    # Fetch recent hooks from vector memory for anti-repetition check (isolated by workspace and brand)
+    mem_mgr = get_memory_manager(
+        brand_name=brand_name,
+        workspace_id=getattr(brand, "workspace_id", None),
+        brand_id=getattr(brand, "id", None),
+    )
     recent_hooks = mem_mgr.retrieve_recent_hooks(limit=10)
 
     # 1. Synthesize structured Brand Context

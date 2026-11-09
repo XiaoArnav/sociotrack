@@ -1,13 +1,13 @@
 """
-Memory Router: Handles GET /api/memory/insights?brand_id={id}.
-Retrieves learned audience insights and hook rules for the specified brand.
+Memory Router: Handles persistent memory endpoints, insights retrieval, and memory lifecycle controls.
+Multi-tenant isolation at workspace and brand level.
 """
 from typing import Optional, List
 import uuid
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from app.database import get_db
 from app.models.brand import Brand
 from app.models.memory import AgentMemory
@@ -19,6 +19,8 @@ from app.schemas.memory import (
     AudienceSentimentSchema,
     PastWinningPostSchema,
     LearnedLessonSchema,
+    MemoryStatusResponse,
+    MemoryClearRequest,
 )
 from app.schemas.auth import UserResponse
 from app.routers.auth import get_current_user, is_admin_user
@@ -28,8 +30,62 @@ from app.services.authorization_service import (
     check_brand_access,
     get_accessible_brand_ids,
 )
+from app.services.persistent_memory_service import PersistentMemoryService
+from app.core.memory import get_memory_manager
 
 router = APIRouter(prefix="/memory", tags=["Memory"])
+
+
+@router.get(
+    "/status",
+    response_model=MemoryStatusResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get genuine persistence health and vector store storage status",
+)
+async def get_memory_storage_status(
+    brand_id: Optional[str] = Query(None, description="UUID of brand"),
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    brand = None
+    if brand_id:
+        brand = await verify_brand_access(db, brand_id, current_user, min_role="viewer")
+
+    workspace_id = getattr(current_user, "active_workspace_id", None)
+    brand_name = brand.name if brand else "SocioTrack"
+    brand_id_val = brand.id if brand else (brand_id or "default_brand")
+
+    raw_status = await PersistentMemoryService.get_storage_status(
+        workspace_id=workspace_id,
+        brand_id=brand_id_val,
+        brand_name=brand_name,
+    )
+
+    # Count SQL memories
+    count_stmt = select(func.count(AgentMemory.id))
+    if brand:
+        count_stmt = count_stmt.where(AgentMemory.brand_id == brand.id)
+    total_res = await db.execute(count_stmt)
+    total_sql = total_res.scalar() or 0
+
+    active_stmt = select(func.count(AgentMemory.id)).where(AgentMemory.is_active.is_(True))
+    if brand:
+        active_stmt = active_stmt.where(AgentMemory.brand_id == brand.id)
+    active_res = await db.execute(active_stmt)
+    active_sql = active_res.scalar() or 0
+
+    stats = raw_status.get("stats", {})
+    return MemoryStatusResponse(
+        status="healthy" if not raw_status.get("storage_error") else "degraded",
+        is_persistent=bool(raw_status.get("is_persistent", False)),
+        storage_provider=str(raw_status.get("storage_provider", "chroma")),
+        persist_directory=raw_status.get("persist_directory"),
+        total_memories=total_sql,
+        active_memories=active_sql,
+        vector_collections_count=stats.get("lessons_learned_count", 0),
+        vector_store_healthy=raw_status.get("storage_error") is None,
+        storage_error=raw_status.get("storage_error"),
+    )
 
 
 @router.get(
@@ -42,6 +98,8 @@ async def get_memory_insights(
     brand_id: Optional[str] = Query(None, description="UUID of the brand"),
     brand_name: Optional[str] = Query(None, description="Brand name if querying by identifier"),
     topic: Optional[str] = Query(None, description="Context topic"),
+    category: Optional[str] = Query(None, description="Filter by memory category"),
+    search: Optional[str] = Query(None, description="Search memory insights"),
     include_inactive: bool = Query(False, description="Whether to include deactivated lessons"),
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -72,22 +130,27 @@ async def get_memory_insights(
 
     active_brand_id = brand.id if brand else (brand_id or "mock_brand_id")
     active_brand_name = brand.name if brand else (brand_name or "SocioTrack")
+    active_workspace_id = brand.workspace_id if brand else getattr(current_user, "active_workspace_id", None)
     active_topic = topic or "Deterministic State Management with LangGraph"
 
-    # Query Agent Memories from SQL
+    # Query SQL memories using PersistentMemoryService
     memories = []
     if brand:
-        query = select(AgentMemory).where(AgentMemory.brand_id == brand.id)
-        if not include_inactive:
-            query = query.where(AgentMemory.is_active.is_(True))
-        query = query.order_by(AgentMemory.created_at.desc())
-        mem_res = await db.execute(query)
-        memories = list(mem_res.scalars().all())
+        memories = await PersistentMemoryService.get_brand_memories(
+            db=db,
+            brand_id=brand.id,
+            workspace_id=brand.workspace_id,
+            category=category,
+            search=search,
+            include_inactive=include_inactive,
+            limit=50,
+        )
 
     insights_list = [
         AgentMemoryResponse(
             id=m.id,
             brand_id=m.brand_id,
+            workspace_id=m.workspace_id,
             insight_text=m.insight_text,
             category=m.category,
             confidence_score=m.confidence_score,
@@ -95,15 +158,22 @@ async def get_memory_insights(
             source_post_id=m.source_post_id,
             source_event=m.source_event,
             is_active=m.is_active if m.is_active is not None else True,
+            is_explicit=bool(m.is_explicit),
+            evidence_count=int(m.evidence_count or 1),
+            memory_type=m.memory_type or "inferred_preference",
+            conflict_status=m.conflict_status or "active",
             created_at=m.created_at,
             updated_at=m.updated_at,
         )
         for m in memories
     ]
 
-    # Query Vector Memory Manager for real semantic records
-    from app.core.memory import get_memory_manager
-    mem_mgr = get_memory_manager(active_brand_name)
+    # Query Vector Memory Manager with workspace isolation
+    mem_mgr = get_memory_manager(
+        brand_name=active_brand_name,
+        workspace_id=active_workspace_id,
+        brand_id=active_brand_id,
+    )
     raw_lessons = mem_mgr.retrieve_lessons(topic=active_topic, limit=5, active_only=not include_inactive)
     raw_posts = mem_mgr.retrieve_top_posts(topic=active_topic, limit=5)
     raw_sentiment = mem_mgr.retrieve_sentiment(topic=active_topic)
@@ -129,14 +199,21 @@ async def get_memory_insights(
     learned_lessons = []
     for idx, l in enumerate(raw_lessons):
         meta = l.get("metadata", {})
+        derived_iso = None
+        if meta.get("timestamp"):
+            try:
+                derived_iso = datetime.fromtimestamp(meta["timestamp"], tz=timezone.utc).isoformat()
+            except Exception:
+                derived_iso = None
+
         learned_lessons.append(
             LearnedLessonSchema(
                 id=l.get("id", f"lesson_{idx}"),
                 topic=meta.get("topic", active_topic),
                 key_lesson=l.get("lesson", ""),
                 composite_score=float(meta.get("composite_score", 5.5)),
-                derived_at=datetime.fromtimestamp(meta.get("timestamp", 0), tz=timezone.utc).isoformat() if meta.get("timestamp") else None,
-                supporting_evidence=meta.get("supporting_evidence", "Derived from vector telemetry"),
+                derived_at=derived_iso,
+                supporting_evidence=meta.get("supporting_evidence", "Derived from persistent vector telemetry"),
                 source_event=meta.get("source_event", "telemetry_ingest"),
                 is_active=meta.get("is_active", True),
                 brand_id=active_brand_id,
@@ -159,37 +236,6 @@ async def get_memory_insights(
                 )
             )
 
-    # Provide fallback baseline only if no memories exist anywhere yet
-    if not learned_lessons:
-        learned_lessons.append(
-            LearnedLessonSchema(
-                id="lesson_baseline",
-                topic=active_topic,
-                key_lesson="Contrarian technical assertions and benchmark percentages yield higher bookmark rates.",
-                composite_score=7.2,
-                supporting_evidence="Verified across 48 historical high-share technical publications.",
-                source_event="baseline_prior",
-                is_active=True,
-                brand_id=active_brand_id,
-            )
-        )
-
-    if not top_winning_posts:
-        top_winning_posts.append(
-            PastWinningPostSchema(
-                id="win_baseline",
-                topic=active_topic,
-                content=f"Engineering breakdown: How we scaled {active_topic} with deterministic checkpoints.",
-                hook="Data-backed contrarian hook",
-                composite_score=8.4,
-                impressions=5000,
-                shares=120,
-                replies=45,
-                likes=280,
-                key_takeaway="Benchmark data combined with contrarian hooks yields optimal virality.",
-            )
-        )
-
     sentiment_score = raw_sentiment.get("sentiment_score", 0.82)
     sentiment_label = raw_sentiment.get("sentiment_label", "positive_growth")
     keywords_raw = raw_sentiment.get("keywords", ["architecture", "telemetry", "retention", "langgraph"])
@@ -208,17 +254,21 @@ async def get_memory_insights(
         keywords=keywords,
     )
 
+    storage_status = mem_mgr.get_storage_status()
+
     return MemoryInsightsResponse(
         brand_id=active_brand_id,
         brand_name=active_brand_name,
         topic=active_topic,
         total_insights=len(insights_list),
+        total_active_memories=len([m for m in insights_list if m.is_active]),
         insights=insights_list,
         total_winning_posts=len(top_winning_posts),
         total_lessons_learned=max(len(insights_list), len(learned_lessons)),
         current_sentiment=current_sentiment,
         top_winning_posts=top_winning_posts,
         learned_lessons=learned_lessons,
+        persistence_status=storage_status,
     )
 
 
@@ -226,7 +276,7 @@ async def get_memory_insights(
     "/insights",
     response_model=AgentMemoryResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Record a new learned audience insight",
+    summary="Record a new explicit or confirmed audience guideline",
 )
 async def create_memory_insight(
     payload: AgentMemoryCreate,
@@ -250,30 +300,17 @@ async def create_memory_insight(
             db.add(brand)
             await db.flush()
 
-    memory = AgentMemory(
-        brand_id=brand.id,
+    memory = await PersistentMemoryService.create_memory(
+        db=db,
+        brand=brand,
         insight_text=payload.insight_text,
-        category=payload.category,
-        confidence_score=payload.confidence_score,
+        category=payload.category or "content_preferences",
+        confidence_score=payload.confidence_score or 0.95,
         supporting_evidence=payload.supporting_evidence or "Direct user-entered guideline",
-        source_event=payload.source_event or "user_edit",
-        is_active=payload.is_active,
-    )
-    db.add(memory)
-    await db.flush()
-    await db.refresh(memory)
-
-    # Also persist to VectorMemoryManager
-    from app.core.memory import get_memory_manager
-    mem_mgr = get_memory_manager(brand.name)
-    mem_mgr.insert_lesson(
-        topic="user_preference",
-        lesson=payload.insight_text,
-        score=payload.confidence_score * 10.0,
-        doc_id=memory.id,
-        supporting_evidence=memory.supporting_evidence,
-        source_event=memory.source_event,
-        confidence=payload.confidence_score,
+        source_event=payload.source_event or "explicit_directive",
+        is_explicit=True,  # Explicit directive entered by user
+        evidence_count=payload.evidence_count or 1,
+        memory_type="explicit_directive",
     )
 
     return AgentMemoryResponse.model_validate(memory)
@@ -293,59 +330,58 @@ async def update_memory_insight(
 ):
     memory, brand = await verify_memory_access(db, insight_id, current_user, min_role="editor")
 
-    if payload.insight_text is not None:
-        memory.insight_text = payload.insight_text
-    if payload.category is not None:
-        memory.category = payload.category
-    if payload.confidence_score is not None:
-        memory.confidence_score = payload.confidence_score
-    if payload.supporting_evidence is not None:
-        memory.supporting_evidence = payload.supporting_evidence
-    if payload.is_active is not None:
-        memory.is_active = payload.is_active
-
-    memory.updated_at = datetime.now(timezone.utc)
-    await db.flush()
-    await db.refresh(memory)
-
-    # Sync to vector collection
-    brand_name = brand.name if brand else "SocioTrack"
-
-    from app.core.memory import get_memory_manager
-    mem_mgr = get_memory_manager(brand_name)
-    mem_mgr.update_lesson(
-        doc_id=insight_id,
-        new_lesson=memory.insight_text,
-        metadata_updates={
-            "is_active": memory.is_active,
-            "confidence": memory.confidence_score,
-            "supporting_evidence": memory.supporting_evidence,
-        },
+    updated = await PersistentMemoryService.update_memory(
+        db=db,
+        memory=memory,
+        brand=brand,
+        new_text=payload.insight_text,
+        new_category=payload.category,
+        new_confidence=payload.confidence_score,
+        is_active=payload.is_active,
+        supporting_evidence=payload.supporting_evidence,
     )
 
-    return AgentMemoryResponse.model_validate(memory)
+    return AgentMemoryResponse.model_validate(updated)
 
 
 @router.delete(
     "/insights/{insight_id}",
     status_code=status.HTTP_200_OK,
-    summary="Deactivate a learned insight to prevent future AI distortion",
+    summary="Deactivate or delete a learned insight",
 )
-async def deactivate_memory_insight(
+async def delete_or_deactivate_memory_insight(
     insight_id: str,
+    hard_delete: bool = Query(False, description="Whether to permanently delete instead of soft-deactivate"),
     current_user: UserResponse = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     memory, brand = await verify_memory_access(db, insight_id, current_user, min_role="editor")
 
-    memory.is_active = False
-    memory.updated_at = datetime.now(timezone.utc)
-    await db.flush()
+    await PersistentMemoryService.delete_memory(
+        db=db,
+        memory=memory,
+        brand=brand,
+        hard_delete=hard_delete,
+    )
 
-    brand_name = brand.name if brand else "SocioTrack"
+    action_label = "deleted" if hard_delete else "deactivated"
+    return {"status": "success", "message": f"Insight '{insight_id}' {action_label}."}
 
-    from app.core.memory import get_memory_manager
-    mem_mgr = get_memory_manager(brand_name)
-    mem_mgr.deactivate_lesson(doc_id=insight_id)
 
-    return {"status": "success", "message": f"Insight '{insight_id}' deactivated."}
+@router.post(
+    "/clear",
+    status_code=status.HTTP_200_OK,
+    summary="Clear all learned memories for a brand",
+)
+async def clear_brand_memories(
+    payload: MemoryClearRequest,
+    current_user: UserResponse = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    brand = await verify_brand_access(db, payload.brand_id, current_user, min_role="admin")
+    result = await PersistentMemoryService.clear_all_brand_memories(db, brand)
+    return {
+        "status": "success",
+        "message": f"All memories cleared for brand '{brand.name}'.",
+        "cleared_stats": result,
+    }
