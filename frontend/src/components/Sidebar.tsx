@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import {
   LayoutDashboard,
   Wand2,
@@ -122,7 +122,7 @@ export function Sidebar({
               <button
                 key={item.id}
                 onClick={() => onSelectTab(item.id)}
-                title={isCollapsed ? item.label : undefined}
+                aria-label={item.label}
                 className={`w-full flex items-center rounded-xl text-xs font-semibold transition-all group ${
                   isCollapsed ? "justify-center p-2.5" : "px-3 py-2.5 space-x-3"
                 } ${

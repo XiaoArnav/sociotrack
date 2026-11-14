@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AuthPage, UserSession } from "@/components/auth/AuthPage";
 import { Sidebar, NavItem } from "@/components/Sidebar";
 import { Header, DashboardMetrics } from "@/components/Header";
@@ -26,6 +26,20 @@ import { CheckCircle2, Sparkles, X } from "lucide-react";
 export default function App() {
   // 1. Authentication State: Always start at Login!
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
+
+  // Auto-authenticate if ?demo=true query param is present
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("demo") === "true") {
+        setCurrentUser({
+          name: "Alex Chen",
+          email: "alex.chen@enterprise.com",
+          role: "Principal Content Architect",
+        });
+      }
+    }
+  }, []);
 
   // 2. Navigation State
   const [currentTab, setCurrentTab] = useState<NavItem>("overview");

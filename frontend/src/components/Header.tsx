@@ -110,6 +110,7 @@ export function Header({
               value={searchValue}
               onChange={handleSearch}
               placeholder="Search drafts, insights..."
+              aria-label="Global search for drafts and insights"
               className="w-48 sm:w-64 h-9 pl-8 pr-8 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] text-xs text-[#172033] placeholder-[#718096] focus:outline-none focus:ring-2 focus:ring-[#5146D8]/20 focus:border-[#5146D8] transition-all"
             />
             <Search className="w-3.5 h-3.5 text-[#718096] absolute left-2.5 top-3" />
@@ -122,8 +123,9 @@ export function Header({
           <div className="relative">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
+              type="button"
               className="w-9 h-9 rounded-xl border border-[#E6E9F0] bg-white hover:bg-[#F6F7FB] flex items-center justify-center text-[#172033] relative transition-colors"
-              aria-label="Notifications"
+              aria-label="View agent intelligence logs and notifications"
             >
               <Bell className="w-4 h-4 text-[#718096]" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#5146D8] ring-2 ring-white" />
@@ -139,12 +141,6 @@ export function Header({
                       Agent Intelligence Logs
                     </span>
                   </div>
-                  <button
-                    onClick={() => setShowNotifications(false)}
-                    className="text-[#718096] hover:text-[#172033]"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
                 </div>
 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -152,6 +148,8 @@ export function Header({
                     <div
                       key={n.id}
                       className="p-2.5 rounded-xl bg-[#F6F7FB] border border-[#E6E9F0] text-left space-y-1 hover:bg-[#ECE9FF]/40 transition-colors cursor-pointer"
+                      tabIndex={0}
+                      role="button"
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-[#172033]">
@@ -174,7 +172,7 @@ export function Header({
       {/* Bottom Row: 4 Compact Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
         {/* Metric 1: Total Drafts */}
-        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all hover:bg-white hover:shadow-card">
+        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all focus-visible:ring-2 focus-visible:ring-[#5146D8]/30 hover:bg-white hover:shadow-card">
           <div className="w-9 h-9 rounded-lg bg-[#ECE9FF] text-[#5146D8] flex items-center justify-center shrink-0">
             <FileText className="w-4 h-4" />
           </div>
@@ -189,7 +187,7 @@ export function Header({
         </div>
 
         {/* Metric 2: Pending Approvals */}
-        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all hover:bg-white hover:shadow-card">
+        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all focus-visible:ring-2 focus-visible:ring-[#5146D8]/30 hover:bg-white hover:shadow-card">
           <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
             <Clock className="w-4 h-4" />
           </div>
@@ -204,7 +202,7 @@ export function Header({
         </div>
 
         {/* Metric 3: Published Posts */}
-        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all hover:bg-white hover:shadow-card">
+        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all focus-visible:ring-2 focus-visible:ring-[#5146D8]/30 hover:bg-white hover:shadow-card">
           <div className="w-9 h-9 rounded-lg bg-[#E8F8F3] text-[#16A477] flex items-center justify-center shrink-0">
             <Send className="w-4 h-4" />
           </div>
@@ -219,7 +217,7 @@ export function Header({
         </div>
 
         {/* Metric 4: Audience Insights Learned */}
-        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all hover:bg-white hover:shadow-card">
+        <div className="bg-[#F6F7FB] border border-[#E6E9F0] rounded-xl p-3 flex items-center space-x-3 transition-all focus-visible:ring-2 focus-visible:ring-[#5146D8]/30 hover:bg-white hover:shadow-card">
           <div className="w-9 h-9 rounded-lg bg-indigo-50 text-[#3478F6] flex items-center justify-center shrink-0">
             <BrainCircuit className="w-4 h-4" />
           </div>

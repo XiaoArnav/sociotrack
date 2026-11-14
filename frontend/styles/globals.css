@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================
+   SOCIOTRACK DESIGN TOKENS
+   ========================================== */
+
+:root {
+  /* Primary Palette - Professional Indigo */
+  --sociotrack-indigo: #5146D8;
+  --sociotrack-indigo-light: #A5B4FC;
+  --sociotrack-indigo-dark: #3730E1;
+
+  /* Secondary Palette - Trust Blue */
+  --sociotrack-blue: #3478F6;
+  --sociotrack-blue-light: #BAE1FF;
+
+  /* Success Palette - Growth Green */
+  --sociotrack-green: #16A477;
+  --sociotrack-green-light: #5EEAD4;
+
+  /* Neutral Colors */
+  --bg-primary: #F6F7FB;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F8FAFC;
+  --text-primary: #172033;
+  --text-secondary: #718096;
+  --border-light: #E6E9F0;
+
+  /* Typography Scale */
+  --font-display: 48px;
+  --font-heading: 32px;
+  --font-body: 18px;
+  --font-caption: 14px;
+  --font-label: 12px;
+}
+
+/* ==========================================
+   BASE STYLES & TYPOGRAPHY
+   ========================================== */
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    @apply bg-[#F6F7FB] text-[#172033];
+  }
+}
+
+/* ==========================================
+   TYPOGRAPHY SYSTEM
+   ========================================== */
+
+@layer base {
+  h1, .font-display {
+    @apply font-bold leading-tight;
+  }
+
+  h2, .font-heading {
+    @apply font-extrabold;
+  }
+
+  h3, .font-body {
+    @apply text-[#172033];
+  }
+
+  p, .text-default {
+    @apply leading-relaxed text-[#172033];
+  }
+}
+
+@layer components {
+  /* Body Text */
+  body {
+    @apply bg-[#F6F7FB] text-[#172033] antialiased;
+  }
+}
+
+/* ==========================================
+   COLOR VARIABLES (Tailwind)
+   ========================================== */
+
+@layer base {
+  .bg-indigo-500 { @apply bg-[#5146D8]; }
+  .bg-blue-500 { @apply bg-[#3478F6]; }
+  .bg-green-500 { @apply bg-[#16A477]; }
+
+  .text-indigo-500 { @apply text-[#5146D8]; }
+  .text-blue-500 { @apply text-[#3478F6]; }
+  .text-green-500 { @apply text-[#16A477]; }
+
+  .border-indigo-500 { @apply border-[#5146D8]; }
+  .border-blue-500 { @apply border-[#3478F6]; }
+  .border-green-500 { @apply border-[#16A477]; }
+
+  /* Accent Colors */
+  .accent-indigo { --accent: #5146D8; }
+  .accent-blue { --accent: #3478F6; }
+  .accent-green { --accent: #16A477; }
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+@layer utilities {
+  /* Selection Styling */
+  ::selection {
+    @apply bg-[#ECE9FF] text-[#5146D8];
+  }
+
+  /* Card Shadow System */
+  .shadow-card {
+    @apply shadow-lg;
+  }
+
+  .shadow-float {
+    @apply shadow-2xl shadow-[#5146D8]/10;
+  }
+}
+
+/* ==========================================
+   ANIMATIONS & TRANSITIONS
+   ========================================== */
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  button, a {
+    @apply transition-colors duration-200 hover:text-[#172033];
+  }
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-[#E6E9F0] rounded-full;
+}
+
+::-webkit-scrollbar-corner {
+  @apply bg-transparent;
+}
+
+/* ==========================================
+   LAYOUT UTILITIES
+   ========================================== */
+
+.container-max-w-7xl {
+  @apply max-w-[72rem] mx-auto px-4 lg:px-6;
+}
+
+.grid-gutter-6 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+/* ==========================================
+   RESPONSIVE BREAKPOINTS
+   ========================================== */
+
+@media (max-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+
+  .font-heading {
+    @apply text-2xl;
+  }
+}
+
+/* Focus visibility for accessibility */
+*:focus-visible {
+  @apply outline-none ring-2 ring-[#5146D8]/30;
+}

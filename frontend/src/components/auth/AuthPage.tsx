@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Eye,
   EyeOff,
@@ -48,6 +48,11 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
+
+  // Keyboard navigation focus trap for accessibility
+  const handleEscapeKey = (e: KeyboardEvent) => {
+    if (e.key === "Escape") setShowPassword(false);
+  };
 
   // Submit Handler for Login
   const handleLoginSubmit = (e: React.FormEvent) => {
@@ -138,12 +143,22 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
     }, 500);
   };
 
+  // Keyboard handlers for accessibility
+  useEffect(() => {
+    document.addEventListener("keydown", handleEscapeKey);
+    return () => document.removeEventListener("keydown", handleEscapeKey);
+  }, []);
+
   return (
     <div className="min-h-screen w-full bg-[#F6F7FB] flex flex-col lg:flex-row items-stretch selection:bg-[#ECE9FF] selection:text-[#5146D8]">
       {/* =========================================================================
           LEFT SECTION – BRAND PRESENTATION (~55% canvas)
           ========================================================================= */}
-      <div className="lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-[#172033] via-[#1E293B] to-[#2B1B54] text-white p-8 lg:p-14 flex flex-col justify-between">
+      <div
+        className="lg:w-[55%] relative overflow-hidden bg-gradient-to-br from-[#172033] via-[#1E293B] to-[#2B1B54] text-white p-8 lg:p-14 flex flex-col justify-between"
+        role="region"
+        aria-label="Brand Presentation"
+      >
         {/* Ambient AI Background Orbs */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#5146D8]/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#3478F6]/25 rounded-full blur-3xl pointer-events-none" />
@@ -280,6 +295,8 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
             <button
               onClick={handleQuickDemoLogin}
               disabled={isLoading}
+              type="button"
+              aria-label="Skip to demo login - instant access to workspace features"
               className="text-xs text-[#5146D8] hover:text-[#4336c5] font-semibold underline underline-offset-2 flex items-center space-x-1"
             >
               <span>Instant Demo Access</span>

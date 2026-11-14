@@ -195,6 +195,7 @@ ${
               onChange={(e) => setTopic(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
               placeholder="What conversation would you like to start?"
+              aria-label="Conversation topic input for generating draft content"
               className="w-full h-12 pl-4 pr-10 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] text-xs sm:text-sm text-[#172033] placeholder-[#718096] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5146D8]/20 focus:border-[#5146D8] transition-all font-medium"
             />
             <Sparkles className="w-4 h-4 text-[#5146D8] absolute right-3.5 top-4 pointer-events-none" />
@@ -210,7 +211,8 @@ ${
                 key={idx}
                 type="button"
                 onClick={() => setTopic(t)}
-                className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all ${
+                aria-label={`Select topic: ${t}`}
+                className={`text-[11px] px-2.5 py-1 rounded-lg border transition-all focus:outline-none focus:ring-2 focus:ring-[#5146D8]/30 ${
                   topic === t
                     ? "bg-[#ECE9FF] text-[#5146D8] border-[#5146D8]/30 font-semibold shadow-xs"
                     : "bg-[#F6F7FB] text-[#718096] border-[#E6E9F0] hover:text-[#172033] hover:border-[#CBD5E1]"
@@ -235,7 +237,7 @@ ${
                   key={t}
                   type="button"
                   onClick={() => setTargetTone(t)}
-                  className={`text-xs px-3 py-1.5 rounded-xl border transition-all ${
+                  className={`text-xs px-3 py-1.5 rounded-xl border transition-all focus:outline-none focus:ring-2 focus:ring-[#5146D8]/30 ${
                     targetTone === t
                       ? "bg-[#5146D8] text-white border-[#5146D8] font-bold shadow-xs"
                       : "bg-[#F6F7FB] text-[#718096] border-[#E6E9F0] hover:text-[#172033] hover:bg-slate-100"
@@ -258,11 +260,12 @@ ${
                   key={p}
                   type="button"
                   onClick={() => setSelectedPlatform(p)}
-                  className={`flex-1 h-9 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
+                  className={`flex-1 h-9 rounded-xl border text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-[#5146D8]/30 ${
                     selectedPlatform === p
                       ? "bg-[#172033] text-white border-[#172033] shadow-xs"
                       : "bg-[#F6F7FB] text-[#718096] border-[#E6E9F0] hover:text-[#172033]"
                   }`}
+                  aria-label={`Select primary platform: ${p}`}
                 >
                   <span>{p}</span>
                 </button>
@@ -277,7 +280,8 @@ ${
             type="button"
             onClick={handleGenerate}
             disabled={isGenerating || !topic.trim()}
-            className="w-full h-12 rounded-xl bg-gradient-to-r from-[#5146D8] via-[#4336c5] to-[#3478F6] hover:opacity-95 text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-md shadow-[#5146D8]/20 flex items-center justify-center space-x-2.5 transition-all"
+            aria-label={`Generate content using AI agent for topic: ${topic}`}
+            className="w-full h-12 rounded-xl bg-gradient-to-r from-[#5146D8] via-[#4336c5] to-[#3478F6] hover:opacity-95 text-white text-xs sm:text-sm font-bold uppercase tracking-wider shadow-md shadow-[#5146D8]/20 flex items-center justify-center space-x-2.5 transition-all focus:outline-none focus:ring-2 focus:ring-[#5146D8]/30"
           >
             {isGenerating ? (
               <>
