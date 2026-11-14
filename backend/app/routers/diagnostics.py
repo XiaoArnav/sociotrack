@@ -103,7 +103,13 @@ async def get_creator_audit(
     brand = brand_res.scalar_one_or_none()
 
     if brand:
-        if brand.user_id or brand.workspace_id:
+        # Public demo showcase brands ('DevRelay', 'SocioTrack', 'CloudScale') are accessible for public audit;
+        # private user-created brands strictly require authenticated membership.
+        is_demo_brand = (
+            brand.name.lower() in ("devrelay", "sociotrack", "cloudscale")
+            or brand.id in ("a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d", "b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e")
+        )
+        if (brand.user_id or brand.workspace_id) and not is_demo_brand:
             await verify_brand_access(db, brand.id, current_user, min_role="viewer")
 
         result = await db.execute(

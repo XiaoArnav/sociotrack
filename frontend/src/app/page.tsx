@@ -794,6 +794,8 @@ export default function App() {
                 posts: live.mediaCount !== undefined ? live.mediaCount : prev.posts,
                 isPrivate: live.is_private !== undefined ? live.is_private : prev.isPrivate,
                 isVerified: live.is_verified !== undefined ? live.is_verified : prev.isVerified,
+                provenanceBadge: "Verified",
+                dataSource: "Meta OpenGraph Live Scraper",
               };
             }
             return prev;
@@ -899,6 +901,8 @@ export default function App() {
               posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : profile.posts,
               isPrivate: liveStats.is_private !== undefined ? liveStats.is_private : profile.isPrivate,
               isVerified: liveStats.is_verified !== undefined ? liveStats.is_verified : profile.isVerified,
+              provenanceBadge: "Verified",
+              dataSource: "Meta OpenGraph Live Scraper",
             };
           }
         } catch {}
@@ -924,6 +928,8 @@ export default function App() {
                   posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
                   isPrivate: liveStats.is_private !== undefined ? liveStats.is_private : prev.isPrivate,
                   isVerified: liveStats.is_verified !== undefined ? liveStats.is_verified : prev.isVerified,
+                  provenanceBadge: "Verified",
+                  dataSource: "Meta OpenGraph Live Scraper",
                 };
               }
               return prev;
