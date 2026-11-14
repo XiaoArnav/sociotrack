@@ -1,8 +1,7 @@
 # SocioTrack: Autonomous AI Social Media Intelligence & Persistent Memory Engine
 
 > **Live Application**: [https://frontend-taupe-zeta-84.vercel.app/](https://frontend-taupe-zeta-84.vercel.app/)  
-> **Upstream Repository**: [https://github.com/stillzepta/sociotrack](https://github.com/stillzepta/sociotrack)  
-> **Fork / Verified Author**: [https://github.com/XiaoArnav/sociotrack](https://github.com/XiaoArnav/sociotrack)  
+> **Repository**: [https://github.com/stillzepta/sociotrack](https://github.com/stillzepta/sociotrack)  
 > **API Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs) • **Local Next.js App**: [http://localhost:3000](http://localhost:3000)
 
 ---
