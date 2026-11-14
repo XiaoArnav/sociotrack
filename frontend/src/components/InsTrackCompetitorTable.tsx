@@ -579,20 +579,73 @@ export function InsTrackCompetitorTable({
   const availableGroups = ["All", "My Accounts", "Creators", "Global Icons", "Competitors"];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Section Header matching Screenshot */}
-      <div className="text-center max-w-2xl mx-auto space-y-1 pt-2">
-        <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent pb-1.5 pt-0.5 leading-tight">
+      <div className="text-center max-w-3xl mx-auto space-y-2 pt-2">
+        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-indigo-500/10 via-sky-500/10 to-cyan-500/10 border border-sky-500/20 text-xs font-bold text-sky-600 dark:text-sky-400">
+          <Activity className="w-3.5 h-3.5" />
+          <span>Multi-Account Intelligence Hub</span>
+        </div>
+        <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent pb-1 pt-0.5 leading-tight">
           Powerful Tracking Dashboard
         </h2>
-        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto">
           Track <span className="font-semibold text-slate-800 dark:text-slate-200">multiple Instagram accounts</span> and assign them to{" "}
-          <span className="font-semibold text-slate-800 dark:text-slate-200">different groups</span>: Your accounts, competitors,
-          clients, and global benchmarks. Click any account to audit its profile.
+          <span className="font-semibold text-slate-800 dark:text-slate-200">strategic cohorts</span>: Your verified accounts, competitors,
+          ecosystem peers, and global benchmarks. Click any account to inspect live metrics.
         </p>
       </div>
 
-      <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200/80 dark:border-[#243048] p-6 shadow-sm space-y-4">
+      {/* Aggregate Cohort Telemetry Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="rounded-xl p-3.5 bg-slate-50 dark:bg-[#141B2B] border border-slate-200/80 dark:border-[#243048] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Total Tracked</div>
+            <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">{accounts.length} Profiles</div>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center">
+            <Users className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="rounded-xl p-3.5 bg-slate-50 dark:bg-[#141B2B] border border-slate-200/80 dark:border-[#243048] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Cohort Reach</div>
+            <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+              {(accounts.reduce((acc, curr) => acc + (curr.followers || 0), 0) / 1_000_000).toFixed(1)}M Total
+            </div>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-500 flex items-center justify-center">
+            <Activity className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="rounded-xl p-3.5 bg-slate-50 dark:bg-[#141B2B] border border-slate-200/80 dark:border-[#243048] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Avg Engagement</div>
+            <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+              {(accounts.reduce((acc, curr) => acc + (curr.engagementRate || 0), 0) / (accounts.length || 1)).toFixed(2)}%
+            </div>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+            <Sparkles className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="rounded-xl p-3.5 bg-slate-50 dark:bg-[#141B2B] border border-slate-200/80 dark:border-[#243048] flex items-center justify-between">
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-400 font-mono">Hero Focus</div>
+            <div className="text-lg font-black text-indigo-600 dark:text-indigo-400 truncate max-w-[110px] mt-0.5">
+              @{primaryHandle}
+            </div>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <Star className="w-4 h-4 fill-current" />
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200/80 dark:border-[#243048] p-5 sm:p-6 shadow-sm space-y-4">
         {/* Top Control Bar with Search, Group Pills & Add Button */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-[#243048]">
           <div className="space-y-1">
@@ -738,13 +791,15 @@ export function InsTrackCompetitorTable({
                     <tr
                       key={acc.handle}
                       onClick={() => onSelectAccount?.(acc.handle)}
-                      className={`hover:bg-slate-50/80 dark:hover:bg-[#1E2638]/70 transition-colors cursor-pointer group ${
-                        isPrimary ? "bg-indigo-50/30 dark:bg-indigo-950/20" : ""
+                      className={`hover:bg-indigo-50/50 dark:hover:bg-[#1a233a] transition-all duration-150 cursor-pointer group ${
+                        isPrimary
+                          ? "bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-transparent dark:from-indigo-950/40 dark:via-purple-950/20 dark:to-transparent"
+                          : ""
                       }`}
                       title={`Click to audit @${acc.handle}`}
                     >
                       {/* Account Avatar + Handle (Permanently Pinned on Left) */}
-                      <td className="sticky left-0 z-10 bg-white dark:bg-[#161F30] group-hover:bg-slate-50 dark:group-hover:bg-[#1E2638] py-3 px-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)] border-r border-slate-100 dark:border-[#243048] min-w-[240px] transition-colors">
+                      <td className="sticky left-0 z-10 bg-white dark:bg-[#161F30] group-hover:bg-indigo-50/60 dark:group-hover:bg-[#1a233a] py-3.5 px-4 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] dark:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.35)] border-r border-slate-100 dark:border-[#243048] min-w-[240px] transition-colors">
                         <div className="flex items-center space-x-3">
                           <img
                             key={acc.handle}
@@ -765,28 +820,28 @@ export function InsTrackCompetitorTable({
                               }
                               target.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(clean)}&backgroundColor=4f46e5,06b6d4,10b981&textColor=ffffff`;
                             }}
-                            className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-[#243048] group-hover:ring-2 group-hover:ring-indigo-500 transition-all shrink-0"
+                            className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-[#243048] group-hover:ring-2 group-hover:ring-indigo-500 group-hover:scale-105 transition-all shrink-0"
                           />
                           <div className="min-w-0">
-                            <div className="flex items-center space-x-1 font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
-                              <span>@{acc.handle}</span>
+                            <div className="flex items-center space-x-1.5 font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
+                              <span className="text-sm">@{acc.handle}</span>
                               {acc.isVerified && (
-                                <span className="w-3.5 h-3.5 rounded-full bg-[#0095F6] text-white flex items-center justify-center text-[8px] font-black shrink-0">
+                                <span className="w-3.5 h-3.5 rounded-full bg-[#0095F6] text-white flex items-center justify-center text-[8px] font-black shrink-0" title="Meta Verified">
                                   ✓
                                 </span>
                               )}
                               {acc.isPrivate && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-400 font-bold shrink-0">
-                                  🔒
+                                <span className="px-1.5 py-0.5 rounded text-[9px] bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-400 font-bold shrink-0">
+                                  🔒 Private
                                 </span>
                               )}
                               {isPrimary && (
-                                <span className="px-1.5 py-0.2 rounded text-[9px] bg-indigo-500 text-white font-extrabold uppercase shrink-0">
-                                  Hero
+                                <span className="px-2 py-0.5 rounded text-[9px] bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-extrabold uppercase shrink-0 shadow-xs">
+                                  Primary Hero
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 truncate max-w-[160px]">
+                            <div className="text-xs text-slate-400 truncate max-w-[170px] mt-0.5">
                               {acc.name}
                             </div>
                           </div>

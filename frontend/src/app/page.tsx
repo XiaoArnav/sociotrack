@@ -50,6 +50,7 @@ import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
 import { GrowthDashboardView } from "@/components/GrowthDashboardView";
 import { PrivateAccountLockout } from "@/components/PrivateAccountLockout";
+import { InstantPerformanceInsights } from "@/components/InstantPerformanceInsights";
 import {
   PostDraft,
   LearnedInsight,
@@ -1733,19 +1734,11 @@ export default function App() {
             </section>
 
             {/* 4. SHOWCASE SECTION 2: INSTANT PERFORMANCE INSIGHTS / COMPETITOR TRACKING */}
-            <section className="space-y-6 pt-4">
-              <div className="text-center max-w-2xl mx-auto space-y-1">
-                <h2 className="text-2xl sm:text-3xl font-black bg-gradient-to-r from-indigo-500 via-sky-400 to-cyan-400 bg-clip-text text-transparent pb-1.5 pt-0.5 leading-tight">
-                  Instant Performance Insights
-                </h2>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Gain instant in-depth insights on any Instagram account:{" "}
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    Competitors, clients or your own accounts
-                  </span>
-                  . Click any account below to inspect their full telemetry and audit scores.
-                </p>
-              </div>
+            <section className="space-y-8 pt-4">
+              <InstantPerformanceInsights
+                creator={activeCreator}
+                onAuditAccount={(handle) => handleAuditAccount(handle)}
+              />
 
               {/* Competitor Table connected to handleAuditAccount & Account Management */}
               <InsTrackCompetitorTable
@@ -1855,7 +1848,7 @@ export default function App() {
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md font-medium">
-                    SocioTrack by Zyrohouse — an emerging startup.
+                    Powered by Zyrohouse
                   </p>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500">
                     Autonomous Social Media Engagement &amp; Real-Time Meta Graph Telemetry.
@@ -1927,10 +1920,10 @@ export default function App() {
 
               <div className="pt-6 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 dark:text-slate-500">
                 <div>
-                  SocioTrack is a product by Zyrohouse, an emerging startup. Built for Microsoft AI Hackathon.
+                  Powered by Zyrohouse. Built for Microsoft AI Hackathon.
                 </div>
                 <div className="font-mono">
-                  © 2026 SocioTrack by Zyrohouse. All rights reserved.
+                  © 2026 SocioTrack. Powered by Zyrohouse. All rights reserved.
                 </div>
               </div>
             </div>

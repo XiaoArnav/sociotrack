@@ -1057,7 +1057,7 @@ export function InsTrackSaaSDashboard({
           <div className="flex flex-col sm:flex-row items-center sm:space-x-3 gap-1">
             <span className="font-extrabold text-white text-sm">SocioTrack</span>
             <span className="text-[11px] text-slate-400">
-              SocioTrack is a product by Zyrohouse, an emerging startup.
+              Powered by Zyrohouse
             </span>
           </div>
           <div className="flex items-center space-x-6 text-[11px]">
