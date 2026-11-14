@@ -2,7 +2,7 @@
 Core agent logic package exports.
 """
 
-from backend.app.core.agent import (
+from .agent import (
     AgentGraphState,
     SocialEngagementAgent,
     build_social_agent_graph,
@@ -13,29 +13,29 @@ from backend.app.core.agent import (
     run_agent_cycle,
     ingest_analytics,
 )
-from backend.app.core.memory import (
+from .memory import (
     VectorMemoryManager,
     get_memory_manager,
     calculate_composite_score,
 )
-from backend.app.core.prompts import (
+from .prompts import (
     SYSTEM_PROMPT_AGENT,
     BRAND_VOICE_GUIDELINES,
     PROMPT_EVALUATION_PASS,
 )
 
-from backend.app.core.schemas import (
+from .schemas import (
     RawPost,
     PostAuditPattern,
     CreatorAuditReport,
 )
-from backend.app.core.analytics import (
+from .analytics import (
     compute_post_statistics,
     compute_true_engagement_rate,
     compute_virality_index,
     compute_utility_index,
 )
-from backend.app.core.diagnostics_agent import run_creator_audit
+from .diagnostics_agent import run_creator_audit
 
 __all__ = [
     "AgentGraphState",

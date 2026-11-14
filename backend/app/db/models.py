@@ -16,10 +16,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-try:
-    from app.db.session import Base
-except ImportError:
-    from backend.app.db.session import Base
+from .session import Base
 
 
 class BrandModel(Base):

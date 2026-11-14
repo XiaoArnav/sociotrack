@@ -62,8 +62,5 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db():
     """Initializes schema tables."""
-    try:
-        from app.db import models  # noqa: F401
-    except ImportError:
-        from backend.app.db import models  # noqa: F401
+    from . import models  # noqa: F401
     Base.metadata.create_all(bind=engine)

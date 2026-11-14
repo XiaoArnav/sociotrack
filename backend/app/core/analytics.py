@@ -7,7 +7,7 @@ No LLM calls - pure deterministic math.
 from typing import Any, Dict, List
 import numpy as np
 
-from backend.app.core.schemas import RawPost
+from .schemas import RawPost
 
 
 def compute_true_engagement_rate(likes: int, comments: int, shares: int, saves: int, reach: int) -> float:

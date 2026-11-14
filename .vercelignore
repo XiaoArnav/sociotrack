@@ -1,6 +1,5 @@
 # Vercel Ignore File
-# Prevents Vercel from triggering unnecessary builds on backend, docs, or non-frontend changes
-backend/
+# The repository-root FastAPI build needs backend/ and its dependencies.
 tests/
 docs/
 .agents/
