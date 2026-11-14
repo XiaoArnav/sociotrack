@@ -105,10 +105,13 @@ function saveSnapshotLocally(snapshot: ProfileSnapshot): boolean {
 /**
  * Fetches all saved profile snapshots for a user or handle.
  */
-export async function getProfileSnapshots(handle?: string): Promise<ProfileSnapshot[]> {
+export async function getProfileSnapshots(handle?: string, userEmail?: string): Promise<ProfileSnapshot[]> {
   try {
     const supabase = createClient();
     let query = supabase.from("profile_snapshots").select("*").order("created_at", { ascending: false });
+    if (userEmail) {
+      query = query.eq("user_email", userEmail.toLowerCase());
+    }
     if (handle) {
       query = query.eq("handle", handle.toLowerCase().replace(/^@/, ""));
     }
@@ -124,9 +127,14 @@ export async function getProfileSnapshots(handle?: string): Promise<ProfileSnaps
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_SNAPSHOTS_KEY);
       if (raw) {
-        const parsed: ProfileSnapshot[] = JSON.parse(raw);
+        let parsed: ProfileSnapshot[] = JSON.parse(raw);
+        if (userEmail) {
+          parsed = parsed.filter(
+            (s) => s.user_email?.toLowerCase() === userEmail.toLowerCase() || s.user_email === "anonymous"
+          );
+        }
         if (handle) {
-          return parsed.filter((s) => s.handle.toLowerCase() === handle.toLowerCase().replace(/^@/, ""));
+          parsed = parsed.filter((s) => s.handle.toLowerCase() === handle.toLowerCase().replace(/^@/, ""));
         }
         return parsed;
       }

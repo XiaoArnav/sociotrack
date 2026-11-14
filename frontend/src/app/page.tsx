@@ -45,7 +45,11 @@ import { PricingMatrixView } from "@/components/PricingMatrixView";
 import { CustomerBillingPortal } from "@/components/CustomerBillingPortal";
 import { BusinessMetricsDashboard } from "@/components/BusinessMetricsDashboard";
 import { TermsAndPrivacyModal } from "@/components/TermsAndPrivacyModal";
-import { saveProfileSnapshot } from "@/utils/supabase/snapshots";
+import {
+  saveProfileSnapshot,
+  getProfileSnapshots,
+  ProfileSnapshot,
+} from "@/utils/supabase/snapshots";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import { OverviewDashboard } from "@/components/OverviewDashboard";
 import { GrowthDashboardView } from "@/components/GrowthDashboardView";
@@ -830,6 +834,30 @@ export default function App() {
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(null);
   const [showHelpModal, setShowHelpModal] = useState(false);
 
+  // Tracked Profiles & Supabase Cloud Sync Modal State
+  const [showTrackedModal, setShowTrackedModal] = useState(false);
+  const [trackedSnapshots, setTrackedSnapshots] = useState<ProfileSnapshot[]>([]);
+  const [isLoadingTracked, setIsLoadingTracked] = useState(false);
+
+  const loadTrackedProfiles = useCallback(async () => {
+    setIsLoadingTracked(true);
+    try {
+      const email = currentUser?.email;
+      const data = await getProfileSnapshots(undefined, email);
+      setTrackedSnapshots(data);
+    } catch {
+      // ignore
+    } finally {
+      setIsLoadingTracked(false);
+    }
+  }, [currentUser?.email]);
+
+  useEffect(() => {
+    if (currentUser?.email) {
+      loadTrackedProfiles();
+    }
+  }, [currentUser?.email, loadTrackedProfiles]);
+
   const showToast = (
     title: string,
     description: string,
@@ -1128,10 +1156,21 @@ export default function App() {
           {currentUser ? (
             <div className="flex items-center space-x-2">
               <button
+                onClick={() => {
+                  setShowTrackedModal(true);
+                  loadTrackedProfiles();
+                }}
+                className="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/70 dark:bg-indigo-950/40 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/70 transition-all shadow-xs"
+                title="View tracked profiles and scheduled weekly syncs"
+              >
+                <Database className="w-3.5 h-3.5 text-indigo-500" />
+                <span>Tracked Profiles ({trackedSnapshots.length})</span>
+              </button>
+              <button
                 onClick={() => setViewMode(viewMode === "public_report" ? "saas_dashboard" : "public_report")}
                 className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
               >
-                {viewMode === "public_report" ? "SaaS App →" : "Public View"}
+                {viewMode === "public_report" ? "SaaS Studio →" : "Public Services"}
               </button>
               <button
                 onClick={() => {
@@ -2003,8 +2042,13 @@ export default function App() {
               onLoginSuccess={(u) => {
                 setCurrentUser(u);
                 setShowAuthModal(false);
-                setViewMode("saas_dashboard");
-                showToast("Signed In Successfully", `Welcome to your SocioTrack Dashboard, ${u.name}!`);
+                setViewMode("public_report");
+                loadTrackedProfiles();
+                showToast(
+                  "Signed In Successfully",
+                  `Welcome, ${u.name}! Public services are open and live Supabase tracking is active.`,
+                  "success"
+                );
               }}
             />
           </div>
@@ -2092,6 +2136,124 @@ export default function App() {
         isOpen={showLegalModal}
         onClose={() => setShowLegalModal(false)}
       />
+
+      {/* TRACKED PROFILES & SUPABASE CLOUD SYNC MODAL */}
+      {showTrackedModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-[#121A2A] rounded-2xl border border-slate-200 dark:border-[#243048] shadow-2xl overflow-hidden p-6 space-y-5 animate-fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    Tracked Profiles &amp; Data Sync
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Recorded in Supabase cloud database with scheduled weekly auto-crawling.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTrackedModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center text-slate-500 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {isLoadingTracked ? (
+              <div className="py-12 flex flex-col items-center justify-center space-y-2 text-slate-400 text-xs">
+                <RefreshCw className="w-5 h-5 animate-spin text-indigo-500" />
+                <span>Syncing records from Supabase...</span>
+              </div>
+            ) : trackedSnapshots.length === 0 ? (
+              <div className="py-10 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto text-slate-400">
+                  <Database className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                    No Tracked Profiles Recorded Yet
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Search any creator on the public search bar, or click &ldquo;Save Snapshot&rdquo; on any profile card to record demographics and activate weekly crawling.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="max-h-[60vh] overflow-y-auto space-y-2.5 pr-1">
+                {trackedSnapshots.map((item, idx) => (
+                  <div
+                    key={item.id || `${item.handle}-${idx}`}
+                    className="p-3.5 rounded-xl border border-slate-200 dark:border-[#1E2638] bg-slate-50/60 dark:bg-[#161F30] flex items-center justify-between gap-3 hover:border-indigo-300 dark:hover:border-indigo-800 transition-all"
+                  >
+                    <div className="flex items-center space-x-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/60 flex items-center justify-center text-indigo-600 font-bold shrink-0 overflow-hidden text-sm">
+                        {item.avatar_url ? (
+                          <img src={item.avatar_url} alt={item.handle} className="w-full h-full object-cover" />
+                        ) : (
+                          item.handle[0]?.toUpperCase()
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                            @{item.handle}
+                          </span>
+                          {item.weekly_crawl_enabled && (
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                              Weekly Sync Active
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center space-x-2 pt-0.5">
+                          <span>{item.followers ? item.followers.toLocaleString() : "0"} followers</span>
+                          <span>•</span>
+                          <span>Score: {item.score || 85}%</span>
+                          {item.created_at && (
+                            <>
+                              <span>•</span>
+                              <span>Synced: {new Date(item.created_at).toLocaleDateString()}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setShowTrackedModal(false);
+                        setViewMode("public_report");
+                        handleAuditAccount(item.handle);
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shrink-0 shadow-xs transition-colors flex items-center space-x-1"
+                    >
+                      <span>Inspect</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+              <span className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Supabase Live Sync Connected</span>
+              </span>
+              <button
+                onClick={loadTrackedProfiles}
+                className="hover:text-indigo-600 dark:hover:text-indigo-400 font-medium flex items-center space-x-1"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Refresh Data</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
