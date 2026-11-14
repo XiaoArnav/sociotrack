@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 export default function TodosPage() {
@@ -54,6 +55,56 @@ export default function TodosPage() {
 
   return (
     <div style={{ maxWidth: "680px", margin: "40px auto", padding: "24px", fontFamily: "system-ui, sans-serif" }}>
+      {/* Top Header with SocioTrack Home Link */}
+      <div style={{ marginBottom: "24px", paddingBottom: "16px", borderBottom: "1px solid #e2e8f0" }}>
+        <Link
+          href="/"
+          aria-label="SocioTrack home"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "12px",
+            textDecoration: "none",
+            color: "inherit",
+            padding: "4px 8px",
+            borderRadius: "14px",
+            outline: "none",
+          }}
+          className="hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+        >
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #6366F1, #8B5CF6, #06B6D4)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "18px",
+              boxShadow: "0 4px 6px -1px rgba(99, 102, 241, 0.2)",
+            }}
+          >
+            ⚡
+          </div>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ fontSize: "20px", fontWeight: 900, letterSpacing: "-0.5px" }}>
+                SocioTrack
+              </span>
+              <span style={{ fontSize: "10px", fontWeight: "bold", padding: "2px 6px", borderRadius: "6px", background: "#eef2ff", color: "#4f46e5" }}>
+                v2.4
+              </span>
+            </div>
+            <div style={{ fontSize: "11px", color: "#64748b" }}>
+              Autonomous Social Intelligence &amp; Reinforcement Growth
+            </div>
+          </div>
+        </Link>
+      </div>
+
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <h1 style={{ margin: 0, fontSize: "24px" }}>Supabase Connection Test</h1>
         <span

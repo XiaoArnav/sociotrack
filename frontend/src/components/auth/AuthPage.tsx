@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Eye,
   EyeOff,
@@ -233,7 +234,13 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
 
         {/* Top Header: Logo & Status Pill */}
         <div className="relative z-10 flex items-center justify-between">
-          <SocioTrackLogo size="lg" light={true} />
+          <Link
+            href="/"
+            aria-label="SocioTrack home"
+            className="hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#172033] rounded-xl p-1 -m-1"
+          >
+            <SocioTrackLogo size="lg" light={true} />
+          </Link>
           <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white">
             <span className="w-2 h-2 rounded-full bg-[#16A477] animate-pulse" />
             <span className="font-semibold tracking-wide">Autonomous Agent Platform</span>

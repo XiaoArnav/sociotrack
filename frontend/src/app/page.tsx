@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { AuthPage, UserSession } from "@/components/auth/AuthPage";
 import {
   InsTrackCreatorCard,
@@ -858,6 +859,34 @@ export default function App() {
     }
   }, [currentUser?.email, loadTrackedProfiles]);
 
+  // Handler: Return to top of default starting view
+  const handleHomeNavigation = useCallback((e?: React.MouseEvent) => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (window.location.hash || window.location.search) {
+        window.history.replaceState(null, "", window.location.pathname || "/");
+      }
+    }
+
+    // Reset view state to default starting view
+    setActiveSubTab("overview");
+    setSelectedStudioHook("");
+    setSearchQuery("");
+    setMemorySearchQuery("");
+    setOpenFaqIdx(null);
+
+    // Dismiss any open overlays or modals
+    setShowAddAccountModal(false);
+    setShowSurveyModal(false);
+    setShowOnboardingWizard(false);
+    setShowFeedbackModal(false);
+    setShowTeamModal(false);
+    setShowLegalModal(false);
+    setShowHelpModal(false);
+    setShowAuthModal(false);
+    setShowTrackedModal(false);
+  }, []);
+
   const showToast = (
     title: string,
     description: string,
@@ -1125,14 +1154,13 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-4 min-h-[72px] sm:min-h-[80px] flex items-center justify-between transition-all">
         {/* Left: SocioTrack Logo & Brand Name */}
         <div className="flex items-center space-x-3.5">
-          <button
-            onClick={() => {
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className="flex items-center space-x-3 hover:opacity-90 transition-opacity"
-            aria-label="SocioTrack Home"
+          <Link
+            href="/"
+            onClick={handleHomeNavigation}
+            className="flex items-center space-x-3 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B0F19] rounded-2xl p-1 -m-1"
+            aria-label="SocioTrack home"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] flex items-center justify-center shadow-md shadow-indigo-500/20">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
               <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[2.5]" />
             </div>
             <div className="text-left">
@@ -1148,7 +1176,7 @@ export default function App() {
                 Autonomous Social Intelligence &amp; Reinforcement Growth
               </p>
             </div>
-          </button>
+          </Link>
         </div>
 
         {/* Right: SaaS App / Log In, Create a Free Account, and Dark Mode Toggle on extreme right */}
@@ -1878,14 +1906,19 @@ export default function App() {
             <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-6">
               <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-center md:justify-start space-x-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white shadow-sm">
+                  <Link
+                    href="/"
+                    onClick={handleHomeNavigation}
+                    aria-label="SocioTrack home"
+                    className="flex items-center justify-center md:justify-start space-x-2.5 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0B0F19] rounded-xl p-1 -m-1"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white shadow-sm shrink-0">
                       <TrendingUp className="w-4 h-4 stroke-[2.5]" />
                     </div>
                     <span className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">
                       SocioTrack
                     </span>
-                  </div>
+                  </Link>
                   <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md font-medium">
                     Powered by Zyrohouse
                   </p>

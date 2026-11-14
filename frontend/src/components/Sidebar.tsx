@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import Link from "next/link";
 import {
   LayoutDashboard,
   Wand2,
@@ -79,13 +80,19 @@ export function Sidebar({
       <div>
         {/* Logo and Collapse Toggle */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#E6E9F0]">
-          {!isCollapsed ? (
-            <SocioTrackLogo size="sm" showWordmark={true} />
-          ) : (
-            <div className="mx-auto">
-              <SocioTrackLogo size="sm" showWordmark={false} />
-            </div>
-          )}
+          <Link
+            href="/"
+            aria-label="SocioTrack home"
+            className="flex items-center hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-xl p-1 -m-1"
+          >
+            {!isCollapsed ? (
+              <SocioTrackLogo size="sm" showWordmark={true} />
+            ) : (
+              <div className="mx-auto">
+                <SocioTrackLogo size="sm" showWordmark={false} />
+              </div>
+            )}
+          </Link>
 
           <button
             onClick={onToggleCollapse}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { Activity, Bot, Database, ExternalLink } from "lucide-react";
 
 export interface NavbarProps {
@@ -14,7 +15,11 @@ export function Navbar({ brandName = "SocioTrack", onBrandChange, isGenerating }
     <header className="sticky top-0 z-40 w-full border-b border-gray-800 bg-[#0f172a]/95 backdrop-blur-md min-h-[72px] sm:min-h-[80px] flex items-center px-4 sm:px-8 transition-all">
       <div className="flex w-full items-center justify-between gap-4">
         {/* Brand & Logo */}
-        <div className="flex items-center space-x-3.5">
+        <Link
+          href="/"
+          aria-label="SocioTrack home"
+          className="flex items-center space-x-3.5 hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0f172a] rounded-xl p-1 -m-1"
+        >
           <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 text-white shadow-lg shadow-blue-500/25 shrink-0">
             <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
           </div>
@@ -31,7 +36,7 @@ export function Navbar({ brandName = "SocioTrack", onBrandChange, isGenerating }
               Autonomous Social Media Engagement & Reinforcement Learning
             </p>
           </div>
-        </div>
+        </Link>
 
         {/* Center: System Status & Routing Indicator */}
         <div className="hidden lg:flex items-center space-x-3 text-xs text-gray-300">
