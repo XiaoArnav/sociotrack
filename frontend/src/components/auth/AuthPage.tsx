@@ -53,6 +53,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
   // Interaction feedback states
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
 
   // Keyboard navigation focus trap for accessibility
@@ -64,6 +65,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     // Client-side Validation
     if (!email || !email.includes("@")) {
@@ -111,6 +113,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     if (!name.trim()) {
       setErrorMessage("Please enter your full name.");
@@ -159,15 +162,13 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
           return;
         }
 
-        const session: UserSession = {
-          name: name.trim() || supaData.user.user_metadata?.name || email.split("@")[0],
-          email: supaData.user.email || email.trim().toLowerCase(),
-          role: "Growth & Content Lead",
-          isDemo: false,
-          token: supaData.session?.access_token || `user_${supaData.user.id}`,
-        };
-        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
-        onLoginSuccess(session);
+        // Show explicit success message and prompt to log in now
+        setErrorMessage(null);
+        setSuccessMessage("Account created! Please log in now.");
+        setScreen("login");
+        setPassword("");
+        setConfirmPassword("");
+        return;
       }
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : "Registration failed. Please try again.";
@@ -355,6 +356,14 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
             </div>
           )}
 
+          {/* Success Banner */}
+          {successMessage && (
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3.5 flex items-start space-x-2 text-xs text-emerald-800 animate-slide-up">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="flex-1 font-semibold">{successMessage}</div>
+            </div>
+          )}
+
           {/* =================================================================
               SCREEN 01: LOGIN
               ================================================================= */}
@@ -527,6 +536,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
                   type="button"
                   onClick={() => {
                     setErrorMessage(null);
+                    setSuccessMessage(null);
                     setScreen("signup");
                   }}
                   className="text-[#5146D8] font-bold hover:underline"
@@ -702,6 +712,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
                   type="button"
                   onClick={() => {
                     setErrorMessage(null);
+                    setSuccessMessage(null);
                     setScreen("login");
                   }}
                   className="text-[#5146D8] font-bold hover:underline"
