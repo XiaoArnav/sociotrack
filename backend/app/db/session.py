@@ -7,14 +7,34 @@ from typing import Generator, Optional
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
-from backend.app.config import settings
+try:
+    from app.config import settings
+except ImportError:
+    from backend.app.config import settings
+
+
+def get_sync_database_url() -> str:
+    sync_url = getattr(settings, "SYNC_DATABASE_URL", None)
+    # If SYNC_DATABASE_URL is unset or left as default SQLite while DATABASE_URL is PostgreSQL,
+    # derive the sync URL directly from DATABASE_URL to keep both drivers connected to the same DB.
+    if not sync_url or (sync_url.startswith("sqlite") and ("postgres" in settings.DATABASE_URL)):
+        url = settings.DATABASE_URL
+    else:
+        url = sync_url
+
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif url.startswith("postgresql://") and "+psycopg2" not in url:
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    elif "+asyncpg" in url:
+        url = url.replace("+asyncpg", "+psycopg2") if "postgresql" in url else url.replace("+asyncpg", "")
+    elif "+aiosqlite" in url:
+        url = url.replace("+aiosqlite", "")
+    return url
+
 
 # Engine configuration
-db_url = getattr(settings, "SYNC_DATABASE_URL", None) or settings.DATABASE_URL
-if "+aiosqlite" in db_url:
-    db_url = db_url.replace("+aiosqlite", "")
-if "+asyncpg" in db_url:
-    db_url = db_url.replace("+asyncpg", "")
+db_url = get_sync_database_url()
 
 connect_args = {}
 if db_url.startswith("sqlite"):
@@ -24,6 +44,7 @@ engine = create_engine(
     db_url,
     connect_args=connect_args,
     echo=False,
+    pool_pre_ping=True,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -41,5 +62,13 @@ def get_db() -> Generator[Session, None, None]:
 
 def init_db():
     """Initializes schema tables."""
-    from backend.app.db import models  # noqa: F401
-    Base.metadata.create_all(bind=engine)
+    try:
+        from app.db import models  # noqa: F401
+    except ImportError:
+        from backend.app.db import models  # noqa: F401
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        if "already exists" in str(e).lower():
+            return
+        raise

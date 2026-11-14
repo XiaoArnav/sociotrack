@@ -88,14 +88,34 @@ async def lifespan(app: FastAPI):
         else:
             raise
 
-    # Startup: ensure tables exist
-    await init_db()
-    # Initialize sync sqlite session if present for legacy routes
+    logger = logging.getLogger("uvicorn.error")
+
+    # Startup: ensure async tables exist, surface failures immediately
+    try:
+        await init_db()
+        logger.info("Async database schema initialized successfully.")
+    except Exception as e:
+        logger.error("FATAL: Failed to initialize async database schema: %s", e, exc_info=True)
+        raise
+
+    # Initialize sync session schema, surface failures immediately
     try:
         from app.db.session import init_db as init_db_legacy
         init_db_legacy()
-    except Exception:
-        pass
+        logger.info("Sync database schema initialized successfully.")
+    except Exception as e:
+        if "already exists" in str(e).lower():
+            logger.info("Sync database schema already initialized.")
+        else:
+            logger.error("FATAL: Failed to initialize sync database schema: %s", e, exc_info=True)
+            raise
+
+    # Seed required finals demo account, workspace, and brand
+    try:
+        from app.db.seed_demo import seed_demo_data
+        await seed_demo_data()
+    except Exception as e:
+        logger.warning("Could not auto-seed demo data: %s", e)
 
     # Background 6-hour automated snapshot cron loop
     async def _snapshot_cron_loop():

@@ -16,12 +16,16 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from backend.app.db.session import Base
+try:
+    from app.db.session import Base
+except ImportError:
+    from backend.app.db.session import Base
 
 
 class BrandModel(Base):
     """Stores brands, voice specifications, and target audience definitions."""
     __tablename__ = "brands"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(100), nullable=False, unique=True, index=True)
@@ -33,6 +37,7 @@ class BrandModel(Base):
 class PostModel(Base):
     """Stores posts, variations, and approval states."""
     __tablename__ = "posts"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     brand_id = Column(String(36), ForeignKey("brands.id", ondelete="CASCADE"), nullable=True)
@@ -57,6 +62,7 @@ class PostModel(Base):
 class MetricModel(Base):
     """Engagement metrics recorded for posts."""
     __tablename__ = "metrics"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     post_id = Column(String(36), ForeignKey("posts.id"), nullable=True)
@@ -73,6 +79,7 @@ class MetricModel(Base):
 class LearnedLessonModel(Base):
     """Reflective memory insights stored when performance crosses threshold (> 5.0)."""
     __tablename__ = "learned_lessons"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     brand_name = Column(String(100), nullable=False, index=True)
@@ -87,6 +94,7 @@ class LearnedLessonModel(Base):
 class SentimentModel(Base):
     """Audience sentiment signals."""
     __tablename__ = "sentiments"
+    __table_args__ = {"extend_existing": True}
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     brand_name = Column(String(100), nullable=True, index=True)

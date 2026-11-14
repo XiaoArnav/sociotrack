@@ -12,11 +12,25 @@ class Base(DeclarativeBase):
     pass
 
 
-# Async Engine & Session Factory
+def normalize_async_database_url(url: str) -> str:
+    if not url:
+        return "sqlite+aiosqlite:///./sociotrack.db"
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if url.startswith("sqlite://") and not url.startswith("sqlite+aiosqlite://"):
+        return url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+    return url
+
+
+# Async Engine & Session Factory with pool pre-ping
+async_db_url = normalize_async_database_url(settings.DATABASE_URL)
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    async_db_url,
     echo=settings.DEBUG,
     future=True,
+    pool_pre_ping=True,
 )
 
 async_session_maker = async_sessionmaker(
@@ -48,6 +62,10 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
 
         def _migrate_columns(sync_conn):
+            # Only execute SQLite-specific dynamic column migrations on SQLite
+            if sync_conn.dialect.name != "sqlite":
+                return
+
             inspector = inspect(sync_conn)
             table_names = inspector.get_table_names()
 
