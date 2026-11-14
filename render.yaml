@@ -25,5 +25,7 @@ services:
         generateValue: true
       - key: DATABASE_URL
         sync: false
+      - key: SYNC_DATABASE_URL
+        sync: false
       - key: CORS_ORIGINS
         value: '["https://frontend-taupe-zeta-84.vercel.app","https://sociotrack.vercel.app"]'

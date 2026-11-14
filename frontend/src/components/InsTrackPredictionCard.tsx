@@ -432,7 +432,10 @@ export function InsTrackPredictionCard({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            {report.data_source === "live_api" ? "Live Scraped Telemetry" : "Sample Benchmark Analytics"}
+          </span>
           <span className="text-xs text-slate-400">Confidence Score:</span>
           <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 font-bold text-xs border border-emerald-500/20">
             {report.ai_confidence_score}% High Signal
