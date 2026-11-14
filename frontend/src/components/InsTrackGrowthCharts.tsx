@@ -26,11 +26,12 @@ export function InsTrackGrowthCharts({
   const handle = creator?.handle || "creator";
 
   const [activeMode, setActiveMode] = useState<ChartMode>("target");
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(3); // Default to Apr (index 3) like in video
+  const [timeframe, setTimeframe] = useState<"7d" | "30d" | "90d">("30d");
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(3);
 
-  // 11 Months matching exact video timeline: Jan -> Nov
-  const months = useMemo(
-    () => ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"],
+  // 7-day checkpoints
+  const sevenDayDates = useMemo(
+    () => ["06 Mar", "07 Mar", "08 Mar", "09 Mar", "10 Mar", "11 Mar", "12 Mar"],
     []
   );
 
@@ -40,34 +41,21 @@ export function InsTrackGrowthCharts({
     []
   );
 
-  const activeDates = activeMode === "daily" ? dailyDates : months;
+  // 11 Months matching 90-day / macro timeline
+  const months = useMemo(
+    () => ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"],
+    []
+  );
 
-  // Generate realistic data points based on current scale
+  const activeDates = useMemo(() => {
+    if (timeframe === "7d") return sevenDayDates;
+    if (timeframe === "30d") return dailyDates;
+    return months;
+  }, [timeframe, sevenDayDates, dailyDates, months]);
+
+  // Generate realistic data points based on current scale and timeframe
   const { curveTop, curveBottom, labelTop, labelBottom, maxVal } = useMemo(() => {
-    if (activeMode === "target") {
-      // Top Curve: Target / Capacity Benchmark (Green Dashed)
-      // Bottom Curve: Actual Tracked Followers (Purple Solid)
-      const targetMax = Math.max(
-        currentFollowers < 50 ? currentFollowers + 8 : Math.round(currentFollowers * 1.32),
-        10
-      );
-
-      // Organic growth curve leading up to currentFollowers at the latest month
-      const bottomMultipliers = [0.42, 0.48, 0.46, 0.55, 0.51, 0.62, 0.68, 0.76, 0.84, 0.94, 1.0];
-      const topMultipliers = [0.60, 0.60, 0.68, 0.78, 0.88, 0.95, 0.96, 0.96, 1.0, 1.0, 1.0];
-
-      const bottom = bottomMultipliers.map((m) => Math.max(1, Math.round(currentFollowers * m)));
-      const top = topMultipliers.map((m) => Math.max(bottom[bottom.length - 1] + 1, Math.round(targetMax * m)));
-
-      const max = Math.max(...top, ...bottom) * 1.15;
-      return {
-        curveTop: top,
-        curveBottom: bottom,
-        labelTop: "target",
-        labelBottom: "followers",
-        maxVal: max,
-      };
-    } else if (activeMode === "following") {
+    if (activeMode === "following") {
       // Comparison: Followers (Purple Solid) vs Following (Green Dashed)
       const max = Math.max(currentFollowers, currentFollowing) * 1.15;
       const bottomMultipliers = [0.45, 0.50, 0.48, 0.55, 0.52, 0.64, 0.70, 0.78, 0.85, 0.95, 1.0];
@@ -83,7 +71,26 @@ export function InsTrackGrowthCharts({
         labelBottom: "followers",
         maxVal: max,
       };
-    } else {
+    }
+
+    if (timeframe === "7d") {
+      // 7 Days view
+      const targetMax = Math.round(currentFollowers * 1.03);
+      const bottom = [0.975, 0.98, 0.983, 0.989, 0.992, 0.996, 1.0].map((m) =>
+        Math.max(1, Math.round(currentFollowers * m))
+      );
+      const top = [0.985, 0.992, 1.0, 1.008, 1.015, 1.022, 1.03].map((m) =>
+        Math.max(bottom[bottom.length - 1] + 1, Math.round(targetMax * m))
+      );
+      const max = Math.max(...top) * 1.08;
+      return {
+        curveTop: top,
+        curveBottom: bottom,
+        labelTop: "target",
+        labelBottom: "followers",
+        maxVal: max,
+      };
+    } else if (timeframe === "30d") {
       // 30-Day Daily view
       const targetMax = Math.round(currentFollowers * 1.08);
       const bottom = [0.92, 0.93, 0.94, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99, 1.0].map((m) =>
@@ -96,12 +103,32 @@ export function InsTrackGrowthCharts({
       return {
         curveTop: top,
         curveBottom: bottom,
-        labelTop: "benchmark",
+        labelTop: "target",
+        labelBottom: "followers",
+        maxVal: max,
+      };
+    } else {
+      // 90-Day / Long-term macro view
+      const targetMax = Math.max(
+        currentFollowers < 50 ? currentFollowers + 8 : Math.round(currentFollowers * 1.32),
+        10
+      );
+      const bottomMultipliers = [0.42, 0.48, 0.46, 0.55, 0.51, 0.62, 0.68, 0.76, 0.84, 0.94, 1.0];
+      const topMultipliers = [0.60, 0.60, 0.68, 0.78, 0.88, 0.95, 0.96, 0.96, 1.0, 1.0, 1.0];
+
+      const bottom = bottomMultipliers.map((m) => Math.max(1, Math.round(currentFollowers * m)));
+      const top = topMultipliers.map((m) => Math.max(bottom[bottom.length - 1] + 1, Math.round(targetMax * m)));
+
+      const max = Math.max(...top, ...bottom) * 1.15;
+      return {
+        curveTop: top,
+        curveBottom: bottom,
+        labelTop: "target",
         labelBottom: "followers",
         maxVal: max,
       };
     }
-  }, [activeMode, currentFollowers, currentFollowing]);
+  }, [activeMode, timeframe, currentFollowers, currentFollowing]);
 
   // Format axis and tooltip numbers cleanly without 0.0k bugs
   const formatChartValue = (val: number): string => {
@@ -257,39 +284,64 @@ export function InsTrackGrowthCharts({
             </span>
           </div>
 
-          {/* View Mode Switcher */}
-          <div className="inline-flex items-center bg-slate-100 dark:bg-[#1E293B] p-0.5 rounded-lg border border-slate-200/80 dark:border-slate-700 transition-colors">
+          {/* Simple Date Filters (7 Days, 30 Days, 90 Days) */}
+          <div className="inline-flex items-center bg-slate-100 dark:bg-[#1E293B] p-0.5 rounded-xl border border-slate-200/80 dark:border-slate-700 transition-colors">
             <button
-              onClick={() => setActiveMode("target")}
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                activeMode === "target"
-                  ? "bg-indigo-600 text-white shadow-xs"
+              type="button"
+              onClick={() => {
+                setTimeframe("7d");
+                if (activeMode === "following") setActiveMode("target");
+              }}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                timeframe === "7d" && activeMode !== "following"
+                  ? "bg-[#6366F1] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               }`}
             >
-              vs Target
+              7 Days
             </button>
             <button
-              onClick={() => setActiveMode("following")}
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                activeMode === "following"
-                  ? "bg-indigo-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
-              }`}
-            >
-              vs Following
-            </button>
-            <button
-              onClick={() => setActiveMode("daily")}
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
-                activeMode === "daily"
-                  ? "bg-indigo-600 text-white shadow-xs"
+              type="button"
+              onClick={() => {
+                setTimeframe("30d");
+                if (activeMode === "following") setActiveMode("target");
+              }}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                timeframe === "30d" && activeMode !== "following"
+                  ? "bg-[#6366F1] text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               }`}
             >
               30 Days
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTimeframe("90d");
+                if (activeMode === "following") setActiveMode("target");
+              }}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                timeframe === "90d" && activeMode !== "following"
+                  ? "bg-[#6366F1] text-white shadow-xs"
+                  : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+              }`}
+            >
+              90 Days
+            </button>
           </div>
+
+          {/* Target vs Following Mode Pill */}
+          <button
+            type="button"
+            onClick={() => setActiveMode(activeMode === "following" ? "target" : "following")}
+            className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all ${
+              activeMode === "following"
+                ? "bg-purple-100 dark:bg-purple-950/60 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300"
+                : "border-slate-200 dark:border-[#243048] bg-white dark:bg-[#161F30] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+            }`}
+          >
+            {activeMode === "following" ? "vs Following (Active)" : "Compare Following"}
+          </button>
         </div>
       </div>
 

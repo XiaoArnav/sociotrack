@@ -12,6 +12,9 @@ import {
   InsTrackBenchmarkCards,
   InsTrackGradeCards,
 } from "@/components/InsTrackBenchmarkCards";
+import { KeyPerformanceMetrics } from "@/components/KeyPerformanceMetrics";
+import { AudienceInsightsSection } from "@/components/AudienceInsightsSection";
+import { AiRecommendationsSection } from "@/components/AiRecommendationsSection";
 import { InsTrackGrowthCharts } from "@/components/InsTrackGrowthCharts";
 import { InsTrackHistoricalTable } from "@/components/InsTrackHistoricalTable";
 import { InsTrackCompetitorTable } from "@/components/InsTrackCompetitorTable";
@@ -804,8 +807,8 @@ export default function App() {
     };
   }, [activeCreator.handle]);
 
-  // 4. Navigation State: Sub-navigation active tab (Default: "growth")
-  const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("growth");
+  // 4. Navigation State: Sub-navigation active tab (Default: "overview")
+  const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("overview");
 
   // 5. Application Data State
   const [drafts, setDrafts] = useState<PostDraft[]>(INITIAL_DRAFTS);
@@ -1089,37 +1092,22 @@ export default function App() {
 
       {/* TOP NAVIGATION BAR */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
-        {/* Left: SocioTrack Logo & App Name */}
+        {/* Left: SocioTrack Logo & Brand Name */}
         <div className="flex items-center space-x-3">
           <button
             onClick={() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
             className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity"
+            aria-label="SocioTrack Home"
           >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] flex items-center justify-center shadow-sm">
-              <TrendingUp className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] flex items-center justify-center shadow-sm">
+              <TrendingUp className="w-4 h-4 text-white stroke-[2.5]" />
             </div>
             <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
               SocioTrack
             </span>
           </button>
-
-          {/* Multi-Brand Workspace Selector */}
-          <div className="hidden md:block">
-            <WorkspaceSelector
-              workspaceName="Growth Ops Org"
-              activeBrandId={activeBrandId}
-              brands={workspaceBrands}
-              onSelectBrand={(id) => {
-                setActiveBrandId(id);
-                const b = workspaceBrands.find((x) => x.id === id);
-                showToast("Switched Workspace Brand", `Active brand context changed to ${b?.name || id}`);
-              }}
-              onOpenTeamModal={() => setShowTeamModal(true)}
-              onNewBrand={() => setShowOnboardingWizard(true)}
-            />
-          </div>
         </div>
 
         {/* Right: SaaS App / Log In, Create a Free Account, and Dark Mode Toggle on extreme right */}
@@ -1374,70 +1362,129 @@ export default function App() {
 
               {/* 2. CREATOR TAB CONTENT */}
 
-              {/* OVERVIEW SUBTAB */}
+              {/* OVERVIEW SUBTAB (Unified 6-Section Executive Dashboard) */}
               {activeSubTab === "overview" && (
-                <div className="space-y-6 animate-fade-in">
-                  <InsTrackBenchmarkCards creator={activeCreator} />
+                <div className="space-y-10 animate-fade-in">
+                  {/* Section 2: Key Performance Metrics */}
+                  <KeyPerformanceMetrics creator={activeCreator} />
+
+                  {/* Section 3: Audience Growth Analytics */}
                   <InsTrackGrowthCharts
                     creator={activeCreator}
                     followers={activeCreator.followers}
                     following={activeCreator.following}
                   />
 
-                  {/* Executive Intelligence Snapshot */}
-                  <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#243048]">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                          <Compass className="w-4 h-4" />
-                        </div>
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                          Executive Intelligence Summary: @{activeCreator.handle}
-                        </h3>
+                  {/* Section 4: Audience Insights */}
+                  <AudienceInsightsSection creator={activeCreator} />
+
+                  {/* Section 5: Content Performance */}
+                  <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center space-x-2">
+                          <span>Content Performance &amp; Top Posts</span>
+                        </h2>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          Top-performing reels, carousels, and image posts ranked by virality score and engagement rate
+                        </p>
                       </div>
-                      <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full">
-                        Score {activeCreator.score}% • Verified
+                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full border border-indigo-200/60 dark:border-indigo-800/60 w-fit">
+                        Direct Post Telemetry
                       </span>
                     </div>
+                    <InsTrackRecentPostsFeed
+                      creator={activeCreator}
+                      onSelectHook={(hook) => {
+                        setSelectedStudioHook(hook);
+                        setActiveSubTab("aistudio");
+                        showToast(
+                          "Hook Sent to AI Studio",
+                          `Loaded hook: "${hook.slice(0, 48)}..." into generator prompt.`,
+                          "success"
+                        );
+                      }}
+                      onToast={(title, msg, type) => showToast(title, msg, type)}
+                    />
+                  </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] space-y-1.5">
-                        <span className="text-[10px] uppercase font-bold text-slate-400">
-                          Top Format Resonance
-                        </span>
-                        <div className="text-base font-extrabold text-slate-900 dark:text-white">
-                          Educational Carousels (3.82% ER)
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Saves outpace likes by 3.8x. Content acts as reference bookmarks for creator audiences.
-                        </p>
-                      </div>
+                  {/* Section 6: AI Recommendations */}
+                  <AiRecommendationsSection
+                    creator={activeCreator}
+                    onSendToStudio={(hook) => {
+                      setSelectedStudioHook(hook);
+                      setActiveSubTab("aistudio");
+                      showToast(
+                        "Hook Sent to AI Studio",
+                        `Loaded hook: "${hook.slice(0, 48)}..." into generator prompt.`,
+                        "success"
+                      );
+                    }}
+                  />
+                </div>
+              )}
 
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] space-y-1.5">
-                        <span className="text-[10px] uppercase font-bold text-slate-400">
-                          Peak Availability Window
-                        </span>
-                        <div className="text-base font-extrabold text-slate-900 dark:text-white">
-                          Tuesday 08:30 – 10:00 AM UTC
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Releasing technical breakdowns during this window yields +42% comment velocity.
-                        </p>
-                      </div>
+              {/* GROWTH PRIMARY TAB */}
+              {activeSubTab === "growth" && (
+                <div className="space-y-8 animate-fade-in">
+                  <KeyPerformanceMetrics creator={activeCreator} />
+                  <InsTrackGrowthCharts
+                    creator={activeCreator}
+                    followers={activeCreator.followers}
+                    following={activeCreator.following}
+                  />
+                  <InsTrackBenchmarkCards creator={activeCreator} />
+                </div>
+              )}
 
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#1E2638] space-y-1.5">
-                        <span className="text-[10px] uppercase font-bold text-slate-400">
-                          Recommended Action
-                        </span>
-                        <div className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">
-                          Convert 3 Static Posts to Carousels
-                        </div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                          Predicted to unlock +1,400 net monthly followers by raising session dwell duration.
-                        </p>
-                      </div>
+              {/* AUDIENCE PRIMARY TAB */}
+              {activeSubTab === "audience" && (
+                <div className="space-y-8 animate-fade-in">
+                  <AudienceInsightsSection creator={activeCreator} />
+                  <InsTrackEngagementView creator={activeCreator} />
+                </div>
+              )}
+
+              {/* ENGAGEMENT PRIMARY TAB */}
+              {activeSubTab === "engagement" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackEngagementView creator={activeCreator} />
+                </div>
+              )}
+
+              {/* CONTENT PRIMARY TAB */}
+              {activeSubTab === "content" && (
+                <div className="space-y-6 animate-fade-in">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
+                        Content Library &amp; Post Performance
+                      </h2>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        Inspect real post telemetry, engagement distribution, and winning hooks
+                      </p>
                     </div>
                   </div>
+                  <InsTrackRecentPostsFeed
+                    creator={activeCreator}
+                    onSelectHook={(hook) => {
+                      setSelectedStudioHook(hook);
+                      setActiveSubTab("aistudio");
+                      showToast(
+                        "Hook Sent to AI Studio",
+                        `Loaded hook: "${hook.slice(0, 48)}..." into generator prompt.`,
+                        "success"
+                      );
+                    }}
+                    onToast={(title, msg, type) => showToast(title, msg, type)}
+                  />
+                </div>
+              )}
+
+              {/* HISTORY PRIMARY TAB */}
+              {activeSubTab === "historical" && (
+                <div className="space-y-6 animate-fade-in">
+                  <InsTrackHistoricalTable creator={activeCreator} />
                 </div>
               )}
 
@@ -1467,18 +1514,6 @@ export default function App() {
                 </div>
               )}
 
-              {/* GROWTH SUBTAB (Default) */}
-              {activeSubTab === "growth" && (
-                <div className="space-y-6 animate-fade-in">
-                  <InsTrackBenchmarkCards creator={activeCreator} />
-                  <InsTrackGrowthCharts
-                    creator={activeCreator}
-                    followers={activeCreator.followers}
-                    following={activeCreator.following}
-                  />
-                </div>
-              )}
-
               {/* UNFOLLOWERS SUBTAB (Who Unfollowed Me Tracker) */}
               {activeSubTab === "unfollowers" && (
                 <div className="space-y-6 animate-fade-in">
@@ -1486,20 +1521,6 @@ export default function App() {
                     creator={activeCreator}
                     onToast={(title, msg, type) => showToast(title, msg, type)}
                   />
-                </div>
-              )}
-
-              {/* ENGAGEMENT SUBTAB */}
-              {activeSubTab === "engagement" && (
-                <div className="space-y-6 animate-fade-in">
-                  <InsTrackEngagementView creator={activeCreator} />
-                </div>
-              )}
-
-              {/* HISTORICAL SUBTAB */}
-              {activeSubTab === "historical" && (
-                <div className="space-y-6 animate-fade-in">
-                  <InsTrackHistoricalTable creator={activeCreator} />
                 </div>
               )}
 

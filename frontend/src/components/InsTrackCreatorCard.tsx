@@ -18,12 +18,14 @@ import {
 } from "lucide-react";
 
 export type SubNavTab =
-  | "growth"
   | "overview"
+  | "growth"
+  | "audience"
+  | "engagement"
+  | "content"
+  | "historical"
   | "audit"
   | "unfollowers"
-  | "engagement"
-  | "historical"
   | "aistudio"
   | "memorybank"
   | "experiments"
@@ -109,11 +111,23 @@ export function InsTrackCreatorCard({
   const [isStarred, setIsStarred] = useState(propIsStarred ?? false);
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [showMoreToolsDropdown, setShowMoreToolsDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const moreToolsRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsStarred(propIsStarred ?? false);
   }, [propIsStarred, creator.handle]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreToolsRef.current && !moreToolsRef.current.contains(e.target as Node)) {
+        setShowMoreToolsDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const displayScore = score ?? creator.score;
 
@@ -530,64 +544,116 @@ export function InsTrackCreatorCard({
         </div>
       </div>
 
-      {/* InsTrack Segmented Sub-Navigation Bar (Matching Screenshot 2) */}
-      <div className="flex items-center space-x-1 sm:space-x-3 pt-4 overflow-x-auto text-xs font-semibold">
-        {(() => {
-          const unfollowerBadge = creator.followers < 100
-            ? "-1"
-            : creator.followers < 1000
-              ? `-${Math.max(1, Math.round(creator.followers * 0.015))}`
-              : creator.followers < 1_000_000
-                ? `-${Math.max(1, Math.round(creator.followers * 0.002))}`
-                : `-${(creator.followers * 0.0001).toFixed(0)}K`;
-
-          return [
+      {/* Streamlined Dashboard Navigation (Primary 6 Tabs + More Tools Menu) */}
+      <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-[#243048] flex-wrap gap-2">
+        {/* Left: 6 Primary Navigation Tabs */}
+        <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto text-xs font-semibold py-1">
+          {[
             { key: "overview", label: "Overview" },
-            { key: "audit", label: "Audit" },
             { key: "growth", label: "Growth" },
-            { key: "unfollowers", label: "Unfollowers", badge: unfollowerBadge, isAlert: true },
+            { key: "audience", label: "Audience" },
             { key: "engagement", label: "Engagement" },
+            { key: "content", label: "Content" },
             { key: "historical", label: "History" },
-            { key: "aistudio", label: "Posts (AI Studio)" },
-            { key: "memorybank", label: "Memory Bank" },
-            { key: "experiments", label: "A/B Experiments" },
-            { key: "calendar", label: "Mix Planner" },
-            { key: "ask_ai", label: "Ask SocioTrack", badge: "AI" },
-            { key: "competitors", label: "Competitor Intel" },
-            { key: "approval", label: "Approval Queue" },
-            { key: "reports", label: "Executive Reports" },
-            { key: "pricing", label: "Plans & Pricing", badge: "Upgrade" },
-            { key: "billing", label: "Account Billing" },
-            { key: "saas_metrics", label: "SaaS Business Metrics", badge: "Live" },
-            { key: "telemetry", label: "Product Telemetry", badge: "Pilot" },
-          ];
-        })().map((tab) => {
-          const isActive = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => onTabChange(tab.key as SubNavTab)}
-              className={`px-4 py-2 rounded-xl transition-all shrink-0 flex items-center space-x-1.5 ${
-                isActive
-                  ? "bg-slate-100 dark:bg-[#243048] text-slate-900 dark:text-white font-bold shadow-xs"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-[#1E2638]"
-              }`}
-            >
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                    tab.isAlert
-                      ? "bg-rose-500 text-white shadow-xs"
-                      : "bg-indigo-500 text-white"
+          ].map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => onTabChange(tab.key as SubNavTab)}
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all shrink-0 flex items-center space-x-1.5 ${
+                  isActive
+                    ? "bg-[#6366F1] text-white font-bold shadow-xs shadow-indigo-500/20"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E2638]"
+                }`}
+              >
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right: More Tools Dropdown */}
+        <div className="relative" ref={moreToolsRef}>
+          {(() => {
+            const secondaryTools = [
+              { key: "aistudio", label: "AI Studio (Posts)", badge: "GenAI" },
+              { key: "memorybank", label: "Memory Bank", badge: "Vector" },
+              { key: "experiments", label: "A/B Experiments", badge: null },
+              { key: "calendar", label: "Mix Planner", badge: null },
+              { key: "audit", label: "Diagnostic Audit", badge: null },
+              { key: "unfollowers", label: "Who Unfollowed Me", badge: "Radar" },
+              { key: "ask_ai", label: "Ask SocioTrack", badge: "AI" },
+              { key: "competitors", label: "Competitor Intel", badge: null },
+              { key: "approval", label: "Approval Queue", badge: null },
+              { key: "reports", label: "Executive Reports", badge: null },
+              { key: "billing", label: "Plans & Billing", badge: null },
+              { key: "saas_metrics", label: "SaaS Business Metrics", badge: "Live" },
+            ];
+
+            const activeSecondary = secondaryTools.find((t) => t.key === activeTab);
+
+            return (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowMoreToolsDropdown(!showMoreToolsDropdown)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 transition-all border ${
+                    activeSecondary
+                      ? "bg-indigo-50 dark:bg-indigo-950/70 border-indigo-300 dark:border-indigo-700 text-[#6366F1] dark:text-indigo-300 shadow-xs"
+                      : "bg-slate-50 dark:bg-[#1E2638] border-slate-200/90 dark:border-[#243048] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#253046]"
                   }`}
+                  aria-expanded={showMoreToolsDropdown}
                 >
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
+                  <Sparkles className="w-3.5 h-3.5 text-[#6366F1]" />
+                  <span>
+                    {activeSecondary ? `Tool: ${activeSecondary.label}` : "More Tools"}
+                  </span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      showMoreToolsDropdown ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {showMoreToolsDropdown && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#161F30] border border-slate-200 dark:border-[#243048] rounded-2xl shadow-xl p-2 z-50 text-xs animate-scale-up space-y-1">
+                    <div className="px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 border-b border-slate-100 dark:border-[#243048]">
+                      Advanced Workspaces &amp; Engines
+                    </div>
+                    <div className="max-h-72 overflow-y-auto py-1 space-y-0.5">
+                      {secondaryTools.map((tool) => {
+                        const isToolActive = activeTab === tool.key;
+                        return (
+                          <button
+                            key={tool.key}
+                            type="button"
+                            onClick={() => {
+                              onTabChange(tool.key as SubNavTab);
+                              setShowMoreToolsDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-xl flex items-center justify-between transition-colors ${
+                              isToolActive
+                                ? "bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] dark:text-indigo-300 font-bold"
+                                : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1E2638]"
+                            }`}
+                          >
+                            <span>{tool.label}</span>
+                            {tool.badge && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-mono">
+                                {tool.badge}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );
