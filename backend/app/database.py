@@ -62,6 +62,14 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
 
         def _migrate_columns(sync_conn):
+            if sync_conn.dialect.name == "postgresql":
+                try:
+                    sync_conn.execute(text("ALTER TABLE follower_snapshots ADD COLUMN IF NOT EXISTS source VARCHAR(100) DEFAULT 'meta_opengraph_verified'"))
+                    sync_conn.execute(text("ALTER TABLE follower_snapshots ADD COLUMN IF NOT EXISTS engagement_rate FLOAT"))
+                except Exception:
+                    pass
+                return
+
             # Only execute SQLite-specific dynamic column migrations on SQLite
             if sync_conn.dialect.name != "sqlite":
                 return
@@ -122,6 +130,13 @@ async def init_db() -> None:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN conflict_status VARCHAR(50) DEFAULT 'active'"))
                 if "updated_at" not in mem_cols:
                     sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN updated_at DATETIME"))
+
+            if "follower_snapshots" in table_names:
+                fs_cols = {c["name"] for c in inspector.get_columns("follower_snapshots")}
+                if "source" not in fs_cols:
+                    sync_conn.execute(text("ALTER TABLE follower_snapshots ADD COLUMN source VARCHAR(100) DEFAULT 'meta_opengraph_verified'"))
+                if "engagement_rate" not in fs_cols:
+                    sync_conn.execute(text("ALTER TABLE follower_snapshots ADD COLUMN engagement_rate FLOAT"))
 
             if "audit_logs" in table_names:
                 cols = {c["name"]: c for c in inspector.get_columns("audit_logs")}

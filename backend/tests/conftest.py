@@ -2,7 +2,17 @@
 Pytest configuration and shared fixtures for SocioTrack backend tests.
 """
 import pytest
+import asyncio
 from app.core.security import create_access_token
+from app.database import init_db
+
+
+@pytest.fixture(autouse=True, scope="session")
+def setup_database_schema():
+    """Initializes and migrates database tables prior to test execution."""
+    loop = asyncio.new_event_loop()
+    loop.run_until_complete(init_db())
+    loop.close()
 
 
 def get_test_auth_headers(user_id: str = "usr_test_default", email: str = "test@sociotrack.com", role: str = "admin") -> dict:

@@ -33,10 +33,12 @@ class FollowerSnapshot(Base):
     followers_count = Column(Integer, nullable=False, default=0)
     following_count = Column(Integer, nullable=False, default=0)
     media_count = Column(Integer, nullable=False, default=0)
-    net_delta = Column(Integer, nullable=False, default=0)
+    net_delta = Column(Integer, nullable=True, default=0)
     unfollowers_count = Column(Integer, nullable=False, default=0)
     new_followers_count = Column(Integer, nullable=False, default=0)
     retention_rate = Column(Float, nullable=False, default=95.0)
+    source = Column(String(100), nullable=True, default="meta_opengraph_verified")
+    engagement_rate = Column(Float, nullable=True)
     recorded_at = Column(
         DateTime(timezone=True),
         nullable=False,

@@ -9,6 +9,8 @@ Implements the Stale-While-Revalidate (SWR) hybrid caching pattern:
 import os
 import io
 import time
+from typing import Optional, List, Dict, Any
+from datetime import datetime, timezone
 import re
 import hashlib
 import asyncio
@@ -366,6 +368,7 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
 
                     avatar_source = og_image or f"/api/creators/{clean_handle}/avatar"
 
+                    now_utc_iso = datetime.fromtimestamp(now, tz=timezone.utc).isoformat()
                     data = {
                         "handle": clean_handle,
                         "name": name,
@@ -385,12 +388,34 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
                         "avatar_proxy": f"/api/creators/{clean_handle}/avatar",
                         "is_private": is_private,
                         "is_verified": is_verified,
-                        "updatedAt": now,
+                        "updatedAt": now_utc_iso,
+                        "updatedAtEpoch": now,
+                        "lastFetchFailed": False,
                     }
                     _LIVE_STATS_CACHE[clean_handle] = (now, data)
+                    try:
+                        from app.services.snapshot_service import record_snapshot
+                        await record_snapshot(
+                            handle=clean_handle,
+                            followers=followers,
+                            following=following,
+                            media_count=posts,
+                            source="meta_opengraph_verified",
+                            engagement_rate=eng_rate if followers > 0 else None,
+                        )
+                    except Exception:
+                        pass
                     return data
     except Exception:
         pass
+
+    # If live scrape failed, preserve last successful cached data if available
+    if clean_handle in _LIVE_STATS_CACHE:
+        cached_time, cached_data = _LIVE_STATS_CACHE[clean_handle]
+        failed_fallback = dict(cached_data)
+        failed_fallback["fallback"] = True
+        failed_fallback["lastFetchFailed"] = True
+        return failed_fallback
 
     # Fallback to preset defaults if live scrape times out
     return None
@@ -408,6 +433,8 @@ async def get_live_creator_stats(handle: str):
         "avatar": f"/api/creators/{clean}/avatar",
         "avatar_proxy": f"/api/creators/{clean}/avatar",
         "fallback": True,
+        "lastFetchFailed": True,
+        "updatedAt": None,
     }
 
 
@@ -480,6 +507,18 @@ async def get_creator_unfollowers(handle: str):
     return await get_unfollowers_report(clean)
 
 
+@router.get("/{handle}/history", summary="Get verified observation history and consecutive deltas for a creator")
+async def get_creator_historical_stats(
+    handle: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+):
+    """Returns chronologically ordered observation ledger with consecutive deltas and metadata."""
+    from app.services.snapshot_service import get_creator_history
+    clean = sanitize_handle(handle, lowercase=True)
+    return await get_creator_history(clean, start_date=start_date, end_date=end_date)
+
+
 @router.post("/{handle}/snapshot", summary="Record manual follower telemetry snapshot")
 async def create_creator_snapshot(
     handle: str,
@@ -492,11 +531,14 @@ async def create_creator_snapshot(
     followers = live.get("followers", 1000) if isinstance(live, dict) else 1000
     following = live.get("following", 100) if isinstance(live, dict) else 100
     media_count = live.get("mediaCount", 10) if isinstance(live, dict) else 10
+    eng_rate = live.get("engagementRate") if isinstance(live, dict) else None
     return await record_snapshot(
         handle=clean,
         followers=followers,
         following=following,
         media_count=media_count,
+        source="meta_opengraph_verified",
+        engagement_rate=eng_rate,
     )
 
 

@@ -66,4 +66,9 @@ def init_db():
         from app.db import models  # noqa: F401
     except ImportError:
         from backend.app.db import models  # noqa: F401
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        if "already exists" in str(e).lower():
+            return
+        raise
