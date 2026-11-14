@@ -14,6 +14,7 @@ export interface PostDraft {
   format?: string;
   status: "Draft" | "Approved" | "Scheduled";
   scheduledTime?: string;
+  scheduledTimeIso?: string;
   content: string;
   predictedEngagement: "LOW" | "MEDIUM" | "HIGH";
   confidenceScore: number; // e.g. 94%

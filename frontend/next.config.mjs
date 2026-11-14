@@ -9,6 +9,7 @@ const nextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
+  transpilePackages: ['@supabase/ssr'],
 };
 
 export default nextConfig;

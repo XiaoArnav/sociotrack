@@ -13,6 +13,7 @@ class CalendarSlotRecommendation(BaseModel):
     data_sufficiency: str = Field(default="empirical", description="'empirical' | 'hypothesis'")
     requires_approval: bool = True
     is_approved: bool = False
+    scheduled_iso: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")
 

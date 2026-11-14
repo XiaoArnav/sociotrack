@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { LearnedInsight } from "@/mocks/mockData";
+import { formatRelativeTime } from "@/lib/dateUtils";
 
 interface AgentMemoryPanelProps {
   insights: LearnedInsight[];
@@ -31,7 +32,7 @@ export function AgentMemoryPanel({
   onRecalibrateMemory,
   isRecalibrating = false,
 }: AgentMemoryPanelProps) {
-  const [lastUpdated, setLastUpdated] = useState("Just now");
+  const [lastUpdatedInstant] = useState<Date>(() => new Date());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [activeList, setActiveList] = useState<LearnedInsight[]>(insights);
@@ -470,7 +471,9 @@ export function AgentMemoryPanel({
           </div>
           <div className="flex items-center justify-between text-[#718096]">
             <span>Last Memory Update:</span>
-            <span className="font-semibold text-[#172033]">{lastUpdated}</span>
+            <span className="font-semibold text-[#172033]" suppressHydrationWarning>
+              {formatRelativeTime(lastUpdatedInstant)}
+            </span>
           </div>
           <div className="flex items-center justify-between text-[#718096]">
             <span>Memory Confidence Index:</span>

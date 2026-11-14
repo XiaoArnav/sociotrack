@@ -77,8 +77,9 @@ export async function fetchMemoryInsights(
 export async function approvePostAPI(
   postContent: string,
   format: string,
-  scheduledTime: string = "2026-11-09T09:30:00Z"
+  scheduledTime?: string
 ): Promise<{ status: string; post_id: string; message: string }> {
+  const finalScheduledTime = scheduledTime || new Date(Date.now() + 86400000).toISOString();
   try {
     const res = await fetch(`${API_BASE_URL}/api/posts/approve`, {
       method: "POST",
@@ -86,7 +87,7 @@ export async function approvePostAPI(
       body: JSON.stringify({
         post_content: postContent,
         format,
-        scheduled_time: scheduledTime,
+        scheduled_time: finalScheduledTime,
       }),
     });
 

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { MockPostVariation, MockSelectedPost } from "@/mocks/mockData";
+import { formatScheduledTime } from "@/lib/dateUtils";
 
 export interface DraftQueueProps {
   drafts: MockPostVariation[];
@@ -76,7 +77,7 @@ export function DraftQueue({
             </div>
             <div className="flex items-center space-x-1.5 text-xs text-blue-300">
               <Clock className="w-3.5 h-3.5" />
-              <span>{selectedPost.scheduled_time}</span>
+              <span suppressHydrationWarning>{formatScheduledTime(selectedPost.scheduled_time)}</span>
             </div>
           </div>
           <p className="text-xs text-gray-300 leading-relaxed italic">

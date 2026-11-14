@@ -17,6 +17,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { CreatorProfile } from "./InsTrackCreatorCard";
+import { formatRelativeTime } from "@/lib/dateUtils";
 
 export interface FeedPost {
   post_id: string;
@@ -345,8 +346,11 @@ export function InsTrackRecentPostsFeed({
                   </div>
 
                   {/* Posted Time */}
-                  <span className="absolute top-3 right-3 z-10 text-[10px] font-bold text-slate-300 bg-black/50 px-2 py-0.5 rounded backdrop-blur-xs">
-                    {post.posted_at}
+                  <span
+                    className="absolute top-3 right-3 z-10 text-[10px] font-bold text-slate-300 bg-black/50 px-2 py-0.5 rounded backdrop-blur-xs"
+                    suppressHydrationWarning
+                  >
+                    {formatRelativeTime(post.posted_at)}
                   </span>
 
                   {/* Center Visual Cue */}

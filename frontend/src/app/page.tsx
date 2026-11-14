@@ -51,6 +51,8 @@ import {
   INITIAL_DRAFTS,
   INITIAL_INSIGHTS,
 } from "@/mocks/mockData";
+import { formatScheduledTime, getDateRangeBounds } from "@/lib/dateUtils";
+import { approvePostAPI } from "@/lib/api";
 import {
   Sun,
   Moon,
@@ -781,7 +783,7 @@ export default function App() {
       .then((res) => (res.ok ? res.json() : null))
       .then((live) => {
         if (!isMounted) return;
-        if (live && !live.fallback && live.followers !== undefined) {
+        if (live && live.followers !== undefined) {
           setActiveCreator((prev) => {
             if (prev.handle.toLowerCase() === live.handle?.toLowerCase()) {
               return {
@@ -794,8 +796,10 @@ export default function App() {
                 posts: live.mediaCount !== undefined ? live.mediaCount : prev.posts,
                 isPrivate: live.is_private !== undefined ? live.is_private : prev.isPrivate,
                 isVerified: live.is_verified !== undefined ? live.is_verified : prev.isVerified,
-                provenanceBadge: "Verified",
-                dataSource: "Meta OpenGraph Live Scraper",
+                lastFetchedAt: live.updatedAt || new Date().toISOString(),
+                lastFetchFailed: Boolean(live.lastFetchFailed),
+                provenanceBadge: live.fallback ? "Retrieved" : "Verified",
+                dataSource: live.fallback ? "Cached Profile Telemetry" : "Meta OpenGraph Live Scraper",
               };
             }
             return prev;
@@ -890,7 +894,7 @@ export default function App() {
             livePromise,
             new Promise((resolve) => setTimeout(() => resolve(null), 2500)),
           ]);
-          if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
+          if (liveStats && liveStats.followers !== undefined) {
             profile = {
               ...profile,
               name: liveStats.name || profile.name,
@@ -901,8 +905,10 @@ export default function App() {
               posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : profile.posts,
               isPrivate: liveStats.is_private !== undefined ? liveStats.is_private : profile.isPrivate,
               isVerified: liveStats.is_verified !== undefined ? liveStats.is_verified : profile.isVerified,
-              provenanceBadge: "Verified",
-              dataSource: "Meta OpenGraph Live Scraper",
+              lastFetchedAt: liveStats.updatedAt || new Date().toISOString(),
+              lastFetchFailed: Boolean(liveStats.lastFetchFailed),
+              provenanceBadge: liveStats.fallback ? "Retrieved" : "Verified",
+              dataSource: liveStats.fallback ? "Cached Profile Telemetry" : "Meta OpenGraph Live Scraper",
             };
           }
         } catch {}
@@ -915,7 +921,7 @@ export default function App() {
       // If livePromise takes slightly longer, attach background updater
       if (livePromise) {
         livePromise.then((liveStats) => {
-          if (liveStats && !liveStats.fallback && liveStats.followers !== undefined) {
+          if (liveStats && liveStats.followers !== undefined) {
             setActiveCreator((prev) => {
               if (prev.handle.toLowerCase() === handle.toLowerCase()) {
                 return {
@@ -928,8 +934,10 @@ export default function App() {
                   posts: liveStats.mediaCount !== undefined ? liveStats.mediaCount : prev.posts,
                   isPrivate: liveStats.is_private !== undefined ? liveStats.is_private : prev.isPrivate,
                   isVerified: liveStats.is_verified !== undefined ? liveStats.is_verified : prev.isVerified,
-                  provenanceBadge: "Verified",
-                  dataSource: "Meta OpenGraph Live Scraper",
+                  lastFetchedAt: liveStats.updatedAt || new Date().toISOString(),
+                  lastFetchFailed: Boolean(liveStats.lastFetchFailed),
+                  provenanceBadge: liveStats.fallback ? "Retrieved" : "Verified",
+                  dataSource: liveStats.fallback ? "Cached Profile Telemetry" : "Meta OpenGraph Live Scraper",
                 };
               }
               return prev;
@@ -954,7 +962,11 @@ export default function App() {
   const handleDateRangeChange = (range: string) => {
     setActiveCreator((prev) => {
       let deltaStr = prev.followersDelta;
-      if (range === "Last 7 Days") {
+      if (range === "Today") {
+        deltaStr = `+${Math.max(1, Math.round(prev.followers * 0.001)).toLocaleString()} (0.1%)`;
+      } else if (range === "This Week") {
+        deltaStr = `+${Math.round(prev.followers * 0.005).toLocaleString()} (0.5%)`;
+      } else if (range === "Last 7 Days") {
         deltaStr = `+${Math.round(prev.followers * 0.007).toLocaleString()} (0.7%)`;
       } else if (range === "Last 30 Days") {
         deltaStr = `+${Math.round(prev.followers * 0.025).toLocaleString()} (2.5%)`;
@@ -986,13 +998,23 @@ export default function App() {
 
   // 11. Approve Draft Handler
   const handleApproveDraft = (draft: PostDraft) => {
+    // Dynamically calculate the next high-velocity scheduling window (tomorrow at 14:00 UTC)
+    const targetSlot = new Date(Date.now() + 86400000);
+    targetSlot.setUTCHours(14, 0, 0, 0);
+    const targetSlotIso = targetSlot.toISOString();
+    const formattedSlot = formatScheduledTime(targetSlotIso);
+
+    // Call approvePostAPI with the dynamic target instant
+    approvePostAPI(draft.content, draft.format || "CAROUSEL", targetSlotIso).catch(() => {});
+
     setDrafts((prev) =>
       prev.map((d) =>
         d.id === draft.id
           ? {
               ...d,
               status: "Approved" as const,
-              scheduledTime: "Tuesday at 2:30 PM (Peak Reply Window)",
+              scheduledTime: formattedSlot,
+              scheduledTimeIso: targetSlotIso,
             }
           : d
       )
@@ -1000,7 +1022,7 @@ export default function App() {
 
     showToast(
       "Draft Approved & Scheduled",
-      `Post scheduled for ${draft.platform} on Tuesday at 2:30 PM (Peak Window).`,
+      `Post scheduled for ${draft.platform} on ${formattedSlot}.`,
       "success"
     );
   };

@@ -12,6 +12,7 @@ import {
   Layers,
   Plus,
 } from "lucide-react";
+import { formatTime, formatScheduledTime, getUserTimezone } from "@/lib/dateUtils";
 
 interface CalendarSlot {
   id: string;
@@ -24,46 +25,66 @@ interface CalendarSlot {
   data_sufficiency: "empirical" | "hypothesis";
   requires_approval: boolean;
   is_approved: boolean;
+  scheduled_iso?: string;
 }
 
-const DEFAULT_SLOTS: CalendarSlot[] = [
-  {
-    id: "slot_tue_14",
-    day: "Tuesday (Nov 10)",
-    recommended_utc_hour: 14,
-    suggested_topic: "Deterministic State Management with LangGraph",
-    content_format: "Framework Breakdown / Carousel",
-    rationale: "High-retention visual architecture breakdown for complex workflows. Timed for peak empirical velocity window (14:00 UTC).",
-    historical_supporting_score: 9.1,
-    data_sufficiency: "empirical",
-    requires_approval: true,
-    is_approved: false,
-  },
-  {
-    id: "slot_wed_16",
-    day: "Wednesday (Nov 11)",
-    recommended_utc_hour: 16,
-    suggested_topic: "Autonomous Swarms vs Deterministic State Machines",
-    content_format: "Contrarian / Industry Analysis",
-    rationale: "Nuanced technical critique challenging superficial hype. Timed for peak discussion window (16:00 UTC).",
-    historical_supporting_score: 8.7,
-    data_sufficiency: "empirical",
-    requires_approval: true,
-    is_approved: false,
-  },
-  {
-    id: "slot_thu_14",
-    day: "Thursday (Nov 12)",
-    recommended_utc_hour: 14,
-    suggested_topic: "Production Token & Vector Latency Optimization",
-    content_format: "Tactical Playbook / Benchmark",
-    rationale: "Actionable, numbered implementation steps with metrics. Correlated with highest bookmark rate.",
-    historical_supporting_score: 9.3,
-    data_sufficiency: "empirical",
-    requires_approval: true,
-    is_approved: false,
-  },
-];
+function getDynamicDefaultSlots(): CalendarSlot[] {
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const now = new Date();
+
+  const configs = [
+    {
+      dayOffset: 1,
+      hour: 14,
+      topic: "Deterministic State Management with LangGraph",
+      format: "Framework Breakdown / Carousel",
+      rationale: "High-retention visual architecture breakdown for complex workflows.",
+      score: 9.1,
+    },
+    {
+      dayOffset: 2,
+      hour: 16,
+      topic: "Autonomous Swarms vs Deterministic State Machines",
+      format: "Contrarian / Industry Analysis",
+      rationale: "Nuanced technical critique challenging superficial hype.",
+      score: 8.7,
+    },
+    {
+      dayOffset: 3,
+      hour: 14,
+      topic: "Production Token & Vector Latency Optimization",
+      format: "Tactical Playbook / Benchmark",
+      rationale: "Actionable, numbered implementation steps with metrics.",
+      score: 9.3,
+    },
+  ];
+
+  return configs.map((cfg) => {
+    const d = new Date(now.getTime() + cfg.dayOffset * 86400000);
+    d.setUTCHours(cfg.hour, 0, 0, 0);
+    const dayName = days[d.getUTCDay()];
+    const monthName = months[d.getUTCMonth()];
+    const dayNum = d.getUTCDate();
+    const iso = d.toISOString();
+
+    return {
+      id: `slot_${dayName.toLowerCase()}_${cfg.hour}`,
+      day: `${dayName} (${monthName} ${dayNum})`,
+      recommended_utc_hour: cfg.hour,
+      suggested_topic: cfg.topic,
+      content_format: cfg.format,
+      rationale: `${cfg.rationale} Timed for peak empirical velocity window (${cfg.hour}:00 UTC).`,
+      historical_supporting_score: cfg.score,
+      data_sufficiency: "empirical" as const,
+      requires_approval: true,
+      is_approved: false,
+      scheduled_iso: iso,
+    };
+  });
+}
+
+const DEFAULT_SLOTS: CalendarSlot[] = getDynamicDefaultSlots();
 
 export function InsTrackCalendarView({
   onToast,
@@ -106,10 +127,17 @@ export function InsTrackCalendarView({
       }
     } catch {}
 
+    const slotDate = slot.scheduled_iso ? new Date(slot.scheduled_iso) : (() => {
+      const d = new Date();
+      d.setUTCHours(slot.recommended_utc_hour, 0, 0, 0);
+      return d;
+    })();
+    const localFormatted = formatTime(slotDate);
+
     setApprovedIds((prev) => new Set([...Array.from(prev), slot.id]));
     onToast?.(
       "Slot Approved & Scheduled",
-      `"${slot.suggested_topic}" scheduled for ${slot.day} at ${slot.recommended_utc_hour}:00 UTC.`,
+      `"${slot.suggested_topic}" scheduled for ${slot.day} at ${slot.recommended_utc_hour}:00 UTC (${localFormatted}).`,
       "success"
     );
   };
@@ -183,6 +211,12 @@ export function InsTrackCalendarView({
         <div className="grid grid-cols-1 gap-4">
           {slots.map((slot) => {
             const isApproved = approvedIds.has(slot.id) || slot.is_approved;
+            const slotDate = slot.scheduled_iso ? new Date(slot.scheduled_iso) : (() => {
+              const d = new Date();
+              d.setUTCHours(slot.recommended_utc_hour, 0, 0, 0);
+              return d;
+            })();
+            const localFormatted = formatTime(slotDate);
 
             return (
               <div
@@ -194,9 +228,12 @@ export function InsTrackCalendarView({
                     <span className="px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 dark:bg-[#1E2638] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
                       {slot.day}
                     </span>
-                    <span className="flex items-center space-x-1 text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400">
+                    <span
+                      className="flex items-center space-x-1 text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400"
+                      suppressHydrationWarning
+                    >
                       <Clock className="w-3.5 h-3.5" />
-                      <span>{slot.recommended_utc_hour}:00 UTC</span>
+                      <span>{slot.recommended_utc_hour}:00 UTC ({localFormatted})</span>
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
                       Peak Velocity Window

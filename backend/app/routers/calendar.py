@@ -106,6 +106,10 @@ async def get_calendar_recommendations(
                 else "System Architecture"
             )
 
+            slot_instant = target_date.replace(hour=hour, minute=0, second=0, microsecond=0)
+            if slot_instant.tzinfo is None:
+                slot_instant = slot_instant.replace(tzinfo=timezone.utc)
+
             slots.append(
                 CalendarSlotRecommendation(
                     id=f"slot_{day_name.lower()}_{hour}",
@@ -118,6 +122,7 @@ async def get_calendar_recommendations(
                     data_sufficiency=data_suff,
                     requires_approval=True,
                     is_approved=False,
+                    scheduled_iso=slot_instant.isoformat(),
                 )
             )
 

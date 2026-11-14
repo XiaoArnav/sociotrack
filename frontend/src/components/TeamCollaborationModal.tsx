@@ -14,6 +14,7 @@ import {
   Clock,
   Lock,
 } from "lucide-react";
+import { formatTime } from "@/lib/dateUtils";
 
 interface TeamMember {
   id: string;
@@ -401,9 +402,9 @@ export function TeamCollaborationModal({
                     by {log.actor_email}
                   </p>
                 </div>
-                <div className="flex items-center space-x-1 text-[10px] text-slate-400 font-mono">
+                <div className="flex items-center space-x-1 text-[10px] text-slate-400 font-mono" suppressHydrationWarning>
                   <Clock className="w-3 h-3" />
-                  <span>{new Date(log.created_at).toLocaleTimeString()}</span>
+                  <span>{formatTime(log.created_at)}</span>
                 </div>
               </div>
             ))}

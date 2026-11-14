@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { UserSession } from "@/components/auth/AuthPage";
+import { useLiveClock, formatRelativeTime } from "@/lib/dateUtils";
 
 export interface DashboardMetrics {
   totalDrafts: number;
@@ -38,34 +39,28 @@ export function Header({
 }: HeaderProps) {
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date());
+  const { formattedDate, formattedTime, now, mounted } = useLiveClock(1000);
 
   const notifications = [
     {
       id: "n1",
       title: "New Audience Preference Discovered",
       desc: "Contrarian technical takes get 3.4x more saves than generic tutorials.",
-      time: "2 mins ago",
+      timestamp: new Date(now.getTime() - 2 * 60 * 1000),
       type: "memory",
     },
     {
       id: "n2",
       title: "Draft Approved & Scheduled",
       desc: "Post scheduled for Tuesday at 2:30 PM (Peak Reply Window).",
-      time: "15 mins ago",
+      timestamp: new Date(now.getTime() - 15 * 60 * 1000),
       type: "schedule",
     },
     {
       id: "n3",
       title: "Viral Ingestion Triggered",
       desc: "Reinforcement score: 8.42 composite. Topic weight boosted +0.4.",
-      time: "1 hour ago",
+      timestamp: new Date(now.getTime() - 60 * 60 * 1000),
       type: "agent",
     },
   ];
@@ -97,10 +92,16 @@ export function Header({
 
         {/* Action Controls: Search, Date, Notifications */}
         <div className="flex items-center space-x-3">
-          {/* Current Date Badge */}
-          <div className="hidden lg:flex items-center space-x-1.5 text-xs text-[#718096] px-3 py-1.5 rounded-xl bg-[#F6F7FB] border border-[#E6E9F0]">
+          {/* Current Date & Live Time Badge */}
+          <div
+            className="hidden lg:flex items-center space-x-2 text-xs text-[#718096] px-3 py-1.5 rounded-xl bg-[#F6F7FB] border border-[#E6E9F0]"
+            suppressHydrationWarning
+          >
             <Calendar className="w-3.5 h-3.5 text-[#5146D8]" />
-            <span className="font-medium">{formattedDate}</span>
+            <span className="font-medium">{mounted ? formattedDate : "Loading calendar..."}</span>
+            <span className="text-[#CBD5E1]">|</span>
+            <Clock className="w-3.5 h-3.5 text-[#16A477]" />
+            <span className="font-mono font-semibold text-[#172033]">{mounted ? formattedTime : "--:--"}</span>
           </div>
 
           {/* Search Input */}
@@ -155,7 +156,9 @@ export function Header({
                         <span className="text-xs font-bold text-[#172033]">
                           {n.title}
                         </span>
-                        <span className="text-[10px] text-[#718096]">{n.time}</span>
+                        <span className="text-[10px] text-[#718096]" suppressHydrationWarning>
+                          {mounted ? formatRelativeTime(n.timestamp, now) : "just now"}
+                        </span>
                       </div>
                       <p className="text-[11px] text-[#718096] line-clamp-2">
                         {n.desc}

@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   RefreshCw,
 } from "lucide-react";
+import { formatDate } from "@/lib/dateUtils";
 
 interface CustomerBillingPortalProps {
   workspaceId?: string;
@@ -145,8 +146,8 @@ export function CustomerBillingPortal({
           <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
             Next Renewal
           </p>
-          <p className="text-xl font-bold text-slate-900 dark:text-white font-mono">
-            {new Date(subscription.current_period_end).toLocaleDateString()}
+          <p className="text-xl font-bold text-slate-900 dark:text-white font-mono" suppressHydrationWarning>
+            {formatDate(subscription.current_period_end)}
           </p>
           <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono">
             Auto-renews safely via Stripe
@@ -226,8 +227,8 @@ export function CustomerBillingPortal({
                   <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
                     {inv.stripe_invoice_id}
                   </td>
-                  <td className="p-3 text-slate-600 dark:text-slate-400 font-mono">
-                    {new Date(inv.date).toLocaleDateString()}
+                  <td className="p-3 text-slate-600 dark:text-slate-400 font-mono" suppressHydrationWarning>
+                    {formatDate(inv.date)}
                   </td>
                   <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
                     ${inv.amount_usd.toFixed(2)} {inv.currency}

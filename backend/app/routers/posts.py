@@ -60,6 +60,8 @@ async def approve_post(
                 scheduled_at = datetime.now(timezone.utc)
         elif isinstance(payload.scheduled_time, datetime):
             scheduled_at = payload.scheduled_time
+    if scheduled_at and scheduled_at.tzinfo is None:
+        scheduled_at = scheduled_at.replace(tzinfo=timezone.utc)
 
     original_draft = payload.post_content or (post.content if post else None)
     is_user_edited = bool(original_draft and approved_text and original_draft.strip() != approved_text.strip())

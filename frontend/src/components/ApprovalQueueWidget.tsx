@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { formatRelativeTime } from "@/lib/dateUtils";
 
 interface DraftItem {
   id: string;
@@ -22,7 +23,7 @@ interface DraftItem {
   status: "draft" | "pending_review" | "approved" | "rejected";
   author: string;
   reviewerNotes?: string;
-  comments: { id: string; author: string; content: string; time: string }[];
+  comments: { id: string; author: string; content: string; time: string; createdAt?: string }[];
 }
 
 interface ApprovalQueueWidgetProps {
@@ -97,6 +98,7 @@ export function ApprovalQueueWidget({
                 author: "Krishna Verma",
                 content: newComment.trim(),
                 time: "Just now",
+                createdAt: new Date().toISOString(),
               },
             ],
           };
@@ -236,7 +238,7 @@ export function ApprovalQueueWidget({
                         >
                           <div className="flex items-center justify-between text-[10px] text-slate-400">
                             <span className="font-bold text-slate-700 dark:text-slate-300">{c.author}</span>
-                            <span>{c.time}</span>
+                            <span suppressHydrationWarning>{formatRelativeTime(c.createdAt || c.time)}</span>
                           </div>
                           <p className="text-slate-800 dark:text-slate-200 text-xs">{c.content}</p>
                         </div>

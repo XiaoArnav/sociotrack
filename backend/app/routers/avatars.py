@@ -9,6 +9,7 @@ Implements the Stale-While-Revalidate (SWR) hybrid caching pattern:
 import os
 import io
 import time
+from datetime import datetime, timezone
 import re
 import hashlib
 import asyncio
@@ -366,6 +367,7 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
 
                     avatar_source = og_image or f"/api/creators/{clean_handle}/avatar"
 
+                    now_utc_iso = datetime.fromtimestamp(now, tz=timezone.utc).isoformat()
                     data = {
                         "handle": clean_handle,
                         "name": name,
@@ -385,12 +387,22 @@ async def scrape_live_instagram_profile(clean_handle: str) -> dict:
                         "avatar_proxy": f"/api/creators/{clean_handle}/avatar",
                         "is_private": is_private,
                         "is_verified": is_verified,
-                        "updatedAt": now,
+                        "updatedAt": now_utc_iso,
+                        "updatedAtEpoch": now,
+                        "lastFetchFailed": False,
                     }
                     _LIVE_STATS_CACHE[clean_handle] = (now, data)
                     return data
     except Exception:
         pass
+
+    # If live scrape failed, preserve last successful cached data if available
+    if clean_handle in _LIVE_STATS_CACHE:
+        cached_time, cached_data = _LIVE_STATS_CACHE[clean_handle]
+        failed_fallback = dict(cached_data)
+        failed_fallback["fallback"] = True
+        failed_fallback["lastFetchFailed"] = True
+        return failed_fallback
 
     # Fallback to preset defaults if live scrape times out
     return None
@@ -408,6 +420,8 @@ async def get_live_creator_stats(handle: str):
         "avatar": f"/api/creators/{clean}/avatar",
         "avatar_proxy": f"/api/creators/{clean}/avatar",
         "fallback": True,
+        "lastFetchFailed": True,
+        "updatedAt": None,
     }
 
 

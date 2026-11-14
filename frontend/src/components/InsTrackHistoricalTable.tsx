@@ -139,10 +139,15 @@ export function InsTrackHistoricalTable({ creator = DEFAULT_CREATOR }: InsTrackH
       {/* Historical Stats Table Card */}
       <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-6 shadow-sm relative">
         {/* Table Header Controls matching Screenshot 7 */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#243048]">
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-            Historical Stats
-          </h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 dark:border-[#243048] gap-2">
+          <div className="flex items-center space-x-2">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+              Historical Stats
+            </h3>
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+              Sample Historical Telemetry (Archived Benchmark Dataset)
+            </span>
+          </div>
           <div className="flex items-center space-x-2 text-[#6366F1]">
             <button
               onClick={handleDownloadCsv}
