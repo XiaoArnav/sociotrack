@@ -47,6 +47,9 @@ import { BusinessMetricsDashboard } from "@/components/BusinessMetricsDashboard"
 import { TermsAndPrivacyModal } from "@/components/TermsAndPrivacyModal";
 import { saveProfileSnapshot } from "@/utils/supabase/snapshots";
 import { createClient as createSupabaseClient } from "@/utils/supabase/client";
+import { OverviewDashboard } from "@/components/OverviewDashboard";
+import { GrowthDashboardView } from "@/components/GrowthDashboardView";
+import { PrivateAccountLockout } from "@/components/PrivateAccountLockout";
 import {
   PostDraft,
   LearnedInsight,
@@ -1090,22 +1093,32 @@ export default function App() {
       )}
 
       {/* TOP NAVIGATION BAR */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-3.5 flex items-center justify-between transition-colors">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-200/80 dark:border-[#243048] px-4 sm:px-8 py-4 min-h-[72px] sm:min-h-[80px] flex items-center justify-between transition-all">
         {/* Left: SocioTrack Logo & Brand Name */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3.5">
           <button
             onClick={() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className="flex items-center space-x-2.5 hover:opacity-90 transition-opacity"
+            className="flex items-center space-x-3 hover:opacity-90 transition-opacity"
             aria-label="SocioTrack Home"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] flex items-center justify-center shadow-sm">
-              <TrendingUp className="w-4 h-4 text-white stroke-[2.5]" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-[#6366F1] via-[#8B5CF6] to-[#06B6D4] flex items-center justify-center shadow-md shadow-indigo-500/20">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white stroke-[2.5]" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-              SocioTrack
-            </span>
+            <div className="text-left">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                  SocioTrack
+                </span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200/60 dark:border-indigo-800/60 hidden sm:inline-block">
+                  v2.4
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden md:block">
+                Autonomous Social Intelligence &amp; Reinforcement Growth
+              </p>
+            </div>
           </button>
         </div>
 
@@ -1115,7 +1128,7 @@ export default function App() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setViewMode(viewMode === "public_report" ? "saas_dashboard" : "public_report")}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
+                className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
               >
                 {viewMode === "public_report" ? "SaaS App →" : "Public View"}
               </button>
@@ -1134,7 +1147,7 @@ export default function App() {
                   setViewMode("public_report");
                   showToast("Signed Out", "Your session has been securely ended and invalidated.");
                 }}
-                className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                 title="Sign out of current workspace"
               >
                 Sign Out
@@ -1147,7 +1160,7 @@ export default function App() {
                   setAuthInitialScreen("login");
                   setShowAuthModal(true);
                 }}
-                className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
+                className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
               >
                 Log in
               </button>
@@ -1156,26 +1169,16 @@ export default function App() {
                   setAuthInitialScreen("signup");
                   setShowAuthModal(true);
                 }}
-                className="px-4 py-1.5 rounded-lg bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-semibold shadow-sm transition-colors"
+                className="px-4 py-2 rounded-xl bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all hover:scale-102"
               >
                 Create Account
               </button>
             </div>
           )}
 
-          {/* Pilot Quick Actions */}
-          <button
-            onClick={() => setShowOnboardingWizard(true)}
-            className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/70 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold hover:bg-indigo-100 transition-colors shadow-xs"
-            title="Start quick 60-second brand onboarding"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Onboard Brand</span>
-          </button>
-
           <button
             onClick={() => setShowFeedbackModal(true)}
-            className="flex items-center space-x-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 text-xs font-semibold transition-colors"
+            className="flex items-center space-x-1 px-3 py-2 rounded-xl border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 text-xs font-semibold transition-colors"
             title="Provide feedback on recommendations or report an issue"
           >
             <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
@@ -1185,7 +1188,7 @@ export default function App() {
           {/* Extreme Right: Moon / Sun Toggle Button */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
-            className="p-2 rounded-xl border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 transition-colors ml-1"
+            className="p-2 sm:p-2.5 rounded-xl border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#161F30] text-slate-600 dark:text-slate-300 transition-colors ml-1"
             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
@@ -1321,55 +1324,39 @@ export default function App() {
 
           {/* MAIN CONTENT DASHBOARD */}
           <main className="max-w-7xl mx-auto px-4 sm:px-8 py-6 space-y-16 pb-32">
-            {/* 1. CREATOR PROFILE CARD & RAINBOW SCORE */}
-            <div id="creator-card-section" className="space-y-6 scroll-mt-20">
-              <InsTrackCreatorCard
-                activeTab={activeSubTab}
-                onTabChange={setActiveSubTab}
-                onExportClick={() => setActiveSubTab("historical")}
-                creator={activeCreator}
-                score={activeCreator.score}
-                onDateRangeChange={handleDateRangeChange}
-                onToggleStar={handleToggleStar}
-                isStarred={bookmarkedHandles.includes(activeCreator.handle)}
+            {/* Private Account Lockout State: If the target account is private, hide analytics and display lock notice */}
+            {activeCreator.isPrivate ? (
+              <PrivateAccountLockout
+                handle={activeCreator.handle}
+                onReturnToSearch={() => {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                  const searchInput = document.querySelector('input[type="text"]') as HTMLInputElement;
+                  if (searchInput) searchInput.focus();
+                }}
               />
-
-              {/* 2. CREATOR TAB CONTENT */}
-
-              {/* OVERVIEW SUBTAB (Unified 6-Section Executive Dashboard) */}
-              {activeSubTab === "overview" && (
-                <div className="space-y-10 animate-fade-in">
-                  {/* Section 2: Key Performance Metrics */}
-                  <KeyPerformanceMetrics creator={activeCreator} />
-
-                  {/* Section 3: Audience Growth Analytics */}
-                  <InsTrackGrowthCharts
+            ) : (
+              <>
+                {/* 1. CREATOR PROFILE CARD & RAINBOW SCORE */}
+                <div id="creator-card-section" className="space-y-6 scroll-mt-20">
+                  <InsTrackCreatorCard
+                    activeTab={activeSubTab}
+                    onTabChange={setActiveSubTab}
+                    onExportClick={() => setActiveSubTab("historical")}
                     creator={activeCreator}
-                    followers={activeCreator.followers}
-                    following={activeCreator.following}
+                    score={activeCreator.score}
+                    onDateRangeChange={handleDateRangeChange}
+                    onToggleStar={handleToggleStar}
+                    isStarred={bookmarkedHandles.includes(activeCreator.handle)}
                   />
 
-                  {/* Section 4: Audience Insights */}
-                  <AudienceInsightsSection creator={activeCreator} />
+                  {/* 2. CREATOR TAB CONTENT */}
 
-                  {/* Section 5: Content Performance */}
-                  <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <h2 className="text-lg font-black text-slate-900 dark:text-white tracking-tight flex items-center space-x-2">
-                          <span>Content Performance &amp; Top Posts</span>
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Top-performing reels, carousels, and image posts ranked by virality score and engagement rate
-                        </p>
-                      </div>
-                      <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-full border border-indigo-200/60 dark:border-indigo-800/60 w-fit">
-                        Direct Post Telemetry
-                      </span>
-                    </div>
-                    <InsTrackRecentPostsFeed
+                  {/* OVERVIEW SUBTAB (Modern Blue/Purple Redesign: Followers, Engagement Rate, Posts, Demographics) */}
+                  {activeSubTab === "overview" && (
+                    <OverviewDashboard
                       creator={activeCreator}
-                      onSelectHook={(hook) => {
+                      onNavigateTab={setActiveSubTab}
+                      onSendToStudio={(hook) => {
                         setSelectedStudioHook(hook);
                         setActiveSubTab("aistudio");
                         showToast(
@@ -1380,36 +1367,16 @@ export default function App() {
                       }}
                       onToast={(title, msg, type) => showToast(title, msg, type)}
                     />
-                  </div>
+                  )}
 
-                  {/* Section 6: AI Recommendations */}
-                  <AiRecommendationsSection
-                    creator={activeCreator}
-                    onSendToStudio={(hook) => {
-                      setSelectedStudioHook(hook);
-                      setActiveSubTab("aistudio");
-                      showToast(
-                        "Hook Sent to AI Studio",
-                        `Loaded hook: "${hook.slice(0, 48)}..." into generator prompt.`,
-                        "success"
-                      );
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* GROWTH PRIMARY TAB */}
-              {activeSubTab === "growth" && (
-                <div className="space-y-8 animate-fade-in">
-                  <KeyPerformanceMetrics creator={activeCreator} />
-                  <InsTrackGrowthCharts
-                    creator={activeCreator}
-                    followers={activeCreator.followers}
-                    following={activeCreator.following}
-                  />
-                  <InsTrackBenchmarkCards creator={activeCreator} />
-                </div>
-              )}
+                  {/* GROWTH PRIMARY TAB (Distinct Growth Page: Trends, Velocity & Peer Benchmarks) */}
+                  {activeSubTab === "growth" && (
+                    <GrowthDashboardView
+                      creator={activeCreator}
+                      onNavigateTab={setActiveSubTab}
+                      onToast={(title, msg, type) => showToast(title, msg, type)}
+                    />
+                  )}
 
               {/* AUDIENCE PRIMARY TAB */}
               {activeSubTab === "audience" && (
@@ -1757,6 +1724,8 @@ export default function App() {
                 </div>
               )}
             </div>
+          </>
+        )}
 
             {/* 3. SHOWCASE SECTION 1: BENCHMARK PERFORMANCE */}
             <section id="benchmark-section" className="space-y-6 pt-4">
@@ -1873,106 +1842,96 @@ export default function App() {
           </main>
 
           {/* FOOTER */}
-          <footer className="border-t border-slate-200 dark:border-[#243048] bg-white dark:bg-[#0B0F19] py-8 text-xs text-slate-500 dark:text-slate-400 transition-colors">
-            <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-              <div>
-                <div className="font-extrabold text-slate-900 dark:text-white text-sm">
-                  SocioTrack
+          <footer className="border-t border-slate-200 dark:border-[#243048] bg-white dark:bg-[#0B0F19] py-10 text-xs text-slate-500 dark:text-slate-400 transition-colors">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-6">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-center md:justify-start space-x-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-[#6366F1] to-[#8B5CF6] flex items-center justify-center text-white shadow-sm">
+                      <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                    </div>
+                    <span className="font-extrabold text-slate-900 dark:text-white text-base tracking-tight">
+                      SocioTrack
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md font-medium">
+                    SocioTrack by Zyrohouse — an emerging startup.
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                    Autonomous Social Media Engagement &amp; Real-Time Meta Graph Telemetry.
+                  </p>
                 </div>
-                <p className="text-[11px] mt-0.5">
-                  Autonomous Social Media Agent with Persistent Vector Memory & Real-Time Analytics.
-                </p>
+
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs font-semibold">
+                  <button
+                    onClick={() => {
+                      setActiveSubTab("overview");
+                      document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Overview
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveSubTab("growth");
+                      document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Growth Trends
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveSubTab("audience");
+                      document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Audience Demographics
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveSubTab("audit");
+                      document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Audit
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveSubTab("aistudio");
+                      document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    AI Studio
+                  </button>
+                  <button
+                    onClick={() => {
+                      document.getElementById("founders-dispatch-section")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-indigo-600 dark:text-indigo-400 transition-colors"
+                  >
+                    Founders’ Dispatch
+                  </button>
+                  <button
+                    onClick={() => setShowLegalModal(true)}
+                    className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    Terms &amp; Privacy
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center space-x-6 text-[11px] font-medium">
-                <button
-                  onClick={() => {
-                    setActiveSubTab("overview");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("audit");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  Audit
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("growth");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  Growth
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("unfollowers");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  Unfollowers
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("aistudio");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  AI Studio
-                </button>
-                <button
-                  onClick={() => {
-                    document.getElementById("founders-dispatch-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500 font-bold text-indigo-600 dark:text-indigo-400"
-                >
-                  Founders’ Dispatch
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("engagement");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  Engagement
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("historical");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500"
-                >
-                  History
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveSubTab("pricing");
-                    document.getElementById("creator-card-section")?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="hover:text-indigo-500 font-bold text-emerald-600 dark:text-emerald-400"
-                >
-                  Plans &amp; Pricing
-                </button>
-                <button
-                  onClick={() => setShowLegalModal(true)}
-                  className="hover:text-indigo-500 font-medium text-slate-500 dark:text-slate-400"
-                >
-                  Terms &amp; Compliance
-                </button>
-              </div>
-              <div className="text-[11px] font-mono">
-                © 2026 SocioTrack. All rights reserved.
+
+              <div className="pt-6 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 dark:text-slate-500">
+                <div>
+                  SocioTrack is a product by Zyrohouse, an emerging startup. Built for Microsoft AI Hackathon.
+                </div>
+                <div className="font-mono">
+                  © 2026 SocioTrack by Zyrohouse. All rights reserved.
+                </div>
               </div>
             </div>
           </footer>
