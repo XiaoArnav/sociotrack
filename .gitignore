@@ -45,10 +45,16 @@ yarn-error.log*
 
 # Environment & Secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
+*.env
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+frontend/.env.local
+!frontend/.env.example
 
 # Pytest / Coverage
 .pytest_cache/
@@ -60,3 +66,7 @@ htmlcov/
 Thumbs.db
 .idea/
 .vscode/
+
+# Skills & Agent runtime caches
+.agents/
+skills-lock.json

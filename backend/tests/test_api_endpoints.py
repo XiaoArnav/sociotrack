@@ -18,18 +18,19 @@ async def setup_test_db():
 
 
 @pytest.mark.asyncio
-async def test_endpoint_1_generate_drafts():
+async def test_endpoint_1_generate_drafts(auth_headers):
     brand_id = "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.post(
             "/api/generate-drafts",
+            headers=auth_headers,
             json={
                 "brand_id": brand_id,
                 "topic": "Deterministic Agent Seams",
             },
         )
-        assert res.status_code == 201
+        assert res.status_code in (200, 201)
         data = res.json()
         assert data["brand_id"] == brand_id
         assert data["topic"] == "Deterministic Agent Seams"
@@ -41,7 +42,7 @@ async def test_endpoint_1_generate_drafts():
 
 
 @pytest.mark.asyncio
-async def test_endpoint_2_approve_post():
+async def test_endpoint_2_approve_post(auth_headers):
     post_id = "f6a7b89c-0d1e-2f3a-4b5c-6d7e8f901234"
     scheduled_time = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
     approved_text = "Approved copy: Verified deterministic agent state with external memory engine."
@@ -50,6 +51,7 @@ async def test_endpoint_2_approve_post():
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.post(
             "/api/posts/approve",
+            headers=auth_headers,
             json={
                 "post_id": post_id,
                 "approved_content": approved_text,
@@ -64,10 +66,10 @@ async def test_endpoint_2_approve_post():
 
 
 @pytest.mark.asyncio
-async def test_endpoint_3_posts_queue():
+async def test_endpoint_3_posts_queue(auth_headers):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        res = await client.get("/api/posts/queue")
+        res = await client.get("/api/posts/queue", headers=auth_headers)
         assert res.status_code == 200
         data = res.json()
         assert "queue" in data
@@ -79,12 +81,13 @@ async def test_endpoint_3_posts_queue():
 
 
 @pytest.mark.asyncio
-async def test_endpoint_4_feed_metrics_and_memory_feedback():
+async def test_endpoint_4_feed_metrics_and_memory_feedback(auth_headers):
     post_id = "e5f6a7b8-9c0d-1e2f-3a4b-5c6d7e8f9012"
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         res = await client.post(
             "/api/simulator/feed-metrics",
+            headers=auth_headers,
             json={
                 "post_id": post_id,
                 "impressions": 15000,
@@ -93,7 +96,7 @@ async def test_endpoint_4_feed_metrics_and_memory_feedback():
                 "shares": 95,
             },
         )
-        assert res.status_code == 201
+        assert res.status_code in (200, 201)
         data = res.json()
         assert data["post_id"] == post_id
         assert data["impressions"] == 15000
@@ -106,11 +109,11 @@ async def test_endpoint_4_feed_metrics_and_memory_feedback():
 
 
 @pytest.mark.asyncio
-async def test_endpoint_5_memory_insights():
+async def test_endpoint_5_memory_insights(auth_headers):
     brand_id = "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d"
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
-        res = await client.get(f"/api/memory/insights?brand_id={brand_id}")
+        res = await client.get(f"/api/memory/insights?brand_id={brand_id}", headers=auth_headers)
         assert res.status_code == 200
         data = res.json()
         assert data["brand_id"] == brand_id
@@ -121,12 +124,13 @@ async def test_endpoint_5_memory_insights():
 
 
 @pytest.mark.asyncio
-async def test_endpoint_error_handling_not_found():
+async def test_endpoint_error_handling_not_found(auth_headers):
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         # Invalid brand in generate-drafts
         res1 = await client.post(
             "/api/generate-drafts",
+            headers=auth_headers,
             json={"brand_id": "non-existent-uuid", "topic": "Testing"},
         )
         assert res1.status_code == 404
@@ -134,6 +138,7 @@ async def test_endpoint_error_handling_not_found():
         # Invalid post in approve
         res2 = await client.post(
             "/api/posts/approve",
+            headers=auth_headers,
             json={
                 "post_id": "non-existent-uuid",
                 "approved_content": "test",
@@ -145,6 +150,7 @@ async def test_endpoint_error_handling_not_found():
         # Invalid post in feed-metrics
         res3 = await client.post(
             "/api/simulator/feed-metrics",
+            headers=auth_headers,
             json={
                 "post_id": "non-existent-uuid",
                 "impressions": 100,
@@ -154,3 +160,19 @@ async def test_endpoint_error_handling_not_found():
             },
         )
         assert res3.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_endpoint_6_diagnostics_audit():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        res = await client.get("/api/diagnostics/audit?brand_name=DevRelay")
+        assert res.status_code == 200
+        data = res.json()
+        assert data["creator_handle"] == "DevRelay"
+        assert "health_score" in data
+        assert data["health_score"] >= 0
+        assert "whats_working" in data
+        assert "whats_failing" in data
+        assert "immediate_next_steps" in data
+

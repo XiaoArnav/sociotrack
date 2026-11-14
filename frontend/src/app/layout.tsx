@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "SocioTrack | AI-Powered Social Media Engagement & Audience Intelligence Agent",
   description:
-    "An intelligent social media engagement agent that understands your audience, predicts engagement, and continuously improves your content strategy. Microsoft Hackathon Edition.",
+    "An intelligent social media engagement agent that understands your audience, predicts engagement, and continuously improves your content strategy. Autonomous Multi-Agent Social Analytics Platform.",
   icons: {
     icon: "/favicon.ico",
   },

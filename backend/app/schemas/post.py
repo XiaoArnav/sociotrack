@@ -1,21 +1,31 @@
 from datetime import datetime
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 PostStatus = Literal["draft", "pending_approval", "scheduled", "published"]
 
 
 class GenerateDraftsRequest(BaseModel):
-    brand_id: str = Field(..., description="UUID of the brand")
+    brand_id: Optional[str] = Field(None, description="UUID of the brand")
+    brand_name: Optional[str] = Field(None, description="Name of the brand")
     topic: str = Field(..., description="Topic or prompt for social media drafts", min_length=2)
+    platform: Optional[str] = Field("Instagram", description="Target platform (Instagram, LinkedIn, X)")
+    target_tone: Optional[str] = Field(None, description="Desired tone (Professional, Conversational, Witty, etc.)")
+    objective: Optional[str] = Field(None, description="Content objective (Brand Awareness, Lead Gen, etc.)")
+    custom_instructions: Optional[str] = Field(None, description="Optional extra instructions from creator")
+    brand_guidelines: Optional[Any] = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class PostDraftResponse(BaseModel):
     id: str
-    brand_id: str
+    brand_id: Optional[str] = None
+    brand_name: Optional[str] = None
     content: str
     topic: str
     hook_style: Optional[str] = None
+    format: Optional[str] = None
     status: str
     scheduled_for: Optional[datetime] = None
     created_at: datetime
@@ -23,35 +33,99 @@ class PostDraftResponse(BaseModel):
         default_factory=list,
         description="Relevant insights retrieved from Hindsight memory bank that shaped these drafts"
     )
+    recommendation_rationale: Optional[str] = None
+    supporting_evidence: Optional[str] = None
+    memories_applied: List[str] = Field(default_factory=list)
+    confidence_score: float = Field(default=0.88, ge=0.0, le=1.0)
+    known_limitations: Optional[str] = None
+    platform_target: Optional[str] = "Instagram"
+    anti_repetition_passed: bool = True
+    # Genuine AI Provenance & Evaluation Metadata
+    is_ai_generated: bool = False
+    generation_method: str = "fallback"
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    latency_ms: Optional[float] = None
+    fallback_reason: Optional[str] = None
+    assumptions_made: List[str] = Field(default_factory=list)
+    dos_matched: List[str] = Field(default_factory=list)
+    donts_avoided: List[str] = Field(default_factory=list)
+    unsupported_claims: List[str] = Field(default_factory=list)
+    improvement_suggestions: List[str] = Field(default_factory=list)
+    match_score: Optional[float] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class GenerateDraftsResponse(BaseModel):
-    brand_id: str
+    brand_id: Optional[str] = None
+    brand_name: Optional[str] = None
     topic: str
     drafts: List[PostDraftResponse]
+    selected_post: Optional[Dict[str, Any]] = None
+    memory_context_summary: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class ApprovePostRequest(BaseModel):
-    post_id: str = Field(..., description="UUID of the post to approve")
-    approved_content: str = Field(..., description="Final edited or approved post copy", min_length=1)
-    scheduled_time: datetime = Field(..., description="ISO 8601 timestamp when the post should be published")
+    post_id: Optional[str] = Field(None, description="UUID of the post to approve")
+    brand_id: Optional[str] = Field(None, description="UUID of the brand")
+    approved_content: Optional[str] = Field(None, description="Final edited or approved post copy")
+    post_content: Optional[str] = Field(None, description="Alternative field for post copy")
+    format: Optional[str] = Field(None, description="Format style of the post")
+    hook_style: Optional[str] = Field(None, description="Hook style of the post")
+    scheduled_time: Optional[Any] = Field(None, description="Timestamp for scheduled publishing")
+    approved_by: Optional[str] = Field(None, description="Username of approver")
+
+    model_config = ConfigDict(extra="allow")
+
+
+class ApprovePostResponse(BaseModel):
+    id: str
+    post_id: str
+    status: str
+    post_status: Optional[str] = None
+    content: Optional[str] = None
+    format: Optional[str] = None
+    hook_style: Optional[str] = None
+    scheduled_for: Optional[datetime] = None
+    scheduled_time: Optional[str] = None
+    message: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class PostQueueItem(BaseModel):
     id: str
-    brand_id: str
+    brand_id: Optional[str] = None
+    brand_name: Optional[str] = None
     content: str
     topic: str
     hook_style: Optional[str] = None
+    format: Optional[str] = None
     status: str
     scheduled_for: Optional[datetime] = None
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class PostQueueResponse(BaseModel):
     total: int
     queue: List[PostQueueItem]
+
+    model_config = ConfigDict(extra="allow")
+
+
+class EvaluateVoiceRequest(BaseModel):
+    brand_id: str
+    content: str = Field(..., min_length=10, description="Post copy to evaluate against brand voice")
+    platform: Optional[str] = "Instagram"
+    target_tone: Optional[str] = None
+
+
+class RegenerateDraftRequest(BaseModel):
+    feedback_instructions: Optional[str] = Field(None, description="Critique points to address in regeneration")
+    target_tone: Optional[str] = None
+

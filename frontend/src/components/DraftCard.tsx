@@ -15,6 +15,11 @@ import {
   Copy,
   Check,
   Edit3,
+  Star,
+  ThumbsDown,
+  Send,
+  X,
+  FileDown,
 } from "lucide-react";
 import { PostDraft, PlatformType } from "@/mocks/mockData";
 
@@ -25,6 +30,9 @@ interface DraftCardProps {
   onRegenerate: (id: string) => void;
   onSendToSimulator: (content: string) => void;
   isRegenerating?: boolean;
+  apiBaseUrl?: string;
+  brandId?: string;
+  onToast?: (title: string, message: string, type: "info" | "success" | "warning") => void;
 }
 
 export function DraftCard({
@@ -34,135 +42,229 @@ export function DraftCard({
   onRegenerate,
   onSendToSimulator,
   isRegenerating = false,
+  apiBaseUrl = "",
+  brandId = "brd_default",
+  onToast,
 }: DraftCardProps) {
-  const [showExplanation, setShowExplanation] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [showExplainability, setShowExplainability] = useState(false);
 
-  const charLimit = draft.platform === "X" ? 280 : draft.platform === "LinkedIn" ? 3000 : 2200;
+  // Recommendation Quality Rating & Rejection States
+  const [rating, setRating] = useState<number>(draft.status === "Approved" ? 5 : 4);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("poor_voice");
+  const [rejectionNotes, setRejectionNotes] = useState("");
+  const [isRejected, setIsRejected] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
   const charCount = draft.content.length;
+  const charLimit = 2200; // Instagram standard limit
   const isOverLimit = charCount > charLimit;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(draft.content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // Platform icon helper
-  const renderPlatformBadge = (platform: PlatformType) => {
-    switch (platform) {
-      case "LinkedIn":
-        return (
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#0A66C2]/10 text-[#0A66C2] border border-[#0A66C2]/20">
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.6 1.6 0 0 0-1.6 1.6 1.6 1.6 0 0 0 1.6 1.6 1.6 1.6 0 0 0 1.6-1.6 1.6 1.6 0 0 0-1.6-1.6Z" />
-            </svg>
-            <span>LinkedIn</span>
-          </span>
-        );
-      case "X":
-        return (
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-black/5 text-[#172033] border border-black/15">
-            <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-            <span>X (Twitter)</span>
-          </span>
-        );
-      case "Instagram":
-        return (
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 text-pink-600 border border-pink-200">
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-            </svg>
-            <span>Instagram</span>
-          </span>
-        );
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(draft.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
-  // Predicted Engagement meter color helper
-  const getEngagementBadge = (level: "LOW" | "MEDIUM" | "HIGH") => {
-    switch (level) {
-      case "HIGH":
-        return {
-          bg: "bg-[#E8F8F3] text-[#16A477] border-[#16A477]/30",
-          barColor: "bg-[#16A477]",
-          width: "92%",
-          label: "HIGH",
-        };
-      case "MEDIUM":
-        return {
-          bg: "bg-amber-50 text-amber-700 border-amber-300",
-          barColor: "bg-amber-500",
-          width: "65%",
-          label: "MEDIUM",
-        };
-      case "LOW":
-        return {
-          bg: "bg-slate-100 text-slate-700 border-slate-300",
-          barColor: "bg-slate-400",
-          width: "35%",
-          label: "LOW",
-        };
+  const handleRate = async (newRating: number) => {
+    setRating(newRating);
+    try {
+      await fetch(`${apiBaseUrl}/api/recommendations/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draft_id: draft.id,
+          brand_id: brandId,
+          decision: "accepted",
+          usefulness_rating: newRating,
+        }),
+      });
+      onToast?.("Rating Saved", `Rated ${newRating} stars. Memory confidence updated.`, "success");
+    } catch {
+      // Offline fallback
     }
   };
 
-  const engInfo = getEngagementBadge(draft.predictedEngagement);
+  const handleRejectSubmit = async () => {
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/recommendations/feedback`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draft_id: draft.id,
+          brand_id: brandId,
+          decision: "rejected",
+          rejection_reason: rejectionReason,
+          user_explanation: rejectionNotes.trim() || undefined,
+          usefulness_rating: rating,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setIsRejected(true);
+        setShowRejectModal(false);
+        if (data.memory_lesson_created) {
+          onToast?.(
+            "Recommendation Rejected",
+            "Recurring pattern detected: negative guideline recorded in brand memory bank.",
+            "info"
+          );
+        } else {
+          onToast?.(
+            "Feedback Recorded",
+            `Signal noted (${data.rejection_count || 1}x). Permanent rules require recurring patterns before adapting brand boundaries.`,
+            "info"
+          );
+        }
+      }
+    } catch {
+      setIsRejected(true);
+      setShowRejectModal(false);
+      onToast?.("Feedback Recorded", "Marked as rejected in local session.", "info");
+    }
+  };
+
+  const handleExportContent = async () => {
+    setIsExporting(true);
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/pilot/export-content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brand_id: brandId,
+          caption: draft.content,
+          format: draft.format || "Carousel",
+          hashtags: ["#SocialIntelligence", "#AudienceGrowth"],
+          optimal_utc_time: "14:00 UTC",
+          target_platform: "instagram",
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof window !== "undefined") {
+          navigator.clipboard.writeText(data.clipboard_text);
+        }
+        onToast?.(
+          "Export Ready & Copied!",
+          "Formatted markdown with hashtags and optimal UTC timing copied to clipboard for manual Buffer/Hootsuite publishing.",
+          "success"
+        );
+      } else {
+        handleCopy();
+        onToast?.("Copied to Clipboard", "Caption copied for external scheduling.", "success");
+      }
+    } catch {
+      handleCopy();
+      onToast?.("Copied to Clipboard", "Caption copied for external scheduling.", "success");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const formatBadgeColors: Record<string, string> = {
+    Carousel: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800",
+    "Single Post": "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800",
+    Reel: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
+    Story: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
+    Playbook: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
+    Discussion: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800",
+  };
+
+  if (isRejected) {
+    return (
+      <div className="bg-slate-50 dark:bg-[#121824] rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 p-4 text-center text-slate-400 space-y-1 text-xs">
+        <p className="font-semibold text-slate-600 dark:text-slate-300">
+          Recommendation Rejected ({rejectionReason})
+        </p>
+        <p className="text-[11px]">
+          Negative guideline recorded in your brand&apos;s vector memory bank. Future drafts will avoid this pattern.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`bg-white rounded-2xl border transition-all duration-300 shadow-card hover:shadow-card-hover p-6 relative ${
-        draft.status === "Approved" || draft.status === "Scheduled"
-          ? "border-[#16A477]/40 ring-1 ring-[#16A477]/20"
-          : "border-[#E6E9F0]"
-      }`}
-    >
-      {/* Top Meta Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E6E9F0]">
-        <div className="flex items-center space-x-2.5">
-          {renderPlatformBadge(draft.platform)}
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#ECE9FF] text-[#5146D8]">
-            <Sparkles className="w-3 h-3" />
-            <span>{draft.hookStyle}</span>
+    <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200/80 dark:border-[#243048] p-5 sm:p-6 shadow-xs hover:shadow-md transition-shadow">
+      {/* Top Header: Platform, Format, Predicted Engagement & Quality Rating */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-[#243048]">
+        <div className="flex flex-wrap items-center gap-2">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-bold border ${
+              formatBadgeColors[draft.format || "Carousel"] || "bg-slate-100 text-slate-700 border-slate-200"
+            }`}
+          >
+            {draft.format || "Carousel"}
           </span>
-          <span className="inline-flex items-center space-x-1 text-[11px] font-medium text-[#718096] bg-[#F6F7FB] px-2 py-0.5 rounded">
-            <span>Tone: {draft.tone}</span>
-          </span>
-        </div>
 
-        {/* Status Pill */}
-        <div className="flex items-center space-x-2">
-          {draft.status === "Draft" ? (
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-              Draft Pending
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-[#1E2638] text-slate-600 dark:text-slate-300 font-mono font-medium">
+            Style: {draft.hookStyle}
+          </span>
+
+          {draft.isAiGenerated ? (
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 font-mono font-semibold"
+              title={`Generated with real foundation model (${draft.model || draft.provider}) in ${draft.latencyMs || 0}ms`}
+            >
+              AI: {draft.model || draft.provider}
             </span>
           ) : (
-            <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#E8F8F3] text-[#16A477] border border-[#16A477]/30">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Approved &amp; Scheduled</span>
+            <span
+              className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1E2638] border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-mono font-medium"
+              title={draft.fallbackReason || "Deterministic Rule Engine (No API key)"}
+            >
+              Offline Rule Engine
             </span>
           )}
+        </div>
+
+        <div className="flex items-center space-x-3">
+          {/* Quality Star Rating */}
+          <div className="flex items-center space-x-0.5" title="Rate recommendation quality">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => handleRate(s)}
+                className="p-0.5 text-slate-300 hover:text-amber-400 transition-colors"
+              >
+                <Star
+                  className={`w-3.5 h-3.5 ${
+                    s <= rating ? "text-amber-400 fill-amber-400" : "text-slate-300 dark:text-slate-600"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+
+          {/* Predicted Engagement Pill */}
+          <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+            <TrendingUp className="w-3.5 h-3.5 text-indigo-500" />
+            <span>{draft.confidenceScore ?? 88}% Confidence</span>
+          </div>
         </div>
       </div>
 
       {/* Editable Content Area */}
       <div className="my-4 space-y-2">
-        <div className="flex items-center justify-between text-xs text-[#718096]">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center space-x-1.5 font-medium">
-            <Edit3 className="w-3.5 h-3.5 text-[#5146D8]" />
+            <Edit3 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span>Interactive Draft (Live Editable)</span>
           </div>
           <div className="flex items-center space-x-3">
             <button
               onClick={handleCopy}
-              className="text-[#718096] hover:text-[#5146D8] flex items-center space-x-1 font-medium transition-colors"
+              className="hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center space-x-1 font-medium transition-colors"
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-[#16A477]" />
-                  <span className="text-[#16A477]">Copied!</span>
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-500 font-bold">Copied!</span>
                 </>
               ) : (
                 <>
@@ -173,7 +275,7 @@ export function DraftCard({
             </button>
             <span
               className={`font-mono text-[11px] font-semibold ${
-                isOverLimit ? "text-red-600" : "text-[#718096]"
+                isOverLimit ? "text-rose-500" : "text-slate-400"
               }`}
             >
               {charCount} / {charLimit} chars
@@ -186,122 +288,111 @@ export function DraftCard({
           value={draft.content}
           onChange={(e) => onUpdateContent(draft.id, e.target.value)}
           disabled={isRegenerating}
-          className={`w-full p-4 rounded-xl text-xs sm:text-sm text-[#172033] bg-[#F6F7FB] border focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#5146D8]/20 transition-all font-sans leading-relaxed resize-y ${
-            isOverLimit ? "border-red-300" : "border-[#E6E9F0] focus:border-[#5146D8]"
+          className={`w-full p-4 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white bg-slate-50 dark:bg-[#1E2638] border focus:bg-white dark:focus:bg-[#1A2338] focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-sans leading-relaxed resize-y ${
+            isOverLimit ? "border-rose-300" : "border-slate-200 dark:border-[#243048]"
           }`}
         />
       </div>
 
-      {/* Predicted Engagement Meter Bar */}
-      <div className="p-3.5 rounded-xl bg-[#F6F7FB] border border-[#E6E9F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-lg bg-white border border-[#E6E9F0] flex items-center justify-center text-[#5146D8]">
-            <TrendingUp className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-[10px] font-semibold text-[#718096] uppercase tracking-wider">
-              Predicted Engagement
-            </div>
-            <div className="flex items-center space-x-2">
-              <span
-                className={`px-2 py-0.5 rounded text-xs font-bold border ${engInfo.bg}`}
-              >
-                {engInfo.label}
-              </span>
-              <span className="text-xs font-bold text-[#172033]">
-                {draft.confidenceScore}% Confidence
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Engagement Progress Bar */}
-        <div className="w-full sm:w-44 space-y-1">
-          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full ${engInfo.barColor} transition-all duration-500 rounded-full`}
-              style={{ width: engInfo.width }}
-            />
-          </div>
-          <div className="flex justify-between text-[10px] text-[#718096] font-mono">
-            <span>Low</span>
-            <span>Med</span>
-            <span>High</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Collapsible Explainability Section: "Why SocioTrack generated this" */}
-      <div className="mt-3.5">
+      {/* Explainable AI Intelligence Accordion */}
+      <div className="mt-3 rounded-xl border border-slate-200/60 dark:border-[#243048] bg-slate-50/50 dark:bg-[#1E2638]/50 overflow-hidden text-xs">
         <button
-          onClick={() => setShowExplanation(!showExplanation)}
-          className="w-full flex items-center justify-between p-3 rounded-xl bg-[#ECE9FF]/50 border border-[#ECE9FF] hover:bg-[#ECE9FF]/80 transition-colors text-left"
+          onClick={() => setShowExplainability(!showExplainability)}
+          className="w-full px-4 py-2.5 flex items-center justify-between text-left font-semibold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
         >
           <div className="flex items-center space-x-2">
-            <Brain className="w-4 h-4 text-[#5146D8]" />
-            <span className="text-xs font-bold text-[#5146D8]">
-              Why SocioTrack generated this
+            <Brain className="w-4 h-4 text-indigo-500" />
+            <span>Explainable AI Intelligence Rationale</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+              Confidence: {draft.confidenceScore ?? 88}%
             </span>
           </div>
-          {showExplanation ? (
-            <ChevronUp className="w-4 h-4 text-[#5146D8]" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-[#5146D8]" />
-          )}
+          {showExplainability ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
 
-        {showExplanation && (
-          <div className="p-3.5 bg-[#FAF9FF] border border-[#ECE9FF] border-t-0 rounded-b-xl text-xs text-[#172033] leading-relaxed space-y-2 animate-slide-up">
-            <p className="italic text-[#172033]">
-              &ldquo;{draft.aiExplanation}&rdquo;
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-[11px]">
-              <div className="bg-white p-2 rounded-lg border border-[#ECE9FF]">
-                <span className="font-bold text-[#16A477] block mb-1">
-                  ✓ Brand Dos Matched:
-                </span>
-                <ul className="space-y-0.5 text-[#718096]">
-                  {draft.dosMatched.map((d, i) => (
-                    <li key={i} className="truncate">• {d}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="bg-white p-2 rounded-lg border border-[#ECE9FF]">
-                <span className="font-bold text-[#5146D8] block mb-1">
-                  🛡 Constraints Respected:
-                </span>
-                <ul className="space-y-0.5 text-[#718096]">
-                  {draft.dontsAvoided.map((d, i) => (
-                    <li key={i} className="truncate">• {d}</li>
-                  ))}
-                </ul>
-              </div>
+        {showExplainability && (
+          <div className="px-4 pb-4 pt-1 space-y-3 border-t border-slate-200/50 dark:border-[#243048] animate-fade-in text-[11px]">
+            <div>
+              <span className="font-bold text-slate-900 dark:text-white">Why This Strategy:</span>
+              <p className="text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
+                {draft.recommendationRationale || draft.aiExplanation ||
+                  "Derived from your historical high-performing formats and active vector memory."}
+              </p>
             </div>
+            {draft.supportingEvidence && (
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">Empirical Evidence:</span>
+                <p className="text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                  {draft.supportingEvidence}
+                </p>
+              </div>
+            )}
+            {draft.unsupportedClaims && draft.unsupportedClaims.length > 0 && (
+              <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+                <span className="font-bold">⚠️ Unverified Claims Detected:</span>
+                <ul className="list-disc list-inside mt-0.5 space-y-0.5">
+                  {draft.unsupportedClaims.map((claim, idx) => (
+                    <li key={idx}>{claim}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {draft.improvementSuggestions && draft.improvementSuggestions.length > 0 && (
+              <div>
+                <span className="font-bold text-slate-900 dark:text-white">💡 Improvement Suggestions:</span>
+                <ul className="list-disc list-inside mt-0.5 text-slate-600 dark:text-slate-300 space-y-0.5">
+                  {draft.improvementSuggestions.map((sug, idx) => (
+                    <li key={idx}>{sug}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {draft.assumptionsMade && draft.assumptionsMade.length > 0 && (
+              <div>
+                <span className="font-bold text-slate-500">ℹ️ Model Assumptions:</span>
+                <ul className="list-disc list-inside mt-0.5 text-slate-400 space-y-0.5">
+                  {draft.assumptionsMade.map((asm, idx) => (
+                    <li key={idx}>{asm}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>
 
       {/* Card Footer Action Buttons */}
-      <div className="mt-5 pt-4 border-t border-[#E6E9F0] flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center space-x-2">
+      <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[#243048] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Regenerate Button */}
           <button
             onClick={() => onRegenerate(draft.id)}
             disabled={isRegenerating}
-            className="h-9 px-3.5 rounded-xl border border-[#E6E9F0] bg-white hover:bg-[#F6F7FB] text-xs font-semibold text-[#172033] flex items-center space-x-1.5 transition-colors"
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#1E2638] hover:bg-slate-50 dark:hover:bg-[#28354D] text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center space-x-1.5 transition-colors"
           >
-            <RotateCw className={`w-3.5 h-3.5 text-[#718096] ${isRegenerating ? "animate-spin" : ""}`} />
+            <RotateCw className={`w-3.5 h-3.5 text-slate-400 ${isRegenerating ? "animate-spin" : ""}`} />
             <span>{isRegenerating ? "Synthesizing..." : "Regenerate"}</span>
           </button>
 
-          {/* Test in Simulator Button */}
+          {/* Export Content for Buffer / Hootsuite */}
           <button
-            onClick={() => onSendToSimulator(draft.content)}
-            className="h-9 px-3.5 rounded-xl border border-[#E6E9F0] bg-white hover:bg-[#F6F7FB] text-xs font-semibold text-[#5146D8] flex items-center space-x-1.5 transition-colors"
+            onClick={handleExportContent}
+            disabled={isExporting}
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#1E2638] hover:bg-slate-50 dark:hover:bg-[#28354D] text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center space-x-1.5 transition-colors"
+            title="Export formatted caption and hashtags for Buffer/Hootsuite"
           >
-            <Sliders className="w-3.5 h-3.5 text-[#5146D8]" />
-            <span>Simulate Engagement</span>
+            <FileDown className="w-3.5 h-3.5 text-sky-500" />
+            <span>Export &amp; Copy</span>
+          </button>
+
+          {/* Reject with Reason Button */}
+          <button
+            onClick={() => setShowRejectModal(true)}
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-[#243048] bg-white dark:bg-[#1E2638] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-xs font-semibold text-slate-500 hover:text-rose-600 transition-colors flex items-center space-x-1"
+            title="Reject recommendation and teach memory"
+          >
+            <ThumbsDown className="w-3.5 h-3.5" />
+            <span>Reject</span>
           </button>
         </div>
 
@@ -311,13 +402,13 @@ export function DraftCard({
           disabled={draft.status === "Approved" || draft.status === "Scheduled"}
           className={`h-9 px-5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center space-x-2 transition-all ${
             draft.status === "Approved" || draft.status === "Scheduled"
-              ? "bg-[#E8F8F3] text-[#16A477] border border-[#16A477]/30 cursor-default"
-              : "bg-gradient-to-r from-[#5146D8] to-[#3478F6] text-white hover:opacity-95 shadow-md shadow-[#5146D8]/20"
+              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 cursor-default"
+              : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-500/20"
           }`}
         >
           {draft.status === "Approved" || draft.status === "Scheduled" ? (
             <>
-              <CheckCircle2 className="w-4 h-4 text-[#16A477]" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>Approved &amp; Scheduled</span>
             </>
           ) : (
@@ -328,6 +419,86 @@ export function DraftCard({
           )}
         </button>
       </div>
+
+      {/* Reject with Reason Popover Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white dark:bg-[#161F30] rounded-2xl border border-slate-200 dark:border-[#243048] p-5 max-w-sm w-full shadow-2xl space-y-4 text-xs">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#243048]">
+              <h4 className="font-bold text-slate-900 dark:text-white">Why Reject this Recommendation?</h4>
+              <button
+                onClick={() => setShowRejectModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Your feedback is directly transformed into an active &ldquo;don&apos;t&rdquo; rule in this brand&apos;s memory bank.
+            </p>
+
+            <div className="space-y-1.5">
+              {[
+                { id: "poor_voice", label: "Off-Brand Voice / Generic Tone" },
+                { id: "repetitive", label: "Repetitive Phrasing / Seen Before" },
+                { id: "off_topic", label: "Topic Irrelevant to Audience" },
+                { id: "inappropriate_hook", label: "Weak or Clickbaity Hook" },
+                { id: "other", label: "Other Rule Violation" },
+              ].map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`flex items-center space-x-2 p-2 rounded-xl border cursor-pointer transition-colors ${
+                    rejectionReason === opt.id
+                      ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 font-semibold"
+                      : "border-slate-100 dark:border-[#243048] text-slate-600 dark:text-slate-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="rejectionReason"
+                    value={opt.id}
+                    checked={rejectionReason === opt.id}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    className="text-indigo-600"
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-slate-700 dark:text-slate-300 text-[11px]">
+                Specific feedback for agent (optional):
+              </label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Too many sales emojis, sounds like generic marketing."
+                value={rejectionNotes}
+                onChange={(e) => setRejectionNotes(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-slate-200 dark:border-[#243048] bg-slate-50 dark:bg-[#1E2638] text-slate-900 dark:text-white text-[11px]"
+              />
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowRejectModal(false)}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-slate-600 dark:text-slate-300 font-semibold text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRejectSubmit}
+                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-xs"
+              >
+                Confirm Rejection &amp; Teach Memory
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

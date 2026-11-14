@@ -39,7 +39,93 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 
+from sqlalchemy import inspect, text
+
 async def init_db() -> None:
-    """Initializes tables for development/testing."""
+    """Initializes tables for development/testing and migrates missing columns."""
+    import app.models  # noqa: F401
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        def _migrate_columns(sync_conn):
+            inspector = inspect(sync_conn)
+            table_names = inspector.get_table_names()
+
+            if "brands" in table_names:
+                brand_cols = {c["name"] for c in inspector.get_columns("brands")}
+                if "workspace_id" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN workspace_id VARCHAR(36)"))
+                if "user_id" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN user_id VARCHAR(36)"))
+                if "intelligence_profile" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN intelligence_profile TEXT"))
+                if "updated_at" not in brand_cols:
+                    sync_conn.execute(text("ALTER TABLE brands ADD COLUMN updated_at DATETIME"))
+
+            if "posts" in table_names:
+                post_cols = {c["name"] for c in inspector.get_columns("posts")}
+                if "idempotency_key" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN idempotency_key VARCHAR(100)"))
+                if "source_provenance" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN source_provenance VARCHAR(100) DEFAULT 'synthetic_or_agent'"))
+                if "platform_post_id" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN platform_post_id VARCHAR(100)"))
+                if "published_at" not in post_cols:
+                    sync_conn.execute(text("ALTER TABLE posts ADD COLUMN published_at DATETIME"))
+
+            if "users" in table_names:
+                user_cols = {c["name"] for c in inspector.get_columns("users")}
+                if "telemetry_opt_in" not in user_cols:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN telemetry_opt_in BOOLEAN DEFAULT 1"))
+                if "ai_training_opt_out" not in user_cols:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN ai_training_opt_out BOOLEAN DEFAULT 1"))
+                if "consent_updated_at" not in user_cols:
+                    sync_conn.execute(text("ALTER TABLE users ADD COLUMN consent_updated_at DATETIME"))
+
+            if "agent_memories" in table_names:
+                mem_cols = {c["name"] for c in inspector.get_columns("agent_memories")}
+                if "workspace_id" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN workspace_id VARCHAR(36)"))
+                if "supporting_evidence" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN supporting_evidence TEXT"))
+                if "source_post_id" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN source_post_id VARCHAR(36)"))
+                if "source_event" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN source_event VARCHAR(50) DEFAULT 'telemetry_ingest'"))
+                if "is_active" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN is_active BOOLEAN DEFAULT 1"))
+                if "is_explicit" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN is_explicit BOOLEAN DEFAULT 0"))
+                if "evidence_count" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN evidence_count INTEGER DEFAULT 1"))
+                if "memory_type" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN memory_type VARCHAR(50) DEFAULT 'inferred_preference'"))
+                if "conflict_status" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN conflict_status VARCHAR(50) DEFAULT 'active'"))
+                if "updated_at" not in mem_cols:
+                    sync_conn.execute(text("ALTER TABLE agent_memories ADD COLUMN updated_at DATETIME"))
+
+            if "audit_logs" in table_names:
+                cols = {c["name"]: c for c in inspector.get_columns("audit_logs")}
+                if cols.get("workspace_id", {}).get("nullable") is False:
+                    sync_conn.execute(text("""
+                        CREATE TABLE IF NOT EXISTS audit_logs_new (
+                            id VARCHAR(36) NOT NULL PRIMARY KEY,
+                            workspace_id VARCHAR(36),
+                            user_id VARCHAR(36),
+                            action VARCHAR(100) NOT NULL,
+                            resource_type VARCHAR(50) NOT NULL,
+                            resource_id VARCHAR(36),
+                            metadata_json TEXT,
+                            ip_address VARCHAR(45),
+                            created_at DATETIME NOT NULL,
+                            FOREIGN KEY(workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE
+                        )
+                    """))
+                    sync_conn.execute(text("INSERT OR IGNORE INTO audit_logs_new SELECT id, workspace_id, user_id, action, resource_type, resource_id, metadata_json, ip_address, created_at FROM audit_logs"))
+                    sync_conn.execute(text("DROP TABLE audit_logs"))
+                    sync_conn.execute(text("ALTER TABLE audit_logs_new RENAME TO audit_logs"))
+                    sync_conn.execute(text("CREATE INDEX IF NOT EXISTS ix_audit_logs_workspace_id ON audit_logs (workspace_id)"))
+                    sync_conn.execute(text("CREATE INDEX IF NOT EXISTS ix_audit_logs_user_id ON audit_logs (user_id)"))
+
+        await conn.run_sync(_migrate_columns)

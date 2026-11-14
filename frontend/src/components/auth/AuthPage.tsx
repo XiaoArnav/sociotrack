@@ -23,11 +23,15 @@ export interface UserSession {
   email: string;
   role: string;
   avatarUrl?: string;
+  isDemo?: boolean;
+  token?: string;
 }
 
 interface AuthPageProps {
   onLoginSuccess: (user: UserSession) => void;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type AuthScreen = "login" | "signup" | "forgot_password";
 
@@ -36,11 +40,11 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Form states
-  const [email, setEmail] = useState("alex.chen@enterprise.com");
-  const [password, setPassword] = useState("DemoPass2026!");
-  const [name, setName] = useState("Alex Chen");
-  const [confirmPassword, setConfirmPassword] = useState("DemoPass2026!");
+  // Form states - Empty initial values for authentic credential input
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [agreeTerms, setAgreeTerms] = useState(true);
 
@@ -54,12 +58,12 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
     if (e.key === "Escape") setShowPassword(false);
   };
 
-  // Submit Handler for Login
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  // Submit Handler for Real Login API
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    // Validation
+    // Client-side Validation
     if (!email || !email.includes("@")) {
       setErrorMessage("Please enter a valid work email address.");
       return;
@@ -70,18 +74,40 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess({
-        name: name || "Alex Chen",
-        email: email,
-        role: "Principal Content Architect",
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
-    }, 900);
+
+      if (res.ok) {
+        const data = await res.json();
+        const session: UserSession = {
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          isDemo: data.user.is_demo,
+          token: data.access_token,
+        };
+        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
+        onLoginSuccess(session);
+      } else {
+        const err = await res.json().catch(() => ({ detail: "Invalid email or password." }));
+        setErrorMessage(err.detail || "Invalid email or password. Please try again.");
+      }
+    } catch {
+      // Backend unreachable: provide informative error and prompt demo option
+      setErrorMessage(
+        "Could not reach backend authentication server. Ensure the backend is running, or launch Interactive Demo Sandbox below."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Submit Handler for Sign Up
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  // Submit Handler for Real Sign Up API
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -103,44 +129,85 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess({
-        name: name,
-        email: email,
-        role: "Growth & Content Lead",
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+          name: name.trim(),
+          role: "Growth & Content Lead",
+        }),
       });
-    }, 1000);
+
+      if (res.ok) {
+        const data = await res.json();
+        const session: UserSession = {
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          isDemo: false,
+          token: data.access_token,
+        };
+        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
+        onLoginSuccess(session);
+      } else {
+        const err = await res.json().catch(() => ({ detail: "Registration failed." }));
+        setErrorMessage(err.detail || "Registration failed. Please check inputs.");
+      }
+    } catch {
+      setErrorMessage("Could not reach backend server. Try again or explore Interactive Demo Sandbox.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Handler for Forgot Password
+  // Handler for Forgot Password (Honest Limitation Messaging)
   const handleForgotPasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     if (!email || !email.includes("@")) {
-      setErrorMessage("Please enter a valid email address to receive reset instructions.");
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setResetSent(true);
-    }, 800);
+    setErrorMessage(
+      "Automated email password reset is currently unavailable because transactional email delivery is not configured. Please contact your workspace administrator to reset your account password, or sign in with your credentials."
+    );
   };
 
-  // Quick 1-Click Demo Login
-  const handleQuickDemoLogin = () => {
+  // Dedicated Explicit Demo Sandbox Handler
+  const handleDemoSandboxClick = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess({
-        name: "Alex Chen",
-        email: "alex.chen@enterprise.com",
-        role: "Principal Content Architect",
-      });
-    }, 500);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/demo-session`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        const session: UserSession = {
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role,
+          isDemo: true,
+          token: data.access_token,
+        };
+        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
+        onLoginSuccess(session);
+        return;
+      }
+    } catch {
+      // offline fallback
+    }
+    const fallbackDemoSession: UserSession = {
+      name: "Demo Guest",
+      email: "guest@sociotrack.io",
+      role: "Interactive Demo Sandbox",
+      isDemo: true,
+    };
+    localStorage.setItem("sociotrack_user_session", JSON.stringify(fallbackDemoSession));
+    onLoginSuccess(fallbackDemoSession);
+    setIsLoading(false);
   };
 
   // Keyboard handlers for accessibility
@@ -163,12 +230,12 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
         <div className="absolute top-0 right-0 w-96 h-96 bg-[#5146D8]/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#3478F6]/25 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Top Header: Logo & Hackathon Pill */}
+        {/* Top Header: Logo & Status Pill */}
         <div className="relative z-10 flex items-center justify-between">
           <SocioTrackLogo size="lg" light={true} />
           <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs text-white">
             <span className="w-2 h-2 rounded-full bg-[#16A477] animate-pulse" />
-            <span className="font-semibold tracking-wide">Microsoft Hackathon 2026</span>
+            <span className="font-semibold tracking-wide">Autonomous Agent Platform</span>
           </div>
         </div>
 
@@ -290,16 +357,16 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ECE9FF] text-[#5146D8]">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Hackathon Prototype</span>
+              <span>Interactive Sandbox</span>
             </span>
             <button
-              onClick={handleQuickDemoLogin}
-              disabled={isLoading}
               type="button"
+              onClick={handleDemoSandboxClick}
+              disabled={isLoading}
               aria-label="Skip to demo login - instant access to workspace features"
               className="text-xs text-[#5146D8] hover:text-[#4336c5] font-semibold underline underline-offset-2 flex items-center space-x-1"
             >
-              <span>Instant Demo Access</span>
+              <span>Explore Demo Mode</span>
               <ArrowRight className="w-3 h-3" />
             </button>
           </div>
@@ -322,16 +389,16 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
                   Welcome back
                 </h2>
                 <p className="text-xs text-[#718096]">
-                  Sign in to continue to your SocioTrack workspace.
+                  Sign in with verified credentials to access your workspace.
                 </p>
               </div>
 
-              {/* Social Login Buttons */}
+              {/* Social Login Buttons - Informative SSO triggers */}
               <div className="space-y-2.5">
                 {/* Continue with Microsoft */}
                 <button
                   type="button"
-                  onClick={handleQuickDemoLogin}
+                  onClick={() => setErrorMessage("Enterprise SSO (Microsoft) requires tenant domain matching. Please enter your work email below or launch Demo Sandbox.")}
                   disabled={isLoading}
                   className="w-full h-11 px-4 rounded-xl border border-[#E6E9F0] bg-white hover:bg-slate-50 text-[#172033] text-xs font-semibold flex items-center justify-center space-x-3 transition-colors shadow-sm"
                 >
@@ -342,13 +409,13 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
                     <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
                     <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
                   </svg>
-                  <span>Continue with Microsoft</span>
+                  <span>Continue with Microsoft SSO</span>
                 </button>
 
                 {/* Continue with Google */}
                 <button
                   type="button"
-                  onClick={handleQuickDemoLogin}
+                  onClick={() => setErrorMessage("Google Workspace SSO requires authorized corporate domain. Please enter your work email below or launch Demo Sandbox.")}
                   disabled={isLoading}
                   className="w-full h-11 px-4 rounded-xl border border-[#E6E9F0] bg-white hover:bg-slate-50 text-[#172033] text-xs font-semibold flex items-center justify-center space-x-3 transition-colors shadow-sm"
                 >
@@ -370,8 +437,24 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
                       d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.3L1.9 16.4C3.7 20.2 7.5 23.5 12 23.5z"
                     />
                   </svg>
-                  <span>Continue with Google</span>
+                  <span>Continue with Google Workspace</span>
                 </button>
+              </div>
+
+              {/* Dedicated Interactive Demo Sandbox Action */}
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={handleDemoSandboxClick}
+                  disabled={isLoading}
+                  className="w-full py-2.5 px-4 rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center justify-center space-x-2 transition-all shadow-sm group"
+                >
+                  <Sparkles className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+                  <span>Launch Interactive Demo Sandbox (Guest Mode)</span>
+                </button>
+                <p className="text-[10px] text-center text-slate-400 mt-1">
+                  Explore full features with benchmark telemetry. No credentials needed.
+                </p>
               </div>
 
               {/* Divider */}
@@ -508,10 +591,10 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
                 </p>
               </div>
 
-              {/* Continue with Microsoft */}
+              {/* Continue with Microsoft SSO */}
               <button
                 type="button"
-                onClick={handleQuickDemoLogin}
+                onClick={() => setErrorMessage("Enterprise SSO (Microsoft) requires tenant domain matching. Please enter your work email below or launch Demo Sandbox.")}
                 disabled={isLoading}
                 className="w-full h-11 px-4 rounded-xl border border-[#E6E9F0] bg-white hover:bg-slate-50 text-[#172033] text-xs font-semibold flex items-center justify-center space-x-3 transition-colors shadow-sm"
               >
@@ -521,7 +604,7 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
                   <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
                   <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
                 </svg>
-                <span>Continue with Microsoft</span>
+                <span>Continue with Microsoft SSO</span>
               </button>
 
               <div className="relative flex items-center justify-center">

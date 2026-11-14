@@ -1,6 +1,56 @@
 from app.models.brand import Brand
 from app.models.post import Post
-from app.models.analytics import PostAnalytics
+from app.models.analytics import PostAnalytics, FollowerSnapshot
 from app.models.memory import AgentMemory
+from app.models.user import User
+from app.models.experiment import ContentExperiment
+from app.models.product_event import ProductEvent
+from app.models.feedback import UserFeedback
+from app.models.workspace import (
+    Workspace,
+    WorkspaceMember,
+    WorkspaceInvite,
+    ApiKey,
+    AuditLog,
+)
+from app.models.competitor import CompetitorTracker
+from app.models.audience_pattern import AudiencePattern
+from app.models.content_operations import (
+    Campaign,
+    ContentTemplate,
+    DraftApproval,
+    DraftComment,
+)
+from app.models.billing import (
+    Subscription,
+    PaymentInvoice,
+    UsageMeter,
+    BillingWebhookEvent,
+)
 
-__all__ = ["Brand", "Post", "PostAnalytics", "AgentMemory"]
+__all__ = [
+    "Brand",
+    "Post",
+    "PostAnalytics",
+    "FollowerSnapshot",
+    "AgentMemory",
+    "User",
+    "ContentExperiment",
+    "ProductEvent",
+    "UserFeedback",
+    "Workspace",
+    "WorkspaceMember",
+    "WorkspaceInvite",
+    "ApiKey",
+    "AuditLog",
+    "CompetitorTracker",
+    "AudiencePattern",
+    "Campaign",
+    "ContentTemplate",
+    "DraftApproval",
+    "DraftComment",
+    "Subscription",
+    "PaymentInvoice",
+    "UsageMeter",
+    "BillingWebhookEvent",
+]

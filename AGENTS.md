@@ -4,16 +4,16 @@
 ## Git & GitHub Contribution Graph Guarantee ("Green Dot" Policy)
 
 ### Objective
-Ensure that EVERY git commit and push performed by Antigravity in any project or workspace across the entire system reliably attributes to the user's GitHub profile (`XiaoArnav`) and registers as an active contribution (green dot) on the GitHub contribution matrix.
+Ensure that EVERY git commit and push performed by Antigravity in any project or workspace across the entire system reliably attributes to the user's GitHub profile (`Krishna Verma`) and registers as an active contribution (green dot) on the GitHub contribution matrix.
 
 ### The 6 Mandatory Git Rules for Antigravity
 
 1. **User Identity Verification (Strict Author Attribution)**:
    - All commits must strictly use the verified GitHub account identity:
-     - **Name**: `XiaoArnav`
-     - **Email**: `322868724+XiaoArnav@users.noreply.github.com`
+     - **Name**: `Krishna Verma`
+     - **Email**: `zepta316@gmail.com`
    - Never use generic system usernames, machine hostnames (e.g., `polymath@MacBook-Air.local`), or unverified secondary emails.
-   - If running git commands in new environments or subshells, verify `git config user.email` or pass `--author="XiaoArnav <322868724+XiaoArnav@users.noreply.github.com>"`.
+   - If running git commands in new environments or subshells, verify `git config user.email` or pass `--author="Krishna Verma <zepta316@gmail.com>"`.
 
 2. **Branch Targeting (Default Branch Priority)**:
    - GitHub only records contributions for commits present on the repository's **default branch** (typically `main`) or `gh-pages`. Commits left on orphan or unmerged feature branches do not register.
@@ -25,7 +25,7 @@ Ensure that EVERY git commit and push performed by Antigravity in any project or
 
 4. **Standalone Repositories vs Forks**:
    - Commits in forked repositories do not count toward profile contributions unless merged into upstream via an accepted Pull Request.
-   - When initializing new hackathons, demos, or projects, ensure they are initialized as independent standalone repositories under `XiaoArnav/` on GitHub.
+   - When initializing new hackathons, demos, or projects, ensure they are initialized as independent standalone repositories under `stillzepta/` on GitHub.
 
 5. **Clean History & Atomic Commits**:
    - Write clear Conventional Commit messages (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`).

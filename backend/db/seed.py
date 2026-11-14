@@ -19,9 +19,11 @@ async def run_seed():
 
     async with async_session_maker() as session:
         # Check if already seeded
-        existing_brand = await session.execute(select(Brand).limit(1))
+        existing_brand = await session.execute(
+            select(Brand).where(Brand.id == "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d")
+        )
         if existing_brand.scalar_one_or_none():
-            print("ℹ️ Database already contains data. Skipping seed.")
+            print("ℹ️ Database already contains sample seed brands. Skipping seed.")
             return
 
         print("📦 Seeding brands...")

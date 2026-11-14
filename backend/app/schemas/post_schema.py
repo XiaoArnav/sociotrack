@@ -30,6 +30,13 @@ class PostVariationSchema(BaseModel):
     full_text: str
     rationale: str
     match_score: Optional[float] = None
+    recommendation_rationale: Optional[str] = None
+    supporting_evidence: Optional[str] = None
+    memories_applied: List[str] = Field(default_factory=list)
+    confidence_score: float = Field(default=0.88, ge=0.0, le=1.0)
+    known_limitations: Optional[str] = None
+    platform_target: str = Field(default="Instagram")
+    anti_repetition_passed: bool = Field(default=True)
 
 
 class BrandVoiceGuidelinesSchema(BaseModel):

@@ -150,68 +150,71 @@ export function LiveEngagementLab({
         </div>
       )}
 
-      {/* Floating Bottom Drawer Container */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 px-4 sm:px-6 pb-3 pointer-events-none">
-        <div className="max-w-5xl mx-auto bg-white rounded-2xl border border-[#E6E9F0] shadow-float pointer-events-auto transition-all duration-300 overflow-hidden">
-          {/* =================================================================
-              COLLAPSED BAR HEADER
-              ================================================================= */}
-          <div
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center justify-between px-5 py-3 cursor-pointer bg-white hover:bg-[#F6F7FB] transition-colors select-none"
+      {/* Sleek Floating Launcher at Bottom-Left when Collapsed */}
+      {!isExpanded ? (
+        <div className="fixed bottom-6 left-6 z-40">
+          <button
+            onClick={() => setIsExpanded(true)}
+            className="flex items-center space-x-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-[#6366F1] to-[#06B6D4] text-white text-xs font-bold shadow-xl hover:scale-105 transition-all group"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5146D8] to-[#3478F6] text-white flex items-center justify-center shadow-sm">
-                <Activity className="w-4 h-4 animate-pulse" />
+            <Activity className="w-4 h-4 animate-pulse" />
+            <span>AI Engagement Lab</span>
+            <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 font-mono">
+              Live
+            </span>
+          </button>
+        </div>
+      ) : (
+        /* Expanded Floating Lab Modal Container */
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="w-full max-w-4xl bg-white dark:bg-[#161F30] rounded-3xl border border-slate-200 dark:border-[#243048] shadow-2xl overflow-hidden animate-scale-up">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-[#243048] bg-slate-50/70 dark:bg-[#0E1526]/70">
+              <div className="flex items-center space-x-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#6366F1] to-[#06B6D4] text-white flex items-center justify-center shadow-md">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+                      Live Engagement Lab
+                    </h3>
+                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECE9FF] dark:bg-indigo-950/60 text-[#6366F1] dark:text-[#818CF8]">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>Demo Mode</span>
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Teach your AI agent through engagement feedback and reinforce pgvector memory.
+                  </p>
+                </div>
               </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-xs font-extrabold text-[#172033] tracking-tight">
-                    Live Engagement Lab
-                  </h3>
-                  <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECE9FF] text-[#5146D8]">
-                    <Sparkles className="w-2.5 h-2.5" />
-                    <span>Demo Mode</span>
+
+              <div className="flex items-center space-x-3">
+                <div className="hidden sm:flex items-center space-x-2 text-xs">
+                  <span className="text-slate-500 dark:text-slate-400">Score:</span>
+                  <span
+                    className={`font-black font-mono px-2 py-0.5 rounded text-xs ${
+                      qualifiesForMemory
+                        ? "bg-[#E8F8F3] dark:bg-emerald-950/60 text-[#16A477] dark:text-emerald-400"
+                        : "bg-slate-100 dark:bg-[#1E2638] text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    {compositeScore}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#718096]">
-                  Teach your AI agent through engagement feedback.
-                </p>
-              </div>
-            </div>
-
-            {/* Right: Quick Composite preview & expand button */}
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 text-xs">
-                <span className="text-[#718096]">Score:</span>
-                <span
-                  className={`font-black font-mono px-2 py-0.5 rounded text-xs ${
-                    qualifiesForMemory
-                      ? "bg-[#E8F8F3] text-[#16A477]"
-                      : "bg-slate-100 text-slate-700"
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(false)}
+                  className="p-1.5 rounded-xl border border-slate-200 dark:border-[#243048] hover:bg-slate-100 dark:hover:bg-[#1E2638] text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
                 >
-                  {compositeScore}
-                </span>
-              </div>
-              <button
-                type="button"
-                className="w-8 h-8 rounded-xl border border-[#E6E9F0] bg-[#F6F7FB] flex items-center justify-center text-[#5146D8] hover:bg-[#ECE9FF] transition-colors"
-              >
-                {isExpanded ? (
                   <ChevronDown className="w-4 h-4" />
-                ) : (
-                  <ChevronUp className="w-4 h-4" />
-                )}
-              </button>
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* =================================================================
-              EXPANDED DRAWER CONTENT
-              ================================================================= */}
-          {isExpanded && (
-            <div className="p-5 border-t border-[#E6E9F0] space-y-5 bg-[#FAF9FF]/40 animate-slide-up">
+            {/* Body Content */}
+            <div className="p-6 space-y-5 bg-white dark:bg-[#161F30] max-h-[80vh] overflow-y-auto">
               {/* Published Post Selector & Presets */}
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div className="flex-1 space-y-1">
@@ -478,9 +481,9 @@ export function LiveEngagementLab({
                 </div>
               )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }
