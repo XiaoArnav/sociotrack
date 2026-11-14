@@ -1052,12 +1052,12 @@ export function InsTrackSaaSDashboard({
           )}
         </main>
 
-        {/* BOTTOM SAAS FOOTER (Matching Video 3 & 4) */}
-        <footer className="border-t border-[#1E2638] bg-[#0E1526] px-8 py-5 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
+        {/* BOTTOM SAAS FOOTER */}
+        <footer className="border-t border-[#1E2638] bg-[#0E1526] px-8 py-6 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center sm:space-x-3 gap-1">
             <span className="font-extrabold text-white text-sm">SocioTrack</span>
-            <span className="text-[11px] text-slate-500">
-              SocioTrack offers powerful analytics and in-depth actionable insights.
+            <span className="text-[11px] text-slate-400">
+              SocioTrack is a product by Zyrohouse, an emerging startup.
             </span>
           </div>
           <div className="flex items-center space-x-6 text-[11px]">
@@ -1070,8 +1070,7 @@ export function InsTrackSaaSDashboard({
             <button onClick={onOpenSurvey} className="hover:text-slate-300 transition-colors">
               Feedback Survey
             </button>
-            <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
-            <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-slate-300 cursor-pointer">Terms &amp; Privacy</span>
           </div>
         </footer>
       </div>

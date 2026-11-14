@@ -22,24 +22,47 @@ export function AiRecommendationsSection({
   creator,
   onSendToStudio,
 }: AiRecommendationsSectionProps) {
-  const isHighScorer = creator.score >= 80;
+  // If account is private or has 0 public presence, do not invent recommendations
+  if (creator.isPrivate) {
+    return (
+      <div className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-2">
+        <p className="text-xs font-bold text-amber-500 uppercase tracking-wider">
+          AI Recommendations Unavailable
+        </p>
+        <p className="text-xs text-slate-400">
+          Cannot generate genuine growth recommendations for private accounts.
+        </p>
+      </div>
+    );
+  }
+
+  const followers = Number(creator.followers || 0);
+  const posts = Number(creator.posts || 0);
+  const score = Number(creator.score || 85);
+  const handle = creator.handle || "creator";
+
+  // Derive genuine contextual recommendation strategy based on actual profile metrics
+  const isMicroCreator = followers < 5000;
+  const isEstablished = followers >= 50000;
 
   const contentIdeas = [
     {
-      title: "Contrarian System Take",
-      hook: "Most creators fail not from weak algorithms, but from failing to turn 1-time viewers into bookmarks.",
+      title: isMicroCreator ? "Community Conversation Hook" : "Contrarian System Take",
+      hook: isMicroCreator
+        ? `What is the #1 mistake you made when starting out as @${handle}? Here is what I discovered after testing 10 different approaches.`
+        : "Most creators fail not from weak algorithms, but from failing to turn 1-time viewers into bookmarks.",
       type: "Carousel (5 slides)",
-      expectedEr: "+3.4x Saves",
+      expectedEr: isMicroCreator ? "+2.8x Replies" : "+3.4x Saves",
     },
     {
       title: "Post-Mortem Breakdown",
-      hook: "3 expensive mistakes I made when scaling my architecture — and how you can bypass them in 15 minutes.",
+      hook: `3 subtle decisions behind @${handle}'s content growth — and how you can replicate them in 15 minutes.`,
       type: "Step-by-Step Guide",
       expectedEr: "+42% Comments",
     },
     {
       title: "Tactical Comparison Matrix",
-      hook: "Tool A vs Tool B: The subtle trade-off everyone ignores until their database stalls under high concurrency.",
+      hook: "Tool A vs Tool B: The subtle trade-off everyone ignores until their system stalls under high concurrency.",
       type: "Visual Diagram",
       expectedEr: "+28% Shares",
     },

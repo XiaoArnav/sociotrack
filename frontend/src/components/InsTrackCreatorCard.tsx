@@ -15,8 +15,12 @@ import {
   Mail,
   Send,
   Lock,
+  Bookmark,
+  Clock,
+  RotateCw,
 } from "lucide-react";
 import { formatDateOnly, formatRelativeTime } from "@/lib/dateUtils";
+import { saveProfileSnapshot, toggleWeeklyCrawl, isWeeklyCrawlEnabled } from "@/utils/supabase/snapshots";
 
 export type SubNavTab =
   | "overview"
@@ -119,11 +123,41 @@ export function InsTrackCreatorCard({
   const [showDateDropdown, setShowDateDropdown] = useState(false);
   const [showMoreToolsDropdown, setShowMoreToolsDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isSavingSnapshot, setIsSavingSnapshot] = useState(false);
+  const [snapshotSaved, setSnapshotSaved] = useState(false);
+  const [weeklyCrawlActive, setWeeklyCrawlActive] = useState(false);
   const moreToolsRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsStarred(propIsStarred ?? false);
+    setWeeklyCrawlActive(isWeeklyCrawlEnabled(creator.handle));
+    setSnapshotSaved(false);
   }, [propIsStarred, creator.handle]);
+
+  // Handler to manually save snapshot
+  const handleSaveSnapshot = async () => {
+    setIsSavingSnapshot(true);
+    try {
+      const rawUser = typeof window !== "undefined" ? localStorage.getItem("sociotrack_user_session") : null;
+      const userEmail = rawUser ? JSON.parse(rawUser)?.email : undefined;
+      await saveProfileSnapshot(creator, userEmail, weeklyCrawlActive);
+      setSnapshotSaved(true);
+      setTimeout(() => setSnapshotSaved(false), 3000);
+    } catch {
+      // ignore
+    } finally {
+      setIsSavingSnapshot(false);
+    }
+  };
+
+  // Handler to toggle weekly crawl automation
+  const handleToggleWeeklyCrawl = async () => {
+    const nextState = !weeklyCrawlActive;
+    setWeeklyCrawlActive(nextState);
+    const rawUser = typeof window !== "undefined" ? localStorage.getItem("sociotrack_user_session") : null;
+    const userEmail = rawUser ? JSON.parse(rawUser)?.email : undefined;
+    await toggleWeeklyCrawl(creator.handle, nextState, userEmail);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -520,8 +554,55 @@ export function InsTrackCreatorCard({
             </div>
           </div>
 
-          {/* Action Row: Link, Export, Date Range Dropdown */}
-          <div className="flex items-center space-x-2 pt-1">
+          {/* Action Row: Save Snapshot, Weekly Crawl Toggle, Link, Export, Date Range Dropdown */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {/* Save Snapshot Button */}
+            <button
+              onClick={handleSaveSnapshot}
+              disabled={isSavingSnapshot}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-xs transition-all ${
+                snapshotSaved
+                  ? "bg-emerald-500 text-white"
+                  : "bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/60 dark:border-indigo-800/60"
+              }`}
+              title="Save current demographics and analytics snapshot to Supabase"
+            >
+              {snapshotSaved ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Snapshot Saved</span>
+                </>
+              ) : isSavingSnapshot ? (
+                <>
+                  <RotateCw className="w-3.5 h-3.5 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Bookmark className="w-3.5 h-3.5" />
+                  <span>Save Snapshot</span>
+                </>
+              )}
+            </button>
+
+            {/* Weekly Crawl Toggle Button */}
+            <button
+              onClick={handleToggleWeeklyCrawl}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                weeklyCrawlActive
+                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
+                  : "border-slate-200 dark:border-[#243048] hover:bg-slate-50 dark:hover:bg-[#1E2638] text-slate-600 dark:text-slate-300"
+              }`}
+              title={
+                weeklyCrawlActive
+                  ? "Weekly automatic crawl is active for @${creator.handle}"
+                  : "Enable weekly automatic crawl for @${creator.handle}"
+              }
+            >
+              <Clock className={`w-3.5 h-3.5 ${weeklyCrawlActive ? "text-emerald-500 animate-pulse" : "text-slate-400"}`} />
+              <span>{weeklyCrawlActive ? "Weekly Crawl Active" : "Auto-Crawl Weekly"}</span>
+            </button>
+
             <button
               onClick={handleCopyLink}
               className="p-2 rounded-lg border border-slate-200 dark:border-[#243048] hover:bg-slate-50 dark:hover:bg-[#1E2638] text-slate-600 dark:text-slate-300 transition-colors"
