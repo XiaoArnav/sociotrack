@@ -104,8 +104,11 @@ async def lifespan(app: FastAPI):
         init_db_legacy()
         logger.info("Sync database schema initialized successfully.")
     except Exception as e:
-        logger.error("FATAL: Failed to initialize sync database schema: %s", e, exc_info=True)
-        raise
+        if "already exists" in str(e).lower():
+            logger.info("Sync database schema already initialized.")
+        else:
+            logger.error("FATAL: Failed to initialize sync database schema: %s", e, exc_info=True)
+            raise
 
     # Seed required finals demo account, workspace, and brand
     try:
