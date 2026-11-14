@@ -45,6 +45,7 @@ import { PricingMatrixView } from "@/components/PricingMatrixView";
 import { CustomerBillingPortal } from "@/components/CustomerBillingPortal";
 import { BusinessMetricsDashboard } from "@/components/BusinessMetricsDashboard";
 import { TermsAndPrivacyModal } from "@/components/TermsAndPrivacyModal";
+import { saveProfileSnapshot } from "@/utils/supabase/snapshots";
 import {
   PostDraft,
   LearnedInsight,
@@ -808,6 +809,13 @@ export default function App() {
       isMounted = false;
     };
   }, [activeCreator.handle]);
+
+  // Automatically save snapshot of the active profile when an authenticated user inspects it
+  useEffect(() => {
+    if (currentUser && !currentUser.isDemo && activeCreator.handle) {
+      saveProfileSnapshot(activeCreator, currentUser.email).catch(() => {});
+    }
+  }, [activeCreator.handle, currentUser]);
 
   // 4. Navigation State: Sub-navigation active tab (Default: "overview")
   const [activeSubTab, setActiveSubTab] = useState<SubNavTab>("overview");

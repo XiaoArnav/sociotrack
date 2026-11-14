@@ -17,6 +17,7 @@ import {
   User,
 } from "lucide-react";
 import { SocioTrackLogo } from "@/components/SocioTrackLogo";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 
 export interface UserSession {
   name: string;
@@ -75,6 +76,27 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
 
     setIsLoading(true);
     try {
+      // 1. Authenticate with Supabase Auth
+      const supabase = createSupabaseClient();
+      const { data: supaData, error: supaError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+
+      if (!supaError && supaData?.user) {
+        const session: UserSession = {
+          name: supaData.user.user_metadata?.name || email.split("@")[0],
+          email: supaData.user.email || email.trim().toLowerCase(),
+          role: "Growth & Content Lead",
+          isDemo: false,
+          token: supaData.session?.access_token,
+        };
+        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
+        onLoginSuccess(session);
+        return;
+      }
+
+      // 2. If Supabase Auth returns invalid credentials or user not in Supabase yet, attempt backend fallback
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -93,13 +115,13 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
         localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
         onLoginSuccess(session);
       } else {
-        const err = await res.json().catch(() => ({ detail: "Invalid email or password." }));
-        setErrorMessage(err.detail || "Invalid email or password. Please try again.");
+        const err = await res.json().catch(() => ({ detail: supaError?.message || "Invalid email or password." }));
+        setErrorMessage(supaError?.message || err.detail || "Invalid email or password. Please try again.");
       }
     } catch {
-      // Backend unreachable: provide informative error and prompt demo option
+      // Fallback message
       setErrorMessage(
-        "Could not reach backend authentication server. Ensure the backend is running, or launch Interactive Demo Sandbox below."
+        "Could not complete authentication. Please verify credentials or launch Interactive Demo Sandbox below."
       );
     } finally {
       setIsLoading(false);
@@ -130,6 +152,33 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
 
     setIsLoading(true);
     try {
+      // 1. Register user directly into Supabase Auth
+      const supabase = createSupabaseClient();
+      const { data: supaData, error: supaError } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+            role: "Growth & Content Lead",
+          },
+        },
+      });
+
+      if (!supaError && supaData?.user) {
+        const session: UserSession = {
+          name: name.trim(),
+          email: supaData.user.email || email.trim().toLowerCase(),
+          role: "Growth & Content Lead",
+          isDemo: false,
+          token: supaData.session?.access_token || "supabase_auth_session",
+        };
+        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
+        onLoginSuccess(session);
+        return;
+      }
+
+      // 2. Fallback to backend registration if Supabase signUp returns email confirmation pending or error
       const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -153,11 +202,11 @@ export function AuthPage({ onLoginSuccess }: AuthPageProps) {
         localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
         onLoginSuccess(session);
       } else {
-        const err = await res.json().catch(() => ({ detail: "Registration failed." }));
-        setErrorMessage(err.detail || "Registration failed. Please check inputs.");
+        const err = await res.json().catch(() => ({ detail: supaError?.message || "Registration failed." }));
+        setErrorMessage(supaError?.message || err.detail || "Registration failed. Please check inputs.");
       }
     } catch {
-      setErrorMessage("Could not reach backend server. Try again or explore Interactive Demo Sandbox.");
+      setErrorMessage("Could not complete registration. Try again or explore Interactive Demo Sandbox.");
     } finally {
       setIsLoading(false);
     }
