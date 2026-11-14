@@ -102,7 +102,10 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
         onLoginSuccess(session);
       }
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : "Authentication failed. Please try again.";
+      let errorMsg = err instanceof Error ? err.message : "Authentication failed. Please try again.";
+      if (errorMsg === "Load failed" || errorMsg === "Failed to fetch") {
+        errorMsg = "Unable to connect to Supabase authentication server. Please check your network connection.";
+      }
       setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
@@ -171,7 +174,10 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
         return;
       }
     } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      let errorMsg = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      if (errorMsg === "Load failed" || errorMsg === "Failed to fetch") {
+        errorMsg = "Unable to connect to Supabase authentication server. Please check your network connection.";
+      }
       setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);

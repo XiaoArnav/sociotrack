@@ -64,7 +64,11 @@ jobs:
       - name: Build Next.js static export
         run: |
           cd frontend
-          NEXT_PUBLIC_BASE_PATH=/sociotrack NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'https://sociotrack-api.onrender.com' }} npm run build
+          NEXT_PUBLIC_BASE_PATH=/sociotrack \
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'https://sociotrack-api.onrender.com' }} \
+          NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://tgxfgjampyoskialuwcq.supabase.co' }} \
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_R2bU5SfgVUiPyXLVds52Og_PDuq0K2i' }} \
+          npm run build
           touch out/.nojekyll
           if [ -d ../docs ]; then cp -r ../docs out/docs; fi
 
