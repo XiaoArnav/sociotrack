@@ -60,7 +60,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
     if (e.key === "Escape") setShowPassword(false);
   };
 
-  // Submit Handler for Real Login API
+  // Submit Handler for Real Login via Supabase Auth
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -77,59 +77,37 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
 
     setIsLoading(true);
     try {
-      // 1. Authenticate with Supabase Auth
       const supabase = createSupabaseClient();
       const { data: supaData, error: supaError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password,
       });
 
-      if (!supaError && supaData?.user) {
+      if (supaError) {
+        setErrorMessage(supaError.message || "Invalid email or password. Please try again.");
+        return;
+      }
+
+      if (supaData?.user) {
         const session: UserSession = {
           name: supaData.user.user_metadata?.name || email.split("@")[0],
           email: supaData.user.email || email.trim().toLowerCase(),
-          role: "Growth & Content Lead",
+          role: supaData.user.user_metadata?.role || "Growth & Content Lead",
           isDemo: false,
           token: supaData.session?.access_token,
         };
         localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
         onLoginSuccess(session);
-        return;
       }
-
-      // 2. If Supabase Auth returns invalid credentials or user not in Supabase yet, attempt backend fallback
-      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const session: UserSession = {
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role,
-          isDemo: data.user.is_demo,
-          token: data.access_token,
-        };
-        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
-        onLoginSuccess(session);
-      } else {
-        const err = await res.json().catch(() => ({ detail: supaError?.message || "Invalid email or password." }));
-        setErrorMessage(supaError?.message || err.detail || "Invalid email or password. Please try again.");
-      }
-    } catch {
-      // Fallback message
-      setErrorMessage(
-        "Could not complete authentication. Please verify credentials or launch Interactive Demo Sandbox below."
-      );
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Authentication failed. Please try again.";
+      setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Submit Handler for Real Sign Up API
+  // Submit Handler for Real Sign Up via Supabase Auth
   const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -140,6 +118,10 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
     }
     if (!email || !email.includes("@")) {
       setErrorMessage("Please enter a valid work email address.");
+      return;
+    }
+    if (!password || password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters long.");
       return;
     }
     if (password !== confirmPassword) {
@@ -153,7 +135,6 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
 
     setIsLoading(true);
     try {
-      // 1. Register user directly into Supabase Auth
       const supabase = createSupabaseClient();
       const { data: supaData, error: supaError } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
@@ -166,55 +147,38 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
         },
       });
 
-      if (!supaError && supaData?.user) {
-        const session: UserSession = {
-          name: name.trim(),
-          email: supaData.user.email || email.trim().toLowerCase(),
-          role: "Growth & Content Lead",
-          isDemo: false,
-          token: supaData.session?.access_token || "supabase_auth_session",
-        };
-        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
-        onLoginSuccess(session);
+      if (supaError) {
+        setErrorMessage(supaError.message || "Registration failed. Please check inputs.");
         return;
       }
 
-      // 2. Fallback to backend registration if Supabase signUp returns email confirmation pending or error
-      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-          password,
-          name: name.trim(),
-          role: "Growth & Content Lead",
-        }),
-      });
+      if (supaData?.user) {
+        // If the user already existed in Supabase, identities is empty
+        if (supaData.user.identities && supaData.user.identities.length === 0) {
+          setErrorMessage("An account with this email already exists. Please sign in instead.");
+          return;
+        }
 
-      if (res.ok) {
-        const data = await res.json();
         const session: UserSession = {
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role,
+          name: name.trim() || supaData.user.user_metadata?.name || email.split("@")[0],
+          email: supaData.user.email || email.trim().toLowerCase(),
+          role: "Growth & Content Lead",
           isDemo: false,
-          token: data.access_token,
+          token: supaData.session?.access_token || `user_${supaData.user.id}`,
         };
         localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
         onLoginSuccess(session);
-      } else {
-        const err = await res.json().catch(() => ({ detail: supaError?.message || "Registration failed." }));
-        setErrorMessage(supaError?.message || err.detail || "Registration failed. Please check inputs.");
       }
-    } catch {
-      setErrorMessage("Could not complete registration. Try again or explore Interactive Demo Sandbox.");
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Registration failed. Please try again.";
+      setErrorMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handler for Forgot Password (Honest Limitation Messaging)
-  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+  // Handler for Forgot Password via Supabase Auth
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -223,41 +187,21 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
       return;
     }
 
-    setErrorMessage(
-      "Automated email password reset is currently unavailable because transactional email delivery is not configured. Please contact your workspace administrator to reset your account password, or sign in with your credentials."
-    );
-  };
-
-  // Dedicated Explicit Demo Sandbox Handler
-  const handleDemoSandboxClick = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/demo-session`, { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        const session: UserSession = {
-          name: data.user.name,
-          email: data.user.email,
-          role: data.user.role,
-          isDemo: true,
-          token: data.access_token,
-        };
-        localStorage.setItem("sociotrack_user_session", JSON.stringify(session));
-        onLoginSuccess(session);
-        return;
+      const supabase = createSupabaseClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase());
+      if (error) {
+        setErrorMessage(error.message || "Could not dispatch password reset link.");
+      } else {
+        setResetSent(true);
       }
-    } catch {
-      // offline fallback
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Could not send password reset request.";
+      setErrorMessage(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
-    const fallbackDemoSession: UserSession = {
-      name: "Demo Guest",
-      email: "guest@sociotrack.io",
-      role: "Interactive Demo Sandbox",
-      isDemo: true,
-    };
-    localStorage.setItem("sociotrack_user_session", JSON.stringify(fallbackDemoSession));
-    onLoginSuccess(fallbackDemoSession);
-    setIsLoading(false);
   };
 
   // Keyboard handlers for accessibility
@@ -403,24 +347,6 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
           ========================================================================= */}
       <div className="lg:w-[45%] flex items-center justify-center p-6 lg:p-14">
         <div className="w-full max-w-md bg-white rounded-2xl border border-[#E6E9F0] shadow-card p-8 lg:p-10 space-y-6 animate-fade-in relative">
-          {/* Quick Demo Mode Badge */}
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#ECE9FF] text-[#5146D8]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Interactive Sandbox</span>
-            </span>
-            <button
-              type="button"
-              onClick={handleDemoSandboxClick}
-              disabled={isLoading}
-              aria-label="Skip to demo login - instant access to workspace features"
-              className="text-xs text-[#5146D8] hover:text-[#4336c5] font-semibold underline underline-offset-2 flex items-center space-x-1"
-            >
-              <span>Explore Demo Mode</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-
           {/* Error Banner */}
           {errorMessage && (
             <div className="rounded-xl bg-red-50 border border-red-200 p-3.5 flex items-start space-x-2 text-xs text-red-700 animate-slide-up">
@@ -448,7 +374,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
                 {/* Continue with Microsoft */}
                 <button
                   type="button"
-                  onClick={() => setErrorMessage("Enterprise SSO (Microsoft) requires tenant domain matching. Please enter your work email below or launch Demo Sandbox.")}
+                  onClick={() => setErrorMessage("Enterprise SSO (Microsoft) is currently being provisioned. Please enter your email and password below.")}
                   disabled={isLoading}
                   className="w-full h-11 px-4 rounded-xl border border-[#E6E9F0] bg-white hover:bg-slate-50 text-[#172033] text-xs font-semibold flex items-center justify-center space-x-3 transition-colors shadow-sm"
                 >
@@ -465,7 +391,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
                 {/* Continue with Google */}
                 <button
                   type="button"
-                  onClick={() => setErrorMessage("Google Workspace SSO requires authorized corporate domain. Please enter your work email below or launch Demo Sandbox.")}
+                  onClick={() => setErrorMessage("Google Workspace SSO is currently being provisioned. Please enter your email and password below.")}
                   disabled={isLoading}
                   className="w-full h-11 px-4 rounded-xl border border-[#E6E9F0] bg-white hover:bg-slate-50 text-[#172033] text-xs font-semibold flex items-center justify-center space-x-3 transition-colors shadow-sm"
                 >
@@ -489,22 +415,6 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
                   </svg>
                   <span>Continue with Google Workspace</span>
                 </button>
-              </div>
-
-              {/* Dedicated Interactive Demo Sandbox Action */}
-              <div className="pt-1">
-                <button
-                  type="button"
-                  onClick={handleDemoSandboxClick}
-                  disabled={isLoading}
-                  className="w-full py-2.5 px-4 rounded-xl border border-indigo-200 dark:border-indigo-800/80 bg-indigo-50/70 dark:bg-indigo-950/40 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold flex items-center justify-center space-x-2 transition-all shadow-sm group"
-                >
-                  <Sparkles className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
-                  <span>Launch Interactive Demo Sandbox (Guest Mode)</span>
-                </button>
-                <p className="text-[10px] text-center text-slate-400 mt-1">
-                  Explore full features with benchmark telemetry. No credentials needed.
-                </p>
               </div>
 
               {/* Divider */}
@@ -644,7 +554,7 @@ export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPagePr
               {/* Continue with Microsoft SSO */}
               <button
                 type="button"
-                onClick={() => setErrorMessage("Enterprise SSO (Microsoft) requires tenant domain matching. Please enter your work email below or launch Demo Sandbox.")}
+                onClick={() => setErrorMessage("Enterprise SSO (Microsoft) is currently being provisioned. Please enter your work email below to register.")}
                 disabled={isLoading}
                 className="w-full h-11 px-4 rounded-xl border border-[#E6E9F0] bg-white hover:bg-slate-50 text-[#172033] text-xs font-semibold flex items-center justify-center space-x-3 transition-colors shadow-sm"
               >

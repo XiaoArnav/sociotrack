@@ -46,6 +46,7 @@ import { CustomerBillingPortal } from "@/components/CustomerBillingPortal";
 import { BusinessMetricsDashboard } from "@/components/BusinessMetricsDashboard";
 import { TermsAndPrivacyModal } from "@/components/TermsAndPrivacyModal";
 import { saveProfileSnapshot } from "@/utils/supabase/snapshots";
+import { createClient as createSupabaseClient } from "@/utils/supabase/client";
 import {
   PostDraft,
   LearnedInsight,
@@ -705,65 +706,48 @@ export default function App() {
   const [viewMode, setViewMode] = useState<"public_report" | "saas_dashboard">("public_report");
 
   useEffect(() => {
-    // 1. Auto-authenticate if ?demo=true query param is present
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("demo") === "true") {
-        const demoSession = {
-          name: "Alex Chen",
-          email: "alex.chen@enterprise.com",
-          role: "Principal Content Architect",
-          isDemo: true,
-        };
-        localStorage.setItem("sociotrack_user_session", JSON.stringify(demoSession));
-        setCurrentUser(demoSession);
-        return;
-      }
-    }
-
-    // 2. Validate saved session from localStorage
+    // 1. Restore authenticated session from Supabase client
     try {
+      const supabase = createSupabaseClient();
+      supabase.auth.getSession().then(({ data }) => {
+        if (data?.session?.user) {
+          const user = data.session.user;
+          const sessionData: UserSession = {
+            name: user.user_metadata?.name || user.email?.split("@")[0] || "User",
+            email: user.email || "",
+            role: user.user_metadata?.role || "Growth & Content Lead",
+            isDemo: false,
+            token: data.session.access_token,
+          };
+          setCurrentUser(sessionData);
+          localStorage.setItem("sociotrack_user_session", JSON.stringify(sessionData));
+        } else {
+          // Fallback to local storage cache if available
+          const saved = localStorage.getItem("sociotrack_user_session");
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (parsed && parsed.email) {
+                setCurrentUser({ ...parsed, isDemo: false });
+              }
+            } catch {
+              // ignore
+            }
+          }
+        }
+      });
+    } catch {
       const saved = localStorage.getItem("sociotrack_user_session");
       if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.token) {
-          const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-          const apiBase = process.env.NEXT_PUBLIC_API_URL || (isHttps ? "https://sociotrack-api.onrender.com" : "http://localhost:8000");
-          fetch(`${apiBase}/api/auth/me`, {
-            headers: { Authorization: `Bearer ${parsed.token}` },
-          })
-            .then((res) => {
-              if (res.status === 401) {
-                // Token has expired or been revoked
-                localStorage.removeItem("sociotrack_user_session");
-                setCurrentUser(null);
-                return null;
-              }
-              return res.ok ? res.json() : null;
-            })
-            .then((meData) => {
-              if (meData) {
-                setCurrentUser({
-                  name: meData.name,
-                  email: meData.email,
-                  role: meData.role,
-                  isDemo: meData.is_demo,
-                  token: parsed.token,
-                });
-              } else if (parsed.isDemo) {
-                setCurrentUser(parsed);
-              }
-            })
-            .catch(() => {
-              // Network fallback: keep current session offline
-              setCurrentUser(parsed);
-            });
-        } else {
-          setCurrentUser(parsed);
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.email) {
+            setCurrentUser({ ...parsed, isDemo: false });
+          }
+        } catch {
+          // ignore
         }
       }
-    } catch {
-      // ignore
     }
   }, []);
 
@@ -1213,37 +1197,6 @@ export default function App() {
           </button>
         </div>
       </header>
-
-      {/* Demo Sandbox Alert Header */}
-      {currentUser?.isDemo && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 flex items-center justify-between text-xs text-amber-800 dark:text-amber-200">
-          <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-            <span className="font-semibold">Interactive Demo Sandbox Mode:</span>
-            <span className="text-slate-600 dark:text-slate-400">
-              Exploring with curated benchmark datasets &amp; isolated vector memory.
-            </span>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="font-bold underline hover:opacity-80 text-indigo-600 dark:text-indigo-400"
-            >
-              Sign in with work email
-            </button>
-            <button
-              onClick={() => {
-                localStorage.removeItem("sociotrack_user_session");
-                setCurrentUser(null);
-                setViewMode("public_report");
-              }}
-              className="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 font-medium"
-            >
-              Exit Sandbox
-            </button>
-          </div>
-        </div>
-      )}
 
       {viewMode === "saas_dashboard" ? (
         <InsTrackSaaSDashboard
