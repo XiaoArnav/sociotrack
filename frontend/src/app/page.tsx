@@ -689,6 +689,7 @@ export default function App() {
   // 2. Authentication State - Null by default; authenticated or demo sessions loaded from localStorage
   const [currentUser, setCurrentUser] = useState<UserSession | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authInitialScreen, setAuthInitialScreen] = useState<"login" | "signup">("login");
   const [showSurveyModal, setShowSurveyModal] = useState(false);
   const [showAddAccountModal, setShowAddAccountModal] = useState(false);
   const [showOnboardingWizard, setShowOnboardingWizard] = useState(false);
@@ -1158,13 +1159,19 @@ export default function App() {
           ) : (
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => {
+                  setAuthInitialScreen("login");
+                  setShowAuthModal(true);
+                }}
                 className="px-3.5 py-1.5 rounded-lg border border-slate-200 dark:border-[#243048] text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-[#161F30] transition-colors"
               >
                 Log in
               </button>
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => {
+                  setAuthInitialScreen("signup");
+                  setShowAuthModal(true);
+                }}
                 className="px-4 py-1.5 rounded-lg bg-[#6366F1] hover:bg-[#5558E6] text-white text-xs font-semibold shadow-sm transition-colors"
               >
                 Create Account
@@ -1894,7 +1901,10 @@ export default function App() {
               </h3>
               <div>
                 <button
-                  onClick={() => setShowSurveyModal(true)}
+                  onClick={() => {
+                    setAuthInitialScreen("signup");
+                    setShowAuthModal(true);
+                  }}
                   className="px-8 py-3.5 rounded-xl bg-white/20 hover:bg-white/30 border border-white/40 text-white font-bold text-sm shadow-lg transition-all inline-flex items-center space-x-2 hover:scale-105"
                 >
                   <span>Create a Free Account</span>
@@ -2084,6 +2094,7 @@ export default function App() {
               <X className="w-4 h-4" />
             </button>
             <AuthPage
+              initialScreen={authInitialScreen}
               onLoginSuccess={(u) => {
                 setCurrentUser(u);
                 setShowAuthModal(false);

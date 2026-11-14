@@ -30,14 +30,15 @@ export interface UserSession {
 
 interface AuthPageProps {
   onLoginSuccess: (user: UserSession) => void;
+  initialScreen?: AuthScreen;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 type AuthScreen = "login" | "signup" | "forgot_password";
 
-export function AuthPage({ onLoginSuccess }: AuthPageProps) {
-  const [screen, setScreen] = useState<AuthScreen>("login");
+export function AuthPage({ onLoginSuccess, initialScreen = "login" }: AuthPageProps) {
+  const [screen, setScreen] = useState<AuthScreen>(initialScreen);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
